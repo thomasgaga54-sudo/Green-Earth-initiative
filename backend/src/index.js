@@ -21,7 +21,14 @@ app.use((err, req, res, next) => {
   res.status(500).json({ msg: err.message || "Something went wrong" });
 });
 
-mongoose.connect(process.env.MONGO_URI)
+const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URL;
+
+if (!mongoUri) {
+  console.error("ERROR: MONGO_URI or MONGODB_URL environment variable is not set. Please configure it in your deployment environment.");
+  process.exit(1);
+}
+
+mongoose.connect(mongoUri)
   .then(() => console.log("MongoDB Connected"))
   .catch(err => console.log(err));
 
