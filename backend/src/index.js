@@ -10,11 +10,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('API is running...');
-});
-
 app.use("/api", userRoutes);
+
+// Serve React frontend in production
+const frontendDist = path.resolve(__dirname, "../../Green Earth Task Frontend/dist");
+app.use(express.static(frontendDist));
+
+// All non-API routes serve the React app
+app.get("*", (req, res) => {
+  res.sendFile(path.join(frontendDist, "index.html"));
+});
 
 app.use((err, req, res, next) => {
   console.error(err);

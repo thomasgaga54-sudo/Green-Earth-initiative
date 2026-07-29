@@ -15,7 +15,8 @@
   "author": "ogaga",
   "main": "backend/src/index.js",
   "scripts": {
-    "start": "node backend/src/index.js"
+    "start": "node backend/src/index.js",
+    "build": "cd \"backend/Green Earth Task Frontend\" && npm install && npm run build"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
