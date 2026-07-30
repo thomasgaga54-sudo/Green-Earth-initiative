@@ -1,0 +1,102 @@
+.page { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* Navbar */
+.nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.2rem 2rem;
+  background: #fff;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.07);
+  position: sticky; top: 0; z-index: 100;
+}
+.logo { font-size: 1.4rem; font-weight: 800; color: var(--green-dark); }
+.navLinks { display: flex; gap: 1rem; align-items: center; }
+.navLogin {
+  padding: 0.5rem 1.2rem; border-radius: var(--radius);
+  color: var(--green-mid); font-weight: 600;
+  border: 1.5px solid var(--green-mid);
+  transition: all 0.2s;
+}
+.navLogin:hover { background: var(--green-pale); }
+.navCta {
+  padding: 0.5rem 1.2rem; border-radius: var(--radius);
+  background: var(--green-mid); color: #fff; font-weight: 600;
+  transition: background 0.2s;
+}
+.navCta:hover { background: var(--green-dark); }
+
+/* Hero */
+.hero {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 2rem; padding: 5rem 4rem;
+  background: linear-gradient(135deg, var(--green-pale) 0%, #fff 60%);
+  flex-wrap: wrap;
+}
+.heroContent { flex: 1; min-width: 280px; max-width: 560px; }
+.badge {
+  display: inline-block;
+  background: var(--green-pale); color: var(--green-dark);
+  padding: 0.35rem 1rem; border-radius: 50px;
+  font-size: 0.85rem; font-weight: 600; margin-bottom: 1.2rem;
+  border: 1px solid #c8e6c9;
+}
+.heroContent h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  line-height: 1.15; font-weight: 900;
+  color: var(--green-dark); margin-bottom: 1rem;
+}
+.heroContent p {
+  font-size: 1.1rem; color: var(--text-light);
+  margin-bottom: 2rem; max-width: 480px;
+}
+.heroBtns { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+.btnPrimary {
+  display: inline-block;
+  padding: 0.85rem 2rem; border-radius: var(--radius);
+  background: var(--green-mid); color: #fff; font-weight: 700;
+  font-size: 1rem; transition: background 0.2s; border: none;
+}
+.btnPrimary:hover { background: var(--green-dark); }
+.btnOutline {
+  display: inline-block;
+  padding: 0.85rem 2rem; border-radius: var(--radius);
+  border: 2px solid var(--green-mid); color: var(--green-mid);
+  font-weight: 700; font-size: 1rem; transition: all 0.2s;
+}
+.btnOutline:hover { background: var(--green-pale); }
+.heroStats { display: flex; gap: 2rem; flex-wrap: wrap; }
+.heroStats div { display: flex; flex-direction: column; }
+.heroStats strong { font-size: 1.5rem; color: var(--green-dark); font-weight: 800; }
+.heroStats span { font-size: 0.85rem; color: var(--text-light); }
+.heroVisual {
+  flex: 1; min-width: 200px;
+  display: flex; align-items: center; justify-content: center;
+}
+.earthEmoji { font-size: clamp(8rem, 18vw, 14rem); line-height: 1; filter: drop-shadow(0 8px 24px rgba(45,122,45,0.25)); }
+
+/* Features */
+.features { padding: 5rem 4rem; text-align: center; background: #fff; }
+.features h2 { font-size: 2rem; color: var(--green-dark); margin-bottom: 3rem; font-weight: 800; }
+.featureGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 2rem; max-width: 900px; margin: 0 auto; }
+.featureCard {
+  padding: 2rem; border-radius: var(--radius);
+  background: var(--green-pale); border: 1px solid #c8e6c9;
+  text-align: left; transition: transform 0.2s, box-shadow 0.2s;
+}
+.featureCard:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+.featureIcon { font-size: 2.5rem; margin-bottom: 1rem; }
+.featureCard h3 { font-size: 1.15rem; color: var(--green-dark); margin-bottom: 0.5rem; font-weight: 700; }
+.featureCard p { color: var(--text-light); font-size: 0.95rem; }
+
+/* CTA */
+.cta {
+  padding: 5rem 2rem; text-align: center;
+  background: linear-gradient(135deg, var(--green-dark), var(--green-mid));
+  color: #fff;
+}
+.cta h2 { font-size: 2rem; margin-bottom: 1rem; font-weight: 800; }
+.cta p { font-size: 1.1rem; margin-bottom: 2rem; opacity: 0.9; }
+.cta .btnPrimary { background: var(--accent); color: #fff; }
+.cta .btnPrimary:hover { background: #e65100; }
+
+/* Footer */
+.footer { padding: 1.5rem; text-align: center; background: var(--green-dark); color: #a5d6a7; font-size: 0.9rem; }

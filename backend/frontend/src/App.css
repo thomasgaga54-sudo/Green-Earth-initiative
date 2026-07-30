@@ -1,14 +1,44 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green-dark: #1a4a1a;
+  --green-mid: #2d7a2d;
+  --green-light: #4caf50;
+  --green-pale: #e8f5e9;
+  --accent: #ff8f00;
+  --text: #1c1c1c;
+  --text-light: #555;
+  --white: #ffffff;
+  --shadow: 0 4px 20px rgba(0,0,0,0.1);
+  --radius: 12px;
 }
 
-h1 {
-  color: #2d5a27;
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--white);
+  color: var(--text);
+  line-height: 1.6;
 }
 
-p {
-  color: #333;
+a { text-decoration: none; color: inherit; }
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s;
 }
+
+input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #ddd;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input:focus { border-color: var(--green-light); }
