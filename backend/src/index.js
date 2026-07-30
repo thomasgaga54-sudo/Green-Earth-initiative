@@ -13,7 +13,8 @@ app.use(express.json());
 app.use("/api", userRoutes);
 
 // Serve React frontend in production
-const frontendPath = path.resolve(__dirname, "../../backend/Green Earth Task Frontend/dist");
+const frontendPath = path.resolve(__dirname, "../Green Earth Task Frontend/dist");
+console.log("Frontend path:", frontendPath);
 app.use(express.static(frontendPath));
 
 // All non-API routes serve the React app
