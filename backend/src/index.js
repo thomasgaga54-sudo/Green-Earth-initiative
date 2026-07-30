@@ -13,10 +13,11 @@ app.use(express.json());
 app.use("/api", userRoutes);
 
 // Serve React frontend in production
-app.use(express.static(path.join(__dirname, "../frontend/dist")));
+const distPath = path.join(__dirname, "../frontend/dist");
+app.use(express.static(distPath));
 
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+app.use((req, res) => {
+  res.sendFile(path.join(distPath, "index.html"));
 });
 
 app.use((err, req, res, next) => {
