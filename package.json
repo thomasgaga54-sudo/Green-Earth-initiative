@@ -16,7 +16,7 @@
   "main": "backend/src/index.js",
   "scripts": {
     "start": "node backend/src/index.js",
-    "build": "cd \"backend/Green Earth Task Frontend\" && npm install && npm run build"
+    "build": "npm install --prefix \"backend/Green Earth Task Frontend\" && npm run build --prefix \"backend/Green Earth Task Frontend\""
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
