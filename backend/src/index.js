@@ -13,13 +13,10 @@ app.use(express.json());
 app.use("/api", userRoutes);
 
 // Serve React frontend in production
-const frontendPath = path.resolve(__dirname, "../frontend/dist");
-console.log("Frontend path:", frontendPath);
-app.use(express.static(frontendPath));
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
-// All non-API routes serve the React app
-app.get("/{*splat}", (req, res) => {
-  res.sendFile(path.join(frontendPath, "index.html"));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
 });
 
 app.use((err, req, res, next) => {
