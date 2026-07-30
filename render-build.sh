@@ -7,5 +7,4 @@ npm install --prefix backend/frontend
 echo "Building frontend..."
 npm run build --prefix backend/frontend
 
-echo "Build complete. dist contents:"
-ls backend/frontend/dist
+echo "Frontend build completed successfully."
