@@ -8,6 +8,9 @@ export default function Dashboard() {
   const user = JSON.parse(localStorage.getItem('user') || '{}')
   const token = localStorage.getItem('token')
 
+  // Set auth header for all requests on this page
+  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+
   const [tasks, setTasks] = useState([])
   const [leaderboard, setLeaderboard] = useState([])
   const [activeTab, setActiveTab] = useState('tasks')
@@ -26,14 +29,16 @@ export default function Dashboard() {
     setSubmitting(taskId)
     setSubmitMsg('')
     try {
-      await axios.post('/api/submit', { userId: user._id, taskId, imageUrl: '' })
-      setSubmitMsg('Task submitted successfully! Points added.')
-      // refresh user points
-      const updated = { ...user, points: (user.points || 0) + (tasks.find(t => t._id === taskId)?.points || 0) }
-      localStorage.setItem('user', JSON.stringify(updated))
-      setTimeout(() => setSubmitMsg(''), 3000)
-    } catch {
-      setSubmitMsg('Submission failed. Try again.')
+      await axios.post(
+        '/api/submit',
+        { taskId, imageUrl: '' },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      setSubmitMsg('Task submitted! Awaiting admin approval.')
+      setTimeout(() => setSubmitMsg(''), 4000)
+    } catch (err) {
+      const msg = err.response?.data?.msg || err.message || 'Unknown error'
+      setSubmitMsg(`Submission failed: ${msg}`)
     } finally {
       setSubmitting(null)
     }
