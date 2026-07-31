@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import Terms from './pages/Terms'
+import InstallPrompt from './components/InstallPrompt'
 import './App.css'
 
 function PrivateRoute({ children }) {
@@ -24,6 +25,7 @@ function AdminRoute({ children }) {
 function App() {
   return (
     <BrowserRouter>
+      <InstallPrompt />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
