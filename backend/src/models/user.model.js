@@ -14,6 +14,7 @@ const TaskSchema = new mongoose.Schema({
   description: String,
   points: Number,
   imageUrl: String,
+  category: { type: String, default: "general" }, // general | children | hard
   createdAt: { type: Date, default: Date.now }
 });
 

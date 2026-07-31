@@ -176,6 +176,53 @@
   margin-bottom: 1.2rem;
 }
 
+/* Category tabs */
+.categoryTabs {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.catBtn {
+  padding: 0.5rem 1.1rem;
+  border-radius: 50px;
+  border: 1.5px solid #c8e6c9;
+  background: #fff;
+  color: var(--text-light);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.catBtn:hover { background: var(--green-pale); color: var(--green-dark); }
+.catActive { background: var(--green-mid) !important; color: #fff !important; border-color: var(--green-mid) !important; }
+
+.kidsTag {
+  display: inline-block;
+  background: #fff8e1;
+  color: #f57f17;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  border: 1px solid #ffe082;
+  margin-bottom: 0.5rem;
+}
+
+.hardTag {
+  display: inline-block;
+  background: #fce4ec;
+  color: #c62828;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  border: 1px solid #ef9a9a;
+  margin-bottom: 0.5rem;
+}
+
 /* Tasks */
 .taskGrid {
   display: grid;

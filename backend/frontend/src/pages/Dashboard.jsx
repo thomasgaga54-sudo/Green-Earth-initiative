@@ -11,8 +11,11 @@ export default function Dashboard() {
   const [tasks, setTasks] = useState([])
   const [leaderboard, setLeaderboard] = useState([])
   const [activeTab, setActiveTab] = useState('tasks')
+  const [taskCategory, setTaskCategory] = useState('all')
   const [submitting, setSubmitting] = useState(null)
   const [submitMsg, setSubmitMsg] = useState('')
+
+  const filteredTasks = taskCategory === 'all' ? tasks : tasks.filter(t => t.category === taskCategory)
 
   useEffect(() => {
     axios.get('/api/tasks').then(r => setTasks(r.data)).catch(() => {})
@@ -120,16 +123,35 @@ export default function Dashboard() {
         {activeTab === 'tasks' && (
           <section>
             <h2 className={styles.sectionTitle}>🌱 Available Tasks</h2>
-            {tasks.length === 0
-              ? <div className={styles.empty}>No tasks available yet. Check back soon!</div>
+
+            {/* Category filter */}
+            <div className={styles.categoryTabs}>
+              {['all', 'general', 'children', 'hard'].map(cat => (
+                <button
+                  key={cat}
+                  className={`${styles.catBtn} ${taskCategory === cat ? styles.catActive : ''}`}
+                  onClick={() => setTaskCategory(cat)}
+                >
+                  {cat === 'all' && '🌍 All'}
+                  {cat === 'general' && '🌿 General'}
+                  {cat === 'children' && '🧒 Kids'}
+                  {cat === 'hard' && '🔥 Challenge'}
+                </button>
+              ))}
+            </div>
+
+            {filteredTasks.length === 0
+              ? <div className={styles.empty}>No tasks in this category yet.</div>
               : <div className={styles.taskGrid}>
-                  {tasks.map(task => (
+                  {filteredTasks.map(task => (
                     <div key={task._id} className={styles.taskCard}>
                       {task.imageUrl && (
                         <img src={task.imageUrl} alt={task.title} className={styles.taskImage} />
                       )}
                       <div className={styles.taskBody}>
                         <div className={styles.taskPoints}>+{task.points} pts</div>
+                        {task.category === 'children' && <span className={styles.kidsTag}>🧒 Kids</span>}
+                        {task.category === 'hard' && <span className={styles.hardTag}>🔥 Challenge</span>}
                         <h3>{task.title}</h3>
                         <p>{task.description}</p>
                         <button
