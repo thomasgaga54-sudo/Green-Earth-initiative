@@ -186,24 +186,42 @@
 .taskCard {
   background: #fff;
   border-radius: var(--radius);
-  padding: 1.5rem;
+  overflow: hidden;
   box-shadow: var(--shadow);
   position: relative;
   transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
 }
 
 .taskCard:hover { transform: translateY(-3px); }
 
+.taskImage {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+}
+
+.taskBody {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .taskPoints {
   position: absolute;
-  top: 1rem; right: 1rem;
-  background: var(--green-pale);
+  top: 0.75rem; right: 0.75rem;
+  background: rgba(255,255,255,0.95);
   color: var(--green-dark);
   font-weight: 800;
   font-size: 0.85rem;
-  padding: 0.25rem 0.65rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 50px;
   border: 1px solid #c8e6c9;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 1;
 }
 
 .taskCard h3 {
@@ -211,7 +229,6 @@
   font-weight: 700;
   color: var(--green-dark);
   margin-bottom: 0.5rem;
-  padding-right: 3.5rem;
 }
 
 .taskCard p {
@@ -219,6 +236,7 @@
   color: var(--text-light);
   margin-bottom: 1.2rem;
   line-height: 1.5;
+  flex: 1;
 }
 
 .submitBtn {

@@ -13,6 +13,7 @@ const TaskSchema = new mongoose.Schema({
   title: String,
   description: String,
   points: Number,
+  imageUrl: String,
   createdAt: { type: Date, default: Date.now }
 });
 

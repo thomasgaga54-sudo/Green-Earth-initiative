@@ -125,16 +125,21 @@ export default function Dashboard() {
               : <div className={styles.taskGrid}>
                   {tasks.map(task => (
                     <div key={task._id} className={styles.taskCard}>
-                      <div className={styles.taskPoints}>+{task.points} pts</div>
-                      <h3>{task.title}</h3>
-                      <p>{task.description}</p>
-                      <button
-                        className={styles.submitBtn}
-                        onClick={() => handleSubmit(task._id)}
-                        disabled={submitting === task._id}
-                      >
-                        {submitting === task._id ? 'Submitting...' : 'Mark Complete'}
-                      </button>
+                      {task.imageUrl && (
+                        <img src={task.imageUrl} alt={task.title} className={styles.taskImage} />
+                      )}
+                      <div className={styles.taskBody}>
+                        <div className={styles.taskPoints}>+{task.points} pts</div>
+                        <h3>{task.title}</h3>
+                        <p>{task.description}</p>
+                        <button
+                          className={styles.submitBtn}
+                          onClick={() => handleSubmit(task._id)}
+                          disabled={submitting === task._id}
+                        >
+                          {submitting === task._id ? 'Submitting...' : 'Mark Complete'}
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
