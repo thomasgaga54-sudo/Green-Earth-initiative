@@ -19,7 +19,7 @@ const SEED_TASKS = [
     title: "Plastic-Free Day",
     description: "Go an entire day without using single-use plastic. Document your plastic-free choices.",
     points: 30, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1567113463300-102a7eb3cb26?w=600&auto=format&fit=crop"
+    imageUrl: "https://images.unsplash.com/photo-1604187351574-c75ca79f5807?w=600&auto=format&fit=crop"
   },
   {
     title: "Bike to Work",
