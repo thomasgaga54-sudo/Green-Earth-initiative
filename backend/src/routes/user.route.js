@@ -2,28 +2,106 @@ const express = require("express");
 const router = express.Router();
 const { register, login } = require("../controllers/auth.controller");
 const { User, Task, Submission } = require("../models/user.model");
+const { protect, adminOnly } = require("../middleware/auth.middleware");
 
+// Auth
 router.post("/register", register);
 router.post("/login", login);
 
+// Public
 router.get("/leaderboard", async (req, res) => {
-  const users = await User.find().sort({ points: -1 }).limit(10);
-  res.json(users);
+  try {
+    const users = await User.find({}, "name points level").sort({ points: -1 }).limit(10);
+    res.json(users);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
 router.get("/tasks", async (req, res) => {
-  const tasks = await Task.find();
-  res.json(tasks);
+  try {
+    const tasks = await Task.find().sort({ createdAt: -1 });
+    res.json(tasks);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
-router.post("/submit", async (req, res) => {
-  const { userId, taskId, imageUrl } = req.body;
-  const submission = await Submission.create({ userId, taskId, imageUrl });
-  const task = await Task.findById(taskId);
-  if (task) {
-    await User.findByIdAndUpdate(userId, { $inc: { points: task.points } });
-  }
-  res.json(submission);
+// User: submit task
+router.post("/submit", protect, async (req, res) => {
+  try {
+    const { taskId, imageUrl } = req.body;
+    const userId = req.user.id;
+    const submission = await Submission.create({ userId, taskId, imageUrl });
+    res.json(submission);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// User: get own submissions
+router.get("/my-submissions", protect, async (req, res) => {
+  try {
+    const submissions = await Submission.find({ userId: req.user.id }).populate("taskId");
+    res.json(submissions);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// ── Admin routes ────────────────────────────────────────────
+
+// Get all users
+router.get("/admin/users", protect, adminOnly, async (req, res) => {
+  try {
+    const users = await User.find({}, "-password").sort({ createdAt: -1 });
+    res.json(users);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Create task
+router.post("/admin/tasks", protect, adminOnly, async (req, res) => {
+  try {
+    const { title, description, points } = req.body;
+    const task = await Task.create({ title, description, points });
+    res.json(task);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Delete task
+router.delete("/admin/tasks/:id", protect, adminOnly, async (req, res) => {
+  try {
+    await Task.findByIdAndDelete(req.params.id);
+    res.json({ msg: "Task deleted" });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Get all submissions (pending)
+router.get("/admin/submissions", protect, adminOnly, async (req, res) => {
+  try {
+    const submissions = await Submission.find()
+      .populate("userId", "name email")
+      .populate("taskId", "title points")
+      .sort({ createdAt: -1 });
+    res.json(submissions);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Approve submission → award points
+router.patch("/admin/submissions/:id/approve", protect, adminOnly, async (req, res) => {
+  try {
+    const sub = await Submission.findById(req.params.id).populate("taskId");
+    if (!sub) return res.status(404).json({ msg: "Submission not found" });
+    if (sub.status === "approved") return res.status(400).json({ msg: "Already approved" });
+    sub.status = "approved";
+    await sub.save();
+    if (sub.taskId) {
+      await User.findByIdAndUpdate(sub.userId, { $inc: { points: sub.taskId.points } });
+    }
+    res.json({ msg: "Approved", submission: sub });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Reject submission
+router.patch("/admin/submissions/:id/reject", protect, adminOnly, async (req, res) => {
+  try {
+    const sub = await Submission.findByIdAndUpdate(
+      req.params.id, { status: "rejected" }, { new: true }
+    );
+    res.json({ msg: "Rejected", submission: sub });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
 module.exports = router;

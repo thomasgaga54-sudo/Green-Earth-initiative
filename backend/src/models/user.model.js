@@ -2,10 +2,11 @@ const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
   name: String,
-  email: String,
+  email: { type: String, unique: true },
   password: String,
   points: { type: Number, default: 0 },
-  level: { type: Number, default: 1 }
+  level: { type: Number, default: 1 },
+  isAdmin: { type: Boolean, default: false }
 });
 
 const TaskSchema = new mongoose.Schema({
@@ -16,8 +17,8 @@ const TaskSchema = new mongoose.Schema({
 });
 
 const SubmissionSchema = new mongoose.Schema({
-  userId: String,
-  taskId: String,
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  taskId: { type: mongoose.Schema.Types.ObjectId, ref: "Task" },
   imageUrl: String,
   status: { type: String, default: "pending" },
   createdAt: { type: Date, default: Date.now }

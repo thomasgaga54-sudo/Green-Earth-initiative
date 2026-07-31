@@ -19,7 +19,7 @@ export default function Login() {
       const { data } = await axios.post('/api/login', form)
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
-      navigate('/dashboard')
+      navigate(data.user.isAdmin ? '/admin' : '/dashboard')
     } catch (err) {
       setError(err.response?.data?.msg || 'Login failed. Please try again.')
     } finally {

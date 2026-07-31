@@ -7,4 +7,7 @@ npm install --prefix backend/frontend
 echo "Building frontend..."
 npm run build --prefix backend/frontend
 
-echo "Frontend build completed successfully."
+echo "Seeding database (admin + tasks)..."
+node backend/src/seed.js
+
+echo "Build and seed completed successfully."

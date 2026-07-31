@@ -1,0 +1,164 @@
+.page { display: flex; min-height: 100vh; background: #f0f4f0; }
+
+/* Sidebar */
+.sidebar {
+  width: 240px; background: #1b5e20; color: #fff;
+  display: flex; flex-direction: column;
+  padding: 2rem 1.2rem;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
+}
+.logo {
+  font-size: 1.2rem; font-weight: 800; color: #a5d6a7;
+  margin-bottom: 2.5rem; padding-left: 0.5rem; line-height: 1.4;
+}
+.logo span { font-size: 0.75rem; color: #69f0ae; font-weight: 600; letter-spacing: 0.05em; }
+.nav { display: flex; flex-direction: column; gap: 0.4rem; flex: 1; }
+.navItem {
+  background: transparent; color: #c8e6c9;
+  border: none; border-radius: 10px;
+  padding: 0.75rem 1rem; text-align: left;
+  font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  transition: background 0.2s; display: flex; align-items: center; gap: 0.5rem;
+}
+.navItem:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.navItem.active { background: #2e7d32; color: #fff; }
+.badge {
+  background: #f44336; color: #fff;
+  border-radius: 50px; font-size: 0.7rem;
+  padding: 0.1rem 0.45rem; font-weight: 800; margin-left: auto;
+}
+.logout {
+  background: rgba(255,255,255,0.08); color: #ef9a9a;
+  border: none; border-radius: 10px; padding: 0.75rem 1rem;
+  text-align: left; font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; transition: background 0.2s; margin-top: 1rem;
+}
+.logout:hover { background: rgba(255,255,255,0.15); }
+
+/* Main */
+.main { margin-left: 240px; flex: 1; padding: 2rem 2.5rem; }
+
+/* Header */
+.header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+}
+.header h1 { font-size: 1.6rem; font-weight: 800; color: #1b5e20; }
+.header p { color: #666; font-size: 0.9rem; margin-top: 0.2rem; }
+.statsRow { display: flex; gap: 1rem; flex-wrap: wrap; }
+.stat {
+  background: #fff; border-radius: 12px; padding: 0.75rem 1.25rem;
+  display: flex; flex-direction: column; align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07); min-width: 70px;
+}
+.stat strong { font-size: 1.5rem; font-weight: 900; color: #1b5e20; }
+.stat span { font-size: 0.75rem; color: #888; }
+
+/* Toast */
+.toast {
+  background: #2e7d32; color: #fff;
+  border-radius: 10px; padding: 0.85rem 1.25rem;
+  margin-bottom: 1.5rem; font-weight: 600; font-size: 0.95rem;
+}
+
+.sectionTitle { font-size: 1.1rem; font-weight: 800; color: #1b5e20; margin-bottom: 1.2rem; }
+
+/* Table */
+.table { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+.tableHead {
+  display: grid; grid-template-columns: 1.5fr 1.5fr 0.7fr 0.8fr 1.2fr;
+  padding: 0.85rem 1.25rem; background: #e8f5e9;
+  font-size: 0.8rem; font-weight: 700; color: #2e7d32; text-transform: uppercase;
+}
+.tableRow {
+  display: grid; grid-template-columns: 1.5fr 1.5fr 0.7fr 0.8fr 1.2fr;
+  padding: 1rem 1.25rem; border-top: 1px solid #f0f0f0;
+  font-size: 0.875rem; align-items: center; transition: background 0.15s;
+}
+.tableRow:hover { background: #f9fdf9; }
+.approvedRow { opacity: 0.7; }
+.pts { font-weight: 800; color: #2e7d32; }
+.actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.approveBtn {
+  background: #e8f5e9; color: #2e7d32; border: 1.5px solid #a5d6a7;
+  border-radius: 7px; padding: 0.4rem 0.75rem; font-size: 0.8rem;
+  font-weight: 700; cursor: pointer; transition: all 0.2s;
+}
+.approveBtn:hover { background: #2e7d32; color: #fff; }
+.rejectBtn {
+  background: #fdecea; color: #c62828; border: 1.5px solid #ef9a9a;
+  border-radius: 7px; padding: 0.4rem 0.75rem; font-size: 0.8rem;
+  font-weight: 700; cursor: pointer; transition: all 0.2s;
+}
+.rejectBtn:hover { background: #c62828; color: #fff; }
+
+/* Task form */
+.taskForm {
+  background: #fff; border-radius: 12px; padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  display: flex; flex-direction: column; gap: 0.85rem; max-width: 560px;
+}
+.taskForm input, .taskForm textarea {
+  width: 100%; padding: 0.75rem 1rem; border-radius: 8px;
+  border: 1.5px solid #c8e6c9; font-size: 0.95rem;
+  font-family: inherit; transition: border 0.2s;
+}
+.taskForm input:focus, .taskForm textarea:focus { outline: none; border-color: #2e7d32; }
+.taskForm button {
+  background: #2e7d32; color: #fff; border: none; border-radius: 8px;
+  padding: 0.85rem; font-size: 1rem; font-weight: 700; cursor: pointer;
+  transition: background 0.2s;
+}
+.taskForm button:hover:not(:disabled) { background: #1b5e20; }
+.taskForm button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Task grid */
+.taskGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; }
+.taskCard {
+  background: #fff; border-radius: 12px; padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07); position: relative;
+}
+.taskPts {
+  position: absolute; top: 1rem; right: 1rem;
+  background: #e8f5e9; color: #1b5e20;
+  font-weight: 800; font-size: 0.85rem;
+  padding: 0.25rem 0.65rem; border-radius: 50px; border: 1px solid #c8e6c9;
+}
+.taskCard h3 { font-size: 1rem; font-weight: 700; color: #1b5e20; margin-bottom: 0.4rem; padding-right: 3.5rem; }
+.taskCard p { font-size: 0.875rem; color: #666; margin-bottom: 1rem; line-height: 1.5; }
+.deleteBtn {
+  background: #fdecea; color: #c62828; border: none; border-radius: 7px;
+  padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+  transition: all 0.2s;
+}
+.deleteBtn:hover { background: #c62828; color: #fff; }
+
+/* User role badges */
+.adminBadge {
+  background: #fff3e0; color: #e65100;
+  border: 1px solid #ffcc80; border-radius: 50px;
+  padding: 0.2rem 0.65rem; font-size: 0.8rem; font-weight: 700;
+}
+.userBadge {
+  background: #e8f5e9; color: #2e7d32;
+  border: 1px solid #a5d6a7; border-radius: 50px;
+  padding: 0.2rem 0.65rem; font-size: 0.8rem; font-weight: 700;
+}
+
+/* Empty */
+.empty {
+  text-align: center; color: #888; padding: 3rem;
+  font-size: 0.95rem; background: #fff;
+  border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; flex-wrap: wrap; padding: 1rem; }
+  .nav { flex-direction: row; flex: unset; }
+  .logo { width: 100%; margin-bottom: 0.5rem; }
+  .main { margin-left: 0; padding: 1.2rem; }
+  .tableHead, .tableRow { grid-template-columns: 1fr 1fr 0.5fr; }
+  .tableHead span:nth-child(4), .tableHead span:nth-child(5),
+  .tableRow span:nth-child(4), .tableRow span:nth-child(5) { display: none; }
+}

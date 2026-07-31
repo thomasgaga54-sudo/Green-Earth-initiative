@@ -16,6 +16,7 @@
   "main": "backend/src/index.js",
   "scripts": {
     "start": "node backend/src/index.js",
+    "seed": "node backend/src/seed.js",
     "build": "npm install --prefix backend/frontend && npm run build --prefix backend/frontend"
   },
   "dependencies": {
