@@ -54,3 +54,24 @@
 }
 .switch a { color: var(--green-mid); font-weight: 600; }
 .switch a:hover { text-decoration: underline; }
+
+.checkField {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--text-light);
+  line-height: 1.5;
+}
+
+.checkField input[type="checkbox"] {
+  margin-top: 0.2rem;
+  accent-color: var(--green-mid);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.checkField a { color: var(--green-mid); font-weight: 600; }
+.checkField a:hover { text-decoration: underline; }

@@ -62,6 +62,12 @@ export default function Register() {
               value={form.password} onChange={handleChange}
             />
           </div>
+          <div className={styles.checkField}>
+            <input type="checkbox" id="agree" required />
+            <label htmlFor="agree">
+              I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+            </label>
+          </div>
           <button type="submit" className={styles.btn} disabled={loading}>
             {loading ? 'Creating account...' : 'Create Account'}
           </button>

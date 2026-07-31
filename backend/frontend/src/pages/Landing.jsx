@@ -88,6 +88,13 @@ export default function Landing() {
       {/* Footer */}
       <footer className={styles.footer}>
         <p>🌍 Green Earth Initiative &copy; {new Date().getFullYear()}</p>
+        <div className={styles.footerLinks}>
+          <Link to="/privacy">Privacy Policy</Link>
+          <span>·</span>
+          <Link to="/terms">Terms &amp; Conditions</Link>
+          <span>·</span>
+          <a href="mailto:admin@greenearth.com">Contact</a>
+        </div>
       </footer>
     </div>
   )

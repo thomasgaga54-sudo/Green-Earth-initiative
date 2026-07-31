@@ -99,4 +99,32 @@
 .cta .btnPrimary:hover { background: #e65100; }
 
 /* Footer */
-.footer { padding: 1.5rem; text-align: center; background: var(--green-dark); color: #a5d6a7; font-size: 0.9rem; }
+.footer {
+  padding: 1.5rem;
+  text-align: center;
+  background: var(--green-dark);
+  color: #a5d6a7;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.footerLinks a {
+  color: #c8e6c9;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: color 0.2s;
+}
+
+.footerLinks a:hover { color: #fff; }
+.footerLinks span { color: #558b5e; }
