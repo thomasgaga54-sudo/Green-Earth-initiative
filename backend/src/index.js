@@ -4,11 +4,42 @@ require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const multer = require("multer");
 const userRoutes = require("./routes/user.route");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// File upload storage — saves to backend/uploads/
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "../uploads"));
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Only image files are allowed"));
+  }
+});
+
+// Serve uploaded images publicly
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
+// Upload endpoint
+app.post("/api/upload", upload.single("image"), (req, res) => {
+  if (!req.file) return res.status(400).json({ msg: "No file uploaded" });
+  const imageUrl = `/uploads/${req.file.filename}`;
+  res.json({ imageUrl });
+});
 
 app.use("/api", userRoutes);
 

@@ -22,6 +22,7 @@ const SubmissionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   taskId: { type: mongoose.Schema.Types.ObjectId, ref: "Task" },
   imageUrl: String,
+  note: String,
   status: { type: String, default: "pending" },
   createdAt: { type: Date, default: Date.now }
 });

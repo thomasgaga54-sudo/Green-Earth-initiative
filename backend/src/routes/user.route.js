@@ -26,9 +26,10 @@ router.get("/tasks", async (req, res) => {
 // User: submit task
 router.post("/submit", protect, async (req, res) => {
   try {
-    const { taskId, imageUrl } = req.body;
+    const { taskId, imageUrl, note } = req.body;
     const userId = req.user.id;
-    const submission = await Submission.create({ userId, taskId, imageUrl });
+    if (!imageUrl) return res.status(400).json({ msg: "Please upload a photo as proof." });
+    const submission = await Submission.create({ userId, taskId, imageUrl, note });
     res.json(submission);
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });

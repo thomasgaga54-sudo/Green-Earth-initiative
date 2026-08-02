@@ -2,21 +2,21 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import styles from './Dashboard.module.css'
+import SubmitModal from '../components/SubmitModal'
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  const [currentUser, setCurrentUser] = useState(() => JSON.parse(localStorage.getItem('user') || '{}'))
   const token = localStorage.getItem('token')
 
-  // Set auth header for all requests on this page
   axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
   const [tasks, setTasks] = useState([])
   const [leaderboard, setLeaderboard] = useState([])
   const [activeTab, setActiveTab] = useState('tasks')
   const [taskCategory, setTaskCategory] = useState('all')
-  const [submitting, setSubmitting] = useState(null)
   const [submitMsg, setSubmitMsg] = useState('')
+  const [selectedTask, setSelectedTask] = useState(null)
 
   const filteredTasks = taskCategory === 'all' ? tasks : tasks.filter(t => t.category === taskCategory)
 
@@ -25,23 +25,10 @@ export default function Dashboard() {
     axios.get('/api/leaderboard').then(r => setLeaderboard(r.data)).catch(() => {})
   }, [])
 
-  const handleSubmit = async (taskId) => {
-    setSubmitting(taskId)
-    setSubmitMsg('')
-    try {
-      await axios.post(
-        '/api/submit',
-        { taskId, imageUrl: '' },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      setSubmitMsg('Task submitted! Awaiting admin approval.')
-      setTimeout(() => setSubmitMsg(''), 4000)
-    } catch (err) {
-      const msg = err.response?.data?.msg || err.message || 'Unknown error'
-      setSubmitMsg(`Submission failed: ${msg}`)
-    } finally {
-      setSubmitting(null)
-    }
+  const handleSubmitSuccess = () => {
+    setSelectedTask(null)
+    setSubmitMsg('✅ Proof submitted! Awaiting admin approval.')
+    setTimeout(() => setSubmitMsg(''), 5000)
   }
 
   const logout = () => {
@@ -50,12 +37,22 @@ export default function Dashboard() {
     navigate('/')
   }
 
-  const level = Math.floor((user.points || 0) / 100) + 1
-  const progress = ((user.points || 0) % 100)
+  const level = Math.floor((currentUser.points || 0) / 100) + 1
+  const progress = (currentUser.points || 0) % 100
 
   return (
     <div className={styles.page}>
-      {/* Sidebar */}
+
+      {/* Submit Modal */}
+      {selectedTask && (
+        <SubmitModal
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onSuccess={handleSubmitSuccess}
+        />
+      )}
+
+      {/* Sidebar / Bottom Nav */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarLogo}>🌍 Green Earth</div>
         <nav className={styles.sidebarNav}>
@@ -72,16 +69,17 @@ export default function Dashboard() {
         <button className={styles.logoutBtn} onClick={logout}>🚪 Logout</button>
       </aside>
 
-      {/* Main */}
+      {/* Main Content */}
       <main className={styles.main}>
+
         {/* Header */}
         <header className={styles.header}>
           <div>
-            <h1>Welcome back, {user.name || 'Eco Warrior'} 👋</h1>
+            <h1>Welcome back, {currentUser.name || 'Eco Warrior'} 👋</h1>
             <p className={styles.headerSub}>Keep up the great eco work!</p>
           </div>
           <div className={styles.pointsBadge}>
-            <span className={styles.pointsNum}>{user.points || 0}</span>
+            <span className={styles.pointsNum}>{currentUser.points || 0}</span>
             <span className={styles.pointsLabel}>Points</span>
           </div>
         </header>
@@ -93,7 +91,7 @@ export default function Dashboard() {
           <div className={styles.statCard}>
             <div className={styles.statIcon}>⚡</div>
             <div>
-              <div className={styles.statNum}>{user.points || 0}</div>
+              <div className={styles.statNum}>{currentUser.points || 0}</div>
               <div className={styles.statLabel}>Total Points</div>
             </div>
           </div>
@@ -124,12 +122,11 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Tabs Content */}
+        {/* ── Tasks Tab ── */}
         {activeTab === 'tasks' && (
           <section>
             <h2 className={styles.sectionTitle}>🌱 Available Tasks</h2>
 
-            {/* Category filter */}
             <div className={styles.categoryTabs}>
               {['all', 'general', 'children', 'hard'].map(cat => (
                 <button
@@ -161,10 +158,9 @@ export default function Dashboard() {
                         <p>{task.description}</p>
                         <button
                           className={styles.submitBtn}
-                          onClick={() => handleSubmit(task._id)}
-                          disabled={submitting === task._id}
+                          onClick={() => setSelectedTask(task)}
                         >
-                          {submitting === task._id ? 'Submitting...' : 'Mark Complete'}
+                          📷 Submit Proof
                         </button>
                       </div>
                     </div>
@@ -174,12 +170,13 @@ export default function Dashboard() {
           </section>
         )}
 
+        {/* ── Leaderboard Tab ── */}
         {activeTab === 'leaderboard' && (
           <section>
             <h2 className={styles.sectionTitle}>🏆 Leaderboard</h2>
             <div className={styles.leaderboard}>
               {leaderboard.map((u, i) => (
-                <div key={u._id} className={`${styles.leaderRow} ${u._id === user._id ? styles.myRow : ''}`}>
+                <div key={u._id} className={`${styles.leaderRow} ${u._id === currentUser._id ? styles.myRow : ''}`}>
                   <span className={styles.rank}>
                     {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
                   </span>
@@ -192,22 +189,24 @@ export default function Dashboard() {
           </section>
         )}
 
+        {/* ── Profile Tab ── */}
         {activeTab === 'profile' && (
           <section>
             <h2 className={styles.sectionTitle}>👤 My Profile</h2>
             <div className={styles.profileCard}>
-              <div className={styles.avatar}>{(user.name || 'U')[0].toUpperCase()}</div>
+              <div className={styles.avatar}>{(currentUser.name || 'U')[0].toUpperCase()}</div>
               <div className={styles.profileInfo}>
-                <h3>{user.name}</h3>
-                <p>{user.email}</p>
+                <h3>{currentUser.name}</h3>
+                <p>{currentUser.email}</p>
                 <div className={styles.profileStats}>
-                  <div><strong>{user.points || 0}</strong><span>Points</span></div>
+                  <div><strong>{currentUser.points || 0}</strong><span>Points</span></div>
                   <div><strong>Level {level}</strong><span>Rank</span></div>
                 </div>
               </div>
             </div>
           </section>
         )}
+
       </main>
     </div>
   )
