@@ -6,7 +6,11 @@ const UserSchema = new mongoose.Schema({
   password: String,
   points: { type: Number, default: 0 },
   level: { type: Number, default: 1 },
-  isAdmin: { type: Boolean, default: false }
+  isAdmin: { type: Boolean, default: false },
+  registrationIp: String,
+  flaggedForReview: { type: Boolean, default: false },
+  flagReason: String,
+  createdAt: { type: Date, default: Date.now }
 });
 
 const TaskSchema = new mongoose.Schema({
@@ -24,6 +28,8 @@ const SubmissionSchema = new mongoose.Schema({
   imageUrl: String,
   note: String,
   status: { type: String, default: "pending" },
+  fraudFlags: [String],
+  submissionIp: String,
   createdAt: { type: Date, default: Date.now }
 });
 

@@ -3,9 +3,10 @@ const router = express.Router();
 const { register, login } = require("../controllers/auth.controller");
 const { User, Task, Submission } = require("../models/user.model");
 const { protect, adminOnly } = require("../middleware/auth.middleware");
+const { fraudCheck, trackRegistrationIP } = require("../middleware/fraud.middleware");
 
 // Auth
-router.post("/register", register);
+router.post("/register", trackRegistrationIP, register);
 router.post("/login", login);
 
 // Public
@@ -24,13 +25,24 @@ router.get("/tasks", async (req, res) => {
 });
 
 // User: submit task
-router.post("/submit", protect, async (req, res) => {
+router.post("/submit", protect, fraudCheck, async (req, res) => {
   try {
     const { taskId, imageUrl, note } = req.body;
     const userId = req.user.id;
+    const ip = req.ip || req.headers["x-forwarded-for"] || "unknown";
     if (!imageUrl) return res.status(400).json({ msg: "Please upload a photo as proof." });
-    const submission = await Submission.create({ userId, taskId, imageUrl, note });
-    res.json(submission);
+
+    const fraudFlags = req.fraudFlags || [];
+    // Auto-flag status if fraud signals detected
+    const status = fraudFlags.length > 0 ? "flagged" : "pending";
+
+    const submission = await Submission.create({
+      userId, taskId, imageUrl, note,
+      fraudFlags,
+      submissionIp: ip,
+      status
+    });
+    res.json({ submission, flagged: fraudFlags.length > 0 });
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
@@ -69,11 +81,13 @@ router.delete("/admin/tasks/:id", protect, adminOnly, async (req, res) => {
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
-// Get all submissions (pending)
+// Get all submissions (pending + flagged)
 router.get("/admin/submissions", protect, adminOnly, async (req, res) => {
   try {
-    const submissions = await Submission.find()
-      .populate("userId", "name email")
+    const { status } = req.query; // ?status=flagged | pending | approved | rejected
+    const filter = status ? { status } : {};
+    const submissions = await Submission.find(filter)
+      .populate("userId", "name email flaggedForReview flagReason registrationIp")
       .populate("taskId", "title points")
       .sort({ createdAt: -1 });
     res.json(submissions);
@@ -102,6 +116,30 @@ router.patch("/admin/submissions/:id/reject", protect, adminOnly, async (req, re
       req.params.id, { status: "rejected" }, { new: true }
     );
     res.json({ msg: "Rejected", submission: sub });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Unflag a user (clear fraud flag)
+router.patch("/admin/users/:id/unflag", protect, adminOnly, async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { flaggedForReview: false, flagReason: null },
+      { new: true }
+    );
+    res.json({ msg: "User unflagged", user });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Ban a user (sets flaggedForReview + adds ban flag)
+router.patch("/admin/users/:id/ban", protect, adminOnly, async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { flaggedForReview: true, flagReason: "banned_by_admin" },
+      { new: true }
+    );
+    res.json({ msg: "User banned", user });
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
