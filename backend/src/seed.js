@@ -93,7 +93,7 @@ const SEED_TASKS = [
     title: "Plant and Harvest a Vegetable Garden",
     description: "Grow your own vegetables from seed to harvest. Document the full journey with photos from planting, growing, and harvesting stages over at least 6 weeks.",
     points: 130, category: "hard",
-    imageUrl: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&auto=format&fit=crop"
+    imageUrl: "https://images.unsplash.com/photo-1592150621744-aca64f48394a?w=600&auto=format&fit=crop"
   },
 
   // ── Children's tasks ──────────────────────────────────────
