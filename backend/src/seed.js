@@ -149,7 +149,7 @@ const SEED_TASKS = [
     title: "Teach a Friend About Recycling",
     description: "Explain to a friend or family member how to sort rubbish into the correct recycling bins. Submit a photo of you both with the recycling bins.",
     points: 15, category: "children",
-    imageUrl: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600&auto=format&fit=crop"
+    imageUrl: "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?w=600&auto=format&fit=crop"
   },
 ];
 
