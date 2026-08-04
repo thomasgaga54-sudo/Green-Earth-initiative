@@ -131,7 +131,7 @@ const SEED_TASKS = [
     title: "Make a Bird Feeder from Recycled Materials",
     description: "Use an old bottle, cardboard, or other recycled items to make a bird feeder. Hang it outside and submit a photo of your creation — bonus points if a bird visits!",
     points: 25, category: "children",
-    imageUrl: "https://images.unsplash.com/photo-1444464666168-49d633b86797?w=600&auto=format&fit=crop"
+    imageUrl: "https://images.unsplash.com/photo-1591608971362-f08b2a75731a?w=600&auto=format&fit=crop"
   },
   {
     title: "Plant Seeds in a Cup",
