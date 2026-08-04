@@ -107,7 +107,7 @@ const SEED_TASKS = [
     title: "Water a Plant Every Day for a Week",
     description: "Pick a plant at home or school and water it every day for 7 days. Take a photo of the plant on day 1 and day 7 to show how it's growing!",
     points: 15, category: "children",
-    imageUrl: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=600&auto=format&fit=crop"
+    imageUrl: "https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?w=600&auto=format&fit=crop"
   },
   {
     title: "Pick Up 10 Pieces of Litter",
