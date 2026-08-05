@@ -43,7 +43,7 @@ const SEED_TASKS = [
     title: "Compost Waste",
     description: "Set up a compost bin at home and submit a photo of your compost setup.",
     points: 35, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1582560475093-ba66accbc424?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/bins.jpg"
   },
 
   // ── Hard tasks ────────────────────────────────────────────
@@ -51,7 +51,7 @@ const SEED_TASKS = [
     title: "Install a Rainwater Harvesting System",
     description: "Build or install a rainwater collection system at your home. Submit photos of the setup and explain how you plan to use the water.",
     points: 120, category: "hard",
-    imageUrl: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/rainwater.jpg"
   },
   {
     title: "Switch to Solar Energy",
