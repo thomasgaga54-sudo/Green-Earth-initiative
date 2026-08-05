@@ -125,7 +125,7 @@ const SEED_TASKS = [
     title: "Turn Off Lights When Leaving a Room",
     description: "For one whole day, make sure you turn off every light when you leave a room. Ask a parent or teacher to confirm you did it and submit a photo of you switching off a light!",
     points: 10, category: "children",
-    imageUrl: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/offlight.jpg"
   },
   {
     title: "Make a Bird Feeder from Recycled Materials",
@@ -143,7 +143,7 @@ const SEED_TASKS = [
     title: "Have a Screen-Free Outdoor Day",
     description: "Spend a whole day outside without any screens — play, explore nature, and enjoy the environment! Submit a photo of your favourite moment from the day.",
     points: 20, category: "children",
-    imageUrl: "https://images.unsplash.com/photo-1472120435266-53107fd0c44a?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/kids.jpg"
   },
   {
     title: "Teach a Friend About Recycling",
