@@ -19,7 +19,7 @@ const SEED_TASKS = [
     title: "Plastic-Free Day",
     description: "Go an entire day without using single-use plastic. Document your plastic-free choices.",
     points: 30, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1604187351574-c75ca79f5807?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/plastic.jpg"
   },
   {
     title: "Bike to Work",
@@ -75,7 +75,7 @@ const SEED_TASKS = [
     title: "Create a Wildlife Garden",
     description: "Transform part of your garden into a wildlife-friendly habitat with native plants, a bird feeder, or an insect hotel. Submit before/after photos and a description of species attracted.",
     points: 100, category: "hard",
-    imageUrl: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/garden.jpg"
   },
   {
     title: "Complete a 5km Plogging Run",
