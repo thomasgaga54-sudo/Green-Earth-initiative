@@ -13,6 +13,7 @@ export default function Dashboard() {
 
   const [tasks, setTasks] = useState([])
   const [leaderboard, setLeaderboard] = useState([])
+  const [mySubmissions, setMySubmissions] = useState([])
   const [activeTab, setActiveTab] = useState('tasks')
   const [taskCategory, setTaskCategory] = useState('all')
   const [submitMsg, setSubmitMsg] = useState('')
@@ -20,9 +21,26 @@ export default function Dashboard() {
 
   const filteredTasks = taskCategory === 'all' ? tasks : tasks.filter(t => t.category === taskCategory)
 
+  const refreshUser = async () => {
+    try {
+      const { data } = await axios.get('/api/me')
+      setCurrentUser(data)
+      localStorage.setItem('user', JSON.stringify(data))
+    } catch {}
+  }
+
   useEffect(() => {
     axios.get('/api/tasks').then(r => setTasks(r.data)).catch(() => {})
     axios.get('/api/leaderboard').then(r => setLeaderboard(r.data)).catch(() => {})
+    axios.get('/api/my-submissions').then(r => setMySubmissions(r.data)).catch(() => {})
+    refreshUser()
+
+    // Poll for point updates every 30 seconds
+    const interval = setInterval(() => {
+      refreshUser()
+      axios.get('/api/my-submissions').then(r => setMySubmissions(r.data)).catch(() => {})
+    }, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   const handleSubmitSuccess = () => {
@@ -58,6 +76,9 @@ export default function Dashboard() {
         <nav className={styles.sidebarNav}>
           <button className={`${styles.navItem} ${activeTab === 'tasks' ? styles.active : ''}`} onClick={() => setActiveTab('tasks')}>
             🌱 Tasks
+          </button>
+          <button className={`${styles.navItem} ${activeTab === 'submissions' ? styles.active : ''}`} onClick={() => setActiveTab('submissions')}>
+            📋 My Submissions
           </button>
           <button className={`${styles.navItem} ${activeTab === 'leaderboard' ? styles.active : ''}`} onClick={() => setActiveTab('leaderboard')}>
             🏆 Leaderboard
@@ -162,6 +183,43 @@ export default function Dashboard() {
                         >
                           📷 Submit Proof
                         </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+            }
+          </section>
+        )}
+
+        {/* ── Submissions Tab ── */}
+        {activeTab === 'submissions' && (
+          <section>
+            <h2 className={styles.sectionTitle}>📋 My Submissions</h2>
+            {mySubmissions.length === 0
+              ? <div className={styles.empty}>You haven't submitted any tasks yet. Complete a task to get started!</div>
+              : <div className={styles.submissionList}>
+                  {mySubmissions.map(sub => (
+                    <div key={sub._id} className={styles.submissionRow}>
+                      {sub.imageUrl && (
+                        <img
+                          src={sub.imageUrl}
+                          alt="proof"
+                          className={styles.subThumb}
+                        />
+                      )}
+                      <div className={styles.subInfo}>
+                        <p className={styles.subTask}>{sub.taskId?.title || 'Task'}</p>
+                        <p className={styles.subNote}>{sub.note || 'No note added'}</p>
+                        <p className={styles.subDate}>{new Date(sub.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      <div className={`${styles.subStatus} ${styles[sub.status]}`}>
+                        {sub.status === 'pending' && '⏳ Pending'}
+                        {sub.status === 'approved' && '✅ Approved'}
+                        {sub.status === 'rejected' && '❌ Rejected'}
+                        {sub.status === 'flagged' && '🚩 Under Review'}
+                        {sub.status === 'approved' && (
+                          <span className={styles.subPoints}>+{sub.taskId?.points} pts</span>
+                        )}
                       </div>
                     </div>
                   ))}

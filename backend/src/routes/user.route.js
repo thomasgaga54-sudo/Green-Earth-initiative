@@ -9,6 +9,14 @@ const { fraudCheck, trackRegistrationIP } = require("../middleware/fraud.middlew
 router.post("/register", trackRegistrationIP, register);
 router.post("/login", login);
 
+// Get current user profile (for point refresh)
+router.get("/me", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id, "-password");
+    res.json(user);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
 // Public
 router.get("/leaderboard", async (req, res) => {
   try {
