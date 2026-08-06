@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { register, login } = require("../controllers/auth.controller");
-const { User, Task, Submission } = require("../models/user.model");
+const { User, Task, Submission, Reward, Redemption } = require("../models/user.model");
 const { protect, adminOnly } = require("../middleware/auth.middleware");
 const { fraudCheck, trackRegistrationIP } = require("../middleware/fraud.middleware");
 
@@ -148,6 +148,129 @@ router.patch("/admin/users/:id/ban", protect, adminOnly, async (req, res) => {
       { new: true }
     );
     res.json({ msg: "User banned", user });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// ── Rewards ─────────────────────────────────────────────────
+
+// Get all available rewards (public)
+router.get("/rewards", async (req, res) => {
+  try {
+    const rewards = await Reward.find({ available: true }).sort({ pointsCost: 1 });
+    res.json(rewards);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Redeem a reward
+router.post("/rewards/:id/redeem", protect, async (req, res) => {
+  try {
+    const { deliveryInfo } = req.body;
+    const userId = req.user.id;
+    const reward = await Reward.findById(req.params.id);
+    if (!reward || !reward.available) return res.status(404).json({ msg: "Reward not available" });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ msg: "User not found" });
+    if (user.points < reward.pointsCost) {
+      return res.status(400).json({ msg: `Not enough points. You need ${reward.pointsCost} pts but have ${user.points} pts.` });
+    }
+    if (!deliveryInfo) return res.status(400).json({ msg: "Please provide your email or delivery address." });
+
+    // Deduct points
+    user.points -= reward.pointsCost;
+    await user.save();
+
+    // Reduce stock if applicable
+    if (reward.stock > 0) {
+      reward.stock -= 1;
+      if (reward.stock === 0) reward.available = false;
+      await reward.save();
+    }
+
+    const redemption = await Redemption.create({
+      userId, rewardId: reward._id,
+      pointsSpent: reward.pointsCost,
+      deliveryInfo,
+      status: "pending"
+    });
+
+    res.json({ msg: "Redemption submitted! We will process it within 14–28 business days.", redemption, remainingPoints: user.points });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Get user's redemptions
+router.get("/my-redemptions", protect, async (req, res) => {
+  try {
+    const redemptions = await Redemption.find({ userId: req.user.id })
+      .populate("rewardId", "title pointsCost imageUrl")
+      .sort({ createdAt: -1 });
+    res.json(redemptions);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// ── Admin Rewards ────────────────────────────────────────────
+
+// Create a reward
+router.post("/admin/rewards", protect, adminOnly, async (req, res) => {
+  try {
+    const reward = await Reward.create(req.body);
+    res.json(reward);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Update a reward
+router.patch("/admin/rewards/:id", protect, adminOnly, async (req, res) => {
+  try {
+    const reward = await Reward.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(reward);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Delete a reward
+router.delete("/admin/rewards/:id", protect, adminOnly, async (req, res) => {
+  try {
+    await Reward.findByIdAndDelete(req.params.id);
+    res.json({ msg: "Reward deleted" });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Get all redemptions (admin)
+router.get("/admin/redemptions", protect, adminOnly, async (req, res) => {
+  try {
+    const { status } = req.query;
+    const filter = status ? { status } : {};
+    const redemptions = await Redemption.find(filter)
+      .populate("userId", "name email")
+      .populate("rewardId", "title pointsCost")
+      .sort({ createdAt: -1 });
+    res.json(redemptions);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Fulfil a redemption
+router.patch("/admin/redemptions/:id/fulfil", protect, adminOnly, async (req, res) => {
+  try {
+    const { fulfilmentNote } = req.body;
+    const redemption = await Redemption.findByIdAndUpdate(
+      req.params.id,
+      { status: "fulfilled", fulfilmentNote },
+      { new: true }
+    );
+    res.json({ msg: "Redemption fulfilled", redemption });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Cancel a redemption and refund points
+router.patch("/admin/redemptions/:id/cancel", protect, adminOnly, async (req, res) => {
+  try {
+    const redemption = await Redemption.findById(req.params.id);
+    if (!redemption) return res.status(404).json({ msg: "Redemption not found" });
+    if (redemption.status === "cancelled") return res.status(400).json({ msg: "Already cancelled" });
+    redemption.status = "cancelled";
+    await redemption.save();
+    // Refund points
+    await User.findByIdAndUpdate(redemption.userId, { $inc: { points: redemption.pointsSpent } });
+    res.json({ msg: "Redemption cancelled and points refunded" });
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 

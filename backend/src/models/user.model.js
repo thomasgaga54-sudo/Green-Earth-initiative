@@ -33,8 +33,31 @@ const SubmissionSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+const RewardSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+  pointsCost: Number,
+  imageUrl: String,
+  category: { type: String, default: "voucher" }, // voucher | merchandise | digital
+  stock: { type: Number, default: -1 }, // -1 = unlimited
+  available: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const RedemptionSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  rewardId: { type: mongoose.Schema.Types.ObjectId, ref: "Reward" },
+  pointsSpent: Number,
+  status: { type: String, default: "pending" }, // pending | fulfilled | cancelled
+  fulfilmentNote: String, // admin adds voucher code or tracking here
+  deliveryInfo: String,   // user provides email/address
+  createdAt: { type: Date, default: Date.now }
+});
+
 const User = mongoose.model("User", UserSchema);
 const Task = mongoose.model("Task", TaskSchema);
 const Submission = mongoose.model("Submission", SubmissionSchema);
+const Reward = mongoose.model("Reward", RewardSchema);
+const Redemption = mongoose.model("Redemption", RedemptionSchema);
 
-module.exports = { User, Task, Submission };
+module.exports = { User, Task, Submission, Reward, Redemption };

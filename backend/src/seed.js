@@ -2,7 +2,7 @@ const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-const { User, Task } = require("./models/user.model");
+const { User, Task, Reward } = require("./models/user.model");
 
 const ADMIN_EMAIL = "admin@greenearth.com";
 const ADMIN_PASSWORD = "GreenAdmin@2024";
@@ -174,6 +174,56 @@ async function seed() {
   await Task.deleteMany({});
   await Task.insertMany(SEED_TASKS);
   console.log(`✅ Seeded ${SEED_TASKS.length} tasks with images`);
+
+  // Seed rewards if none exist
+  const rewardCount = await Reward.countDocuments();
+  if (rewardCount === 0) {
+    await Reward.insertMany([
+      {
+        title: "Green Earth Eco Tote Bag",
+        description: "A reusable cotton tote bag branded with the Green Earth Initiative logo. Perfect for plastic-free shopping!",
+        pointsCost: 100,
+        category: "merchandise",
+        imageUrl: "https://images.unsplash.com/photo-1610650200733-e8f7f4d3b9e8?w=400&auto=format&fit=crop",
+        stock: -1, available: true
+      },
+      {
+        title: "£5 Eco Store Voucher",
+        description: "A £5 digital voucher redeemable at our partner eco-friendly online stores. Code sent to your email.",
+        pointsCost: 200,
+        category: "voucher",
+        imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop",
+        stock: -1, available: true
+      },
+      {
+        title: "Tree Planting Certificate",
+        description: "We plant a real tree in your name through our reforestation partners. Receive a personalised digital certificate.",
+        pointsCost: 150,
+        category: "digital",
+        imageUrl: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&auto=format&fit=crop",
+        stock: -1, available: true
+      },
+      {
+        title: "£10 Amazon Eco Store Voucher",
+        description: "A £10 voucher for eco-friendly products on Amazon. Code sent to your registered email address.",
+        pointsCost: 350,
+        category: "voucher",
+        imageUrl: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&auto=format&fit=crop",
+        stock: -1, available: true
+      },
+      {
+        title: "Green Earth Premium Bundle",
+        description: "A premium eco bundle including a bamboo water bottle, seed kit, reusable straw set, and Green Earth stickers. Shipped to your address.",
+        pointsCost: 500,
+        category: "merchandise",
+        imageUrl: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&auto=format&fit=crop",
+        stock: 20, available: true
+      },
+    ]);
+    console.log("✅ Seeded 5 rewards");
+  } else {
+    console.log(`ℹ️  Rewards already exist (${rewardCount}), skipping reward seed`);
+  }
 
   await mongoose.disconnect();
   console.log("Done.");

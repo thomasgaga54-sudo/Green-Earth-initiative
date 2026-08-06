@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import styles from './Dashboard.module.css'
 import SubmitModal from '../components/SubmitModal'
+import RewardsTab from '../components/RewardsTab'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -79,6 +80,9 @@ export default function Dashboard() {
           </button>
           <button className={`${styles.navItem} ${activeTab === 'submissions' ? styles.active : ''}`} onClick={() => setActiveTab('submissions')}>
             📋 My Submissions
+          </button>
+          <button className={`${styles.navItem} ${activeTab === 'rewards' ? styles.active : ''}`} onClick={() => setActiveTab('rewards')}>
+            🎁 Rewards
           </button>
           <button className={`${styles.navItem} ${activeTab === 'leaderboard' ? styles.active : ''}`} onClick={() => setActiveTab('leaderboard')}>
             🏆 Leaderboard
@@ -225,6 +229,21 @@ export default function Dashboard() {
                   ))}
                 </div>
             }
+          </section>
+        )}
+
+        {/* ── Rewards Tab ── */}
+        {activeTab === 'rewards' && (
+          <section>
+            <h2 className={styles.sectionTitle}>🎁 Rewards Store</h2>
+            <RewardsTab
+              currentUser={currentUser}
+              onPointsUpdate={(newPoints) => {
+                const updated = { ...currentUser, points: newPoints }
+                setCurrentUser(updated)
+                localStorage.setItem('user', JSON.stringify(updated))
+              }}
+            />
           </section>
         )}
 
