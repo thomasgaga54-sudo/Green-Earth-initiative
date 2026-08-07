@@ -84,7 +84,6 @@ export default function SubmitModal({ task, onClose, onSuccess }) {
               ref={fileRef}
               type="file"
               accept="image/*"
-              capture="environment"
               onChange={handleFile}
               className={styles.fileInput}
             />
