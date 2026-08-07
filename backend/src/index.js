@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs");
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 const express = require("express");
@@ -11,19 +12,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// File upload storage — saves to backend/uploads/
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "../uploads"));
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`);
-  }
-});
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log("Created uploads directory");
+}
 
+// File upload — use memory storage, convert to base64 and store in DB
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) cb(null, true);
@@ -31,13 +29,15 @@ const upload = multer({
   }
 });
 
-// Serve uploaded images publicly
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+// Serve uploaded images publicly (for any locally stored images)
+app.use("/uploads", express.static(uploadsDir));
 
-// Upload endpoint
+// Upload endpoint — stores image as base64 data URL
 app.post("/api/upload", upload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ msg: "No file uploaded" });
-  const imageUrl = `/uploads/${req.file.filename}`;
+  // Convert to base64 data URL — works on any hosting without filesystem
+  const base64 = req.file.buffer.toString("base64");
+  const imageUrl = `data:${req.file.mimetype};base64,${base64}`;
   res.json({ imageUrl });
 });
 
