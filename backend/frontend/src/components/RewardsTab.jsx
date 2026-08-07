@@ -23,7 +23,6 @@ export default function RewardsTab({ currentUser, onPointsUpdate }) {
   const filteredRewards = regionFilter === 'All'
     ? rewards
     : rewards.filter(r => r.region === regionFilter)
-
   const handleRedeem = async () => {
     if (!deliveryInfo.trim()) { setError('Please enter your email or delivery address.'); return }
     setLoading(true); setError(''); setMsg('')
@@ -61,32 +60,10 @@ export default function RewardsTab({ currentUser, onPointsUpdate }) {
 
       {view === 'catalogue' && (
         <>
-          <p className={styles.hint}>Select your region to see available eVouchers. Points are deducted on redemption.</p>
-
-          {/* Region filter */}
-          <div className={styles.regionScroll}>
-            {REGIONS.map(r => (
-              <button
-                key={r}
-                className={`${styles.regionBtn} ${regionFilter === r ? styles.regionActive : ''}`}
-                onClick={() => setRegionFilter(r)}
-              >
-                {r === 'United Kingdom' && '🇬🇧 UK'}
-                {r === 'United States' && '🇺🇸 USA'}
-                {r === 'Brazil' && '🇧🇷 Brazil'}
-                {r === 'South Africa' && '🇿🇦 S. Africa'}
-                {r === 'Europe' && '🇪🇺 Europe'}
-                {r === 'Nigeria' && '🇳🇬 Nigeria'}
-                {r === 'Ghana' && '🇬🇭 Ghana'}
-                {r === 'Kenya' && '🇰🇪 Kenya'}
-                {r === 'Global' && '🌍 Global'}
-                {r === 'All' && '🌐 All'}
-              </button>
-            ))}
-          </div>
+          <p className={styles.hint}>Redeem your points for global rewards — available in every country. Points are deducted instantly on redemption.</p>
 
           <div className={styles.grid}>
-            {filteredRewards.map(reward => {
+            {rewards.map(reward => {
               const canAfford = (currentUser.points || 0) >= reward.pointsCost
               return (
                 <div key={reward._id} className={`${styles.card} ${!canAfford ? styles.locked : ''}`}>
@@ -114,7 +91,7 @@ export default function RewardsTab({ currentUser, onPointsUpdate }) {
                 </div>
               )
             })}
-            {filteredRewards.length === 0 && <div className={styles.empty}>No rewards available for this region yet.</div>}
+            {rewards.length === 0 && <div className={styles.empty}>No rewards available yet. Check back soon!</div>}
           </div>
         </>
       )}
