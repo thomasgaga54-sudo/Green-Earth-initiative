@@ -131,7 +131,7 @@ export default function RewardsTab({ currentUser, onPointsUpdate }) {
             </div>
             <div className={styles.field}>
               <label>
-                {selected.category === 'merchandise' ? '📦 Delivery Address' : '📧 Email Address'}
+                {selected.category === 'merchandise' ? '📦 Delivery Address' : '📧 Email Address for eVoucher'}
               </label>
               <input
                 type="text"
@@ -141,7 +141,7 @@ export default function RewardsTab({ currentUser, onPointsUpdate }) {
               />
             </div>
             {error && <div className={styles.error}>{error}</div>}
-            <p className={styles.modalHint}>⏱ Rewards are processed within 14–28 business days. Points are deducted immediately.</p>
+            <p className={styles.modalHint}>⏱ CashtoCode eVoucher codes are delivered by email within 14–28 business days. Points are deducted immediately on confirmation.</p>
             <div className={styles.modalActions}>
               <button className={styles.cancelBtn} onClick={() => setSelected(null)}>Cancel</button>
               <button className={styles.confirmBtn} onClick={handleRedeem} disabled={loading}>
