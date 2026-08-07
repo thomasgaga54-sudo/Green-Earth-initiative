@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import styles from './RewardsTab.module.css'
 
+const REGIONS = ['All', 'United Kingdom', 'United States', 'Brazil', 'South Africa', 'Europe', 'Nigeria', 'Ghana', 'Kenya', 'Global']
+
 export default function RewardsTab({ currentUser, onPointsUpdate }) {
   const [rewards, setRewards] = useState([])
   const [redemptions, setRedemptions] = useState([])
@@ -10,12 +12,17 @@ export default function RewardsTab({ currentUser, onPointsUpdate }) {
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState('')
   const [error, setError] = useState('')
-  const [view, setView] = useState('catalogue') // catalogue | history
+  const [view, setView] = useState('catalogue')
+  const [regionFilter, setRegionFilter] = useState('All')
 
   useEffect(() => {
     axios.get('/api/rewards').then(r => setRewards(r.data)).catch(() => {})
     axios.get('/api/my-redemptions').then(r => setRedemptions(r.data)).catch(() => {})
   }, [])
+
+  const filteredRewards = regionFilter === 'All'
+    ? rewards
+    : rewards.filter(r => r.region === regionFilter)
 
   const handleRedeem = async () => {
     if (!deliveryInfo.trim()) { setError('Please enter your email or delivery address.'); return }
@@ -26,7 +33,6 @@ export default function RewardsTab({ currentUser, onPointsUpdate }) {
       onPointsUpdate(data.remainingPoints)
       setSelected(null)
       setDeliveryInfo('')
-      // Refresh redemptions
       const r = await axios.get('/api/my-redemptions')
       setRedemptions(r.data)
     } catch (err) {
@@ -53,17 +59,44 @@ export default function RewardsTab({ currentUser, onPointsUpdate }) {
 
       {msg && <div className={styles.success}>{msg}</div>}
 
-      {/* ── Catalogue ── */}
       {view === 'catalogue' && (
         <>
-          <p className={styles.hint}>Redeem your points for eco-friendly rewards. Points are deducted instantly on redemption.</p>
+          <p className={styles.hint}>Select your region to see available eVouchers. Points are deducted on redemption.</p>
+
+          {/* Region filter */}
+          <div className={styles.regionScroll}>
+            {REGIONS.map(r => (
+              <button
+                key={r}
+                className={`${styles.regionBtn} ${regionFilter === r ? styles.regionActive : ''}`}
+                onClick={() => setRegionFilter(r)}
+              >
+                {r === 'United Kingdom' && '🇬🇧 UK'}
+                {r === 'United States' && '🇺🇸 USA'}
+                {r === 'Brazil' && '🇧🇷 Brazil'}
+                {r === 'South Africa' && '🇿🇦 S. Africa'}
+                {r === 'Europe' && '🇪🇺 Europe'}
+                {r === 'Nigeria' && '🇳🇬 Nigeria'}
+                {r === 'Ghana' && '🇬🇭 Ghana'}
+                {r === 'Kenya' && '🇰🇪 Kenya'}
+                {r === 'Global' && '🌍 Global'}
+                {r === 'All' && '🌐 All'}
+              </button>
+            ))}
+          </div>
+
           <div className={styles.grid}>
-            {rewards.map(reward => {
+            {filteredRewards.map(reward => {
               const canAfford = (currentUser.points || 0) >= reward.pointsCost
               return (
                 <div key={reward._id} className={`${styles.card} ${!canAfford ? styles.locked : ''}`}>
                   {reward.imageUrl && <img src={reward.imageUrl} alt={reward.title} className={styles.cardImg} />}
                   <div className={styles.cardBody}>
+                    <div className={styles.cardMeta}>
+                      <span className={styles.cardFlag}>{reward.flag}</span>
+                      <span className={styles.cardRegion}>{reward.region}</span>
+                      <span className={styles.cardCurrency}>{reward.currency}</span>
+                    </div>
                     <div className={styles.cardCategory}>{categoryIcon(reward.category)} {reward.category}</div>
                     <h3>{reward.title}</h3>
                     <p>{reward.description}</p>
@@ -81,12 +114,11 @@ export default function RewardsTab({ currentUser, onPointsUpdate }) {
                 </div>
               )
             })}
-            {rewards.length === 0 && <div className={styles.empty}>No rewards available yet. Check back soon!</div>}
+            {filteredRewards.length === 0 && <div className={styles.empty}>No rewards available for this region yet.</div>}
           </div>
         </>
       )}
 
-      {/* ── History ── */}
       {view === 'history' && (
         <div className={styles.historyList}>
           {redemptions.length === 0
@@ -112,12 +144,11 @@ export default function RewardsTab({ currentUser, onPointsUpdate }) {
         </div>
       )}
 
-      {/* ── Redeem Modal ── */}
       {selected && (
         <div className={styles.overlay} onClick={e => e.target === e.currentTarget && setSelected(null)}>
           <div className={styles.modal}>
             <div className={styles.modalHeader}>
-              <h2>Redeem: {selected.title}</h2>
+              <h2>{selected.flag} Redeem: {selected.title}</h2>
               <button className={styles.closeBtn} onClick={() => setSelected(null)}>✕</button>
             </div>
             <p className={styles.modalDesc}>{selected.description}</p>
@@ -141,7 +172,7 @@ export default function RewardsTab({ currentUser, onPointsUpdate }) {
               />
             </div>
             {error && <div className={styles.error}>{error}</div>}
-            <p className={styles.modalHint}>⏱ CashtoCode eVoucher codes are delivered by email within 14–28 business days. Points are deducted immediately on confirmation.</p>
+            <p className={styles.modalHint}>⏱ eVoucher codes are delivered by email within 14–28 business days. Points are deducted immediately on confirmation.</p>
             <div className={styles.modalActions}>
               <button className={styles.cancelBtn} onClick={() => setSelected(null)}>Cancel</button>
               <button className={styles.confirmBtn} onClick={handleRedeem} disabled={loading}>

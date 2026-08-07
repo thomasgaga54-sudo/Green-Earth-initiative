@@ -179,56 +179,44 @@ async function seed() {
   const rewardCount = await Reward.countDocuments();
   if (rewardCount === 0) {
     await Reward.insertMany([
-      {
-        title: "CashtoCode eVoucher £5",
-        description: "A £5 CashtoCode eVoucher redeemable at hundreds of online stores and gaming platforms. Your unique voucher code will be sent to your registered email within 14–28 business days.",
-        pointsCost: 200,
-        category: "voucher",
-        imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop",
-        stock: -1, available: true
-      },
-      {
-        title: "CashtoCode eVoucher £10",
-        description: "A £10 CashtoCode eVoucher redeemable at hundreds of online stores, gaming platforms, and entertainment services. Code sent to your email.",
-        pointsCost: 350,
-        category: "voucher",
-        imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop",
-        stock: -1, available: true
-      },
-      {
-        title: "CashtoCode eVoucher £25",
-        description: "A £25 CashtoCode eVoucher — one of our most popular rewards! Use it at hundreds of online retailers and entertainment platforms. Code delivered to your email.",
-        pointsCost: 750,
-        category: "voucher",
-        imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop",
-        stock: -1, available: true
-      },
-      {
-        title: "CashtoCode eVoucher £50",
-        description: "A £50 CashtoCode eVoucher for our most dedicated eco warriors! Redeemable at a wide range of online stores and platforms. Code sent to your registered email.",
-        pointsCost: 1500,
-        category: "voucher",
-        imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop",
-        stock: -1, available: true
-      },
-      {
-        title: "Tree Planting Certificate",
-        description: "We plant a real tree in your name through our reforestation partners. Receive a personalised digital certificate by email.",
-        pointsCost: 150,
-        category: "digital",
-        imageUrl: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&auto=format&fit=crop",
-        stock: -1, available: true
-      },
-      {
-        title: "Green Earth Eco Tote Bag",
-        description: "A reusable cotton tote bag branded with the Green Earth Initiative logo. Perfect for plastic-free shopping! Shipped to your address.",
-        pointsCost: 100,
-        category: "merchandise",
-        imageUrl: "https://images.unsplash.com/photo-1610650200733-e8f7f4d3b9e8?w=400&auto=format&fit=crop",
-        stock: -1, available: true
-      },
+      // 🇬🇧 UK — CashtoCode
+      { title: "CashtoCode eVoucher £5", description: "£5 CashtoCode eVoucher redeemable at hundreds of UK online stores and gaming platforms. Code sent to your email.", pointsCost: 200, category: "voucher", currency: "GBP", region: "United Kingdom", flag: "🇬🇧", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+      { title: "CashtoCode eVoucher £10", description: "£10 CashtoCode eVoucher for UK users. Redeemable at leading online retailers and entertainment platforms.", pointsCost: 350, category: "voucher", currency: "GBP", region: "United Kingdom", flag: "🇬🇧", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+      { title: "CashtoCode eVoucher £25", description: "£25 CashtoCode eVoucher for UK users. Code delivered to your email within 14–28 business days.", pointsCost: 750, category: "voucher", currency: "GBP", region: "United Kingdom", flag: "🇬🇧", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+
+      // 🇺🇸 USA — CashtoCode
+      { title: "CashtoCode eVoucher $5", description: "$5 CashtoCode eVoucher for US users. Redeemable at hundreds of US online stores and platforms.", pointsCost: 200, category: "voucher", currency: "USD", region: "United States", flag: "🇺🇸", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+      { title: "CashtoCode eVoucher $10", description: "$10 CashtoCode eVoucher for US users. Code sent to your registered email address.", pointsCost: 350, category: "voucher", currency: "USD", region: "United States", flag: "🇺🇸", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+      { title: "CashtoCode eVoucher $25", description: "$25 CashtoCode eVoucher for US users. Redeemable at a wide range of US online retailers.", pointsCost: 750, category: "voucher", currency: "USD", region: "United States", flag: "🇺🇸", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+
+      // 🇧🇷 Brazil — CashtoCode
+      { title: "CashtoCode eVoucher R$25", description: "R$25 CashtoCode eVoucher for Brazilian users. Redeemable at leading BR online platforms and stores.", pointsCost: 200, category: "voucher", currency: "BRL", region: "Brazil", flag: "🇧🇷", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+      { title: "CashtoCode eVoucher R$50", description: "R$50 CashtoCode eVoucher for Brazilian users. Code delivered to your email within 14–28 business days.", pointsCost: 350, category: "voucher", currency: "BRL", region: "Brazil", flag: "🇧🇷", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+
+      // 🇿🇦 South Africa — CashtoCode
+      { title: "CashtoCode eVoucher R50", description: "R50 CashtoCode eVoucher for South African users. Redeemable at SA online stores and digital platforms.", pointsCost: 200, category: "voucher", currency: "ZAR", region: "South Africa", flag: "🇿🇦", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+      { title: "CashtoCode eVoucher R100", description: "R100 CashtoCode eVoucher for South African users. Code sent to your email within 14–28 business days.", pointsCost: 350, category: "voucher", currency: "ZAR", region: "South Africa", flag: "🇿🇦", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+
+      // 🇪🇺 Europe — CashtoCode
+      { title: "CashtoCode eVoucher €5", description: "€5 CashtoCode eVoucher for European users. Redeemable across EU online stores and entertainment platforms.", pointsCost: 200, category: "voucher", currency: "EUR", region: "Europe", flag: "🇪🇺", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+      { title: "CashtoCode eVoucher €10", description: "€10 CashtoCode eVoucher for European users. Code delivered to your email within 14–28 business days.", pointsCost: 350, category: "voucher", currency: "EUR", region: "Europe", flag: "🇪🇺", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+
+      // 🇳🇬 Nigeria — Opay eVoucher (CashtoCode not available)
+      { title: "Opay eVoucher ₦2,000", description: "₦2,000 Opay eVoucher for Nigerian users. Redeemable via the Opay app for airtime, data, bills, and online shopping. Code sent to your email.", pointsCost: 200, category: "voucher", currency: "NGN", region: "Nigeria", flag: "🇳🇬", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+      { title: "Opay eVoucher ₦5,000", description: "₦5,000 Opay eVoucher for Nigerian users. Use it for airtime, data, utility bills, and more via the Opay platform.", pointsCost: 350, category: "voucher", currency: "NGN", region: "Nigeria", flag: "🇳🇬", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+
+      // 🇬🇭 Ghana — MTN Mobile Money voucher (CashtoCode not available)
+      { title: "MTN MoMo eVoucher GH₵20", description: "GH₵20 MTN Mobile Money eVoucher for Ghanaian users. Redeemable via MTN MoMo for airtime, data, and online payments.", pointsCost: 200, category: "voucher", currency: "GHS", region: "Ghana", flag: "🇬🇭", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+      { title: "MTN MoMo eVoucher GH₵50", description: "GH₵50 MTN Mobile Money eVoucher for Ghanaian users. Code delivered to your registered email.", pointsCost: 350, category: "voucher", currency: "GHS", region: "Ghana", flag: "🇬🇭", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+
+      // 🇰🇪 Kenya — M-Pesa voucher
+      { title: "M-Pesa eVoucher KSh500", description: "KSh500 M-Pesa eVoucher for Kenyan users. Redeemable via M-Pesa for airtime, bills, and mobile payments.", pointsCost: 200, category: "voucher", currency: "KES", region: "Kenya", flag: "🇰🇪", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop", stock: -1, available: true },
+
+      // 🌍 Global non-cash rewards
+      { title: "Tree Planting Certificate", description: "We plant a real tree in your name through our reforestation partners. Receive a personalised digital certificate by email. Available worldwide.", pointsCost: 150, category: "digital", currency: "ALL", region: "Global", flag: "🌍", imageUrl: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&auto=format&fit=crop", stock: -1, available: true },
+      { title: "Green Earth Eco Tote Bag", description: "A reusable cotton tote bag branded with the Green Earth Initiative logo. Shipped to your address worldwide.", pointsCost: 100, category: "merchandise", currency: "ALL", region: "Global", flag: "🌍", imageUrl: "https://images.unsplash.com/photo-1610650200733-e8f7f4d3b9e8?w=400&auto=format&fit=crop", stock: -1, available: true },
     ]);
-    console.log("✅ Seeded 6 CashtoCode rewards");
+    console.log("✅ Seeded multi-currency rewards");
   } else {
     console.log(`ℹ️  Rewards already exist (${rewardCount}), skipping reward seed`);
   }

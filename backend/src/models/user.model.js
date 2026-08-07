@@ -39,6 +39,9 @@ const RewardSchema = new mongoose.Schema({
   pointsCost: Number,
   imageUrl: String,
   category: { type: String, default: "voucher" }, // voucher | merchandise | digital
+  currency: { type: String, default: "GBP" },
+  region: { type: String, default: "UK" },
+  flag: { type: String, default: "🇬🇧" },
   stock: { type: Number, default: -1 }, // -1 = unlimited
   available: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now }

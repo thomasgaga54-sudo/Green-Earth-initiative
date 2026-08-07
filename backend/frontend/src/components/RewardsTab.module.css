@@ -44,6 +44,50 @@
   font-weight: 600; border: 1px solid #c8e6c9;
 }
 
+/* Region filter */
+.regionScroll {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: none;
+}
+.regionScroll::-webkit-scrollbar { display: none; }
+
+.regionBtn {
+  padding: 0.45rem 1rem;
+  border-radius: 50px;
+  border: 1.5px solid #c8e6c9;
+  background: #fff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--text-light);
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.regionBtn:hover { background: var(--green-pale); }
+.regionActive { background: var(--green-dark) !important; color: #fff !important; border-color: var(--green-dark) !important; }
+
+/* Card meta */
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.25rem;
+}
+.cardFlag { font-size: 1.1rem; }
+.cardRegion { font-size: 0.75rem; color: var(--text-light); font-weight: 600; }
+.cardCurrency {
+  font-size: 0.7rem;
+  background: var(--green-pale);
+  color: var(--green-dark);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-weight: 700;
+  margin-left: auto;
+}
+
 /* Grid */
 .grid {
   display: grid;
