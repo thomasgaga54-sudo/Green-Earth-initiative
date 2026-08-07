@@ -67,8 +67,9 @@ const fraudCheck = async (req, res, next) => {
     const user = await User.findById(userId);
     if (user && user.createdAt) {
       const accountAgeMs = now - new Date(user.createdAt).getTime();
-      if (accountAgeMs < 5 * 60 * 1000) {
-        // Allow submission but flag for review
+      if (accountAgeMs < 2 * 60 * 1000) {
+        // Only flag if submitting within 2 minutes of registration AND also has other signals
+        // Don't flag on first honest submission
         req.fraudFlags = req.fraudFlags || [];
         req.fraudFlags.push("new_account_submission");
       }

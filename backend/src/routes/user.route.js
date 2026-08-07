@@ -41,8 +41,9 @@ router.post("/submit", protect, fraudCheck, async (req, res) => {
     if (!imageUrl) return res.status(400).json({ msg: "Please upload a photo as proof." });
 
     const fraudFlags = req.fraudFlags || [];
-    // Auto-flag status if fraud signals detected
-    const status = fraudFlags.length > 0 ? "flagged" : "pending";
+    // Only flag status if there are serious fraud signals (not just new account)
+    const seriousFlags = fraudFlags.filter(f => f !== 'new_account_submission');
+    const status = seriousFlags.length > 0 ? "flagged" : "pending";
 
     const submission = await Submission.create({
       userId, taskId, imageUrl, note,

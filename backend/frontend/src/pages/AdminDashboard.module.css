@@ -91,6 +91,15 @@
 .proofThumb:hover { transform: scale(1.05); }
 .noPhoto { font-size: 0.75rem; color: #9e9e9e; }
 .noteText { font-size: 0.8rem; color: #616161; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.flaggedRow { background: #fff8e1 !important; border-left: 3px solid #f57c00; }
+.flagBadge {
+  display: inline-block;
+  background: #fff3e0; color: #e65100;
+  font-size: 0.7rem; font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px; margin-top: 0.2rem;
+}
 .approveBtn {
   background: #e8f5e9; color: #2e7d32; border: 1.5px solid #a5d6a7;
   border-radius: 7px; padding: 0.4rem 0.75rem; font-size: 0.8rem;
