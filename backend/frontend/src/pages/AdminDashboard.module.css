@@ -79,6 +79,18 @@
 .approvedRow { opacity: 0.7; }
 .pts { font-weight: 800; color: #2e7d32; }
 .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.proofThumb {
+  width: 60px; height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid #c8e6c9;
+  transition: transform 0.2s;
+}
+.proofThumb:hover { transform: scale(1.05); }
+.noPhoto { font-size: 0.75rem; color: #9e9e9e; }
+.noteText { font-size: 0.8rem; color: #616161; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .approveBtn {
   background: #e8f5e9; color: #2e7d32; border: 1.5px solid #a5d6a7;
   border-radius: 7px; padding: 0.4rem 0.75rem; font-size: 0.8rem;

@@ -137,12 +137,19 @@ export default function AdminDashboard() {
               ? <div className={styles.empty}>No pending submissions 🎉</div>
               : <div className={styles.table}>
                   <div className={styles.tableHead}>
-                    <span>User</span><span>Task</span><span>Points</span><span>Date</span><span>Actions</span>
+                    <span>Photo</span><span>User</span><span>Task</span><span>Note</span><span>Points</span><span>Date</span><span>Actions</span>
                   </div>
                   {pending.map(s => (
                     <div key={s._id} className={styles.tableRow}>
+                      <span>
+                        {s.imageUrl
+                          ? <img src={s.imageUrl} alt="proof" className={styles.proofThumb} onClick={() => window.open(s.imageUrl)} />
+                          : <span className={styles.noPhoto}>No photo</span>
+                        }
+                      </span>
                       <span><strong>{s.userId?.name}</strong><br /><small>{s.userId?.email}</small></span>
                       <span>{s.taskId?.title || '—'}</span>
+                      <span className={styles.noteText}>{s.note || '—'}</span>
                       <span className={styles.pts}>+{s.taskId?.points || 0} pts</span>
                       <span>{new Date(s.createdAt).toLocaleDateString()}</span>
                       <span className={styles.actions}>
