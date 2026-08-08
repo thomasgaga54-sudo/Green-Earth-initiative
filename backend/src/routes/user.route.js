@@ -21,7 +21,7 @@ router.get("/me", protect, async (req, res) => {
 router.get("/stats", async (req, res) => {
   try {
     const [memberCount, submissionCount] = await Promise.all([
-      User.countDocuments({ isAdmin: false }),
+      User.countDocuments(),
       Submission.countDocuments({ status: "approved" })
     ]);
     res.json({ members: memberCount, tasksDone: submissionCount });
