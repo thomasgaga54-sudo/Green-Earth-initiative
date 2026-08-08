@@ -17,6 +17,17 @@ router.get("/me", protect, async (req, res) => {
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
+// Public stats endpoint
+router.get("/stats", async (req, res) => {
+  try {
+    const [memberCount, submissionCount] = await Promise.all([
+      User.countDocuments({ isAdmin: false }),
+      Submission.countDocuments({ status: "approved" })
+    ]);
+    res.json({ members: memberCount, tasksDone: submissionCount });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
 // Public
 router.get("/leaderboard", async (req, res) => {
   try {

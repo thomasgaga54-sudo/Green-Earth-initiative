@@ -1,14 +1,24 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 import styles from './Landing.module.css'
 
 const features = [
   { icon: '🌱', title: 'Complete Eco Tasks', desc: 'Plant trees, reduce waste, save energy — earn points for real actions.' },
   { icon: '🏆', title: 'Climb the Leaderboard', desc: 'Compete with your community and rise through green achievement levels.' },
-  { icon: '🎁', title: 'Earn Rewards', desc: 'Redeem your points for vouchers, merchandise, and exclusive perks.' },
+  { icon: '🎁', title: 'Earn Rewards', desc: 'Redeem your points for eVouchers, merchandise, and exclusive perks.' },
 ]
 
 export default function Landing() {
+  const [stats, setStats] = useState({ members: null, tasksDone: null })
+
+  useEffect(() => {
+    axios.get('/api/stats')
+      .then(r => setStats(r.data))
+      .catch(() => {})
+  }, [])
+
   return (
     <div className={styles.page}>
       {/* Navbar */}
@@ -30,15 +40,20 @@ export default function Landing() {
         >
           <span className={styles.badge}>🌿 Eco Gamification Platform</span>
           <h1>Turn Green Actions<br />into Real Rewards</h1>
-          <p>Join thousands of eco-warriors completing environmental tasks, earning points, and making a measurable impact on the planet.</p>
+          <p>Join eco-warriors completing environmental tasks, earning points, and making a measurable impact on the planet.</p>
           <div className={styles.heroBtns}>
             <Link to="/register" className={styles.btnPrimary}>Start Earning Points</Link>
             <Link to="/login" className={styles.btnOutline}>I have an account</Link>
           </div>
           <div className={styles.heroStats}>
-            <div><strong>12,400+</strong><span>Members</span></div>
-            <div><strong>3,200+</strong><span>Tasks Done</span></div>
-            <div><strong>850+</strong><span>Trees Planted</span></div>
+            <div>
+              <strong>{stats.members !== null ? stats.members.toLocaleString() : '—'}</strong>
+              <span>Members</span>
+            </div>
+            <div>
+              <strong>{stats.tasksDone !== null ? stats.tasksDone.toLocaleString() : '—'}</strong>
+              <span>Tasks Completed</span>
+            </div>
           </div>
         </motion.div>
         <motion.div
