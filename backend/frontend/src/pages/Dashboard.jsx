@@ -4,6 +4,7 @@ import axios from 'axios'
 import styles from './Dashboard.module.css'
 import SubmitModal from '../components/SubmitModal'
 import RewardsTab from '../components/RewardsTab'
+import ProfileTab from '../components/ProfileTab'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -268,20 +269,10 @@ export default function Dashboard() {
 
         {/* ── Profile Tab ── */}
         {activeTab === 'profile' && (
-          <section>
-            <h2 className={styles.sectionTitle}>👤 My Profile</h2>
-            <div className={styles.profileCard}>
-              <div className={styles.avatar}>{(currentUser.name || 'U')[0].toUpperCase()}</div>
-              <div className={styles.profileInfo}>
-                <h3>{currentUser.name}</h3>
-                <p>{currentUser.email}</p>
-                <div className={styles.profileStats}>
-                  <div><strong>{currentUser.points || 0}</strong><span>Points</span></div>
-                  <div><strong>Level {level}</strong><span>Rank</span></div>
-                </div>
-              </div>
-            </div>
-          </section>
+          <ProfileTab currentUser={currentUser} onUpdate={(updated) => {
+            setCurrentUser(updated)
+            localStorage.setItem('user', JSON.stringify(updated))
+          }} />
         )}
 
       </main>

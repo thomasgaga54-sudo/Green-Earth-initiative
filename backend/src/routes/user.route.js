@@ -17,6 +17,19 @@ router.get("/me", protect, async (req, res) => {
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
+// Update user profile
+router.patch("/me", protect, async (req, res) => {
+  try {
+    const allowed = ["name", "phone", "country", "city", "dateOfBirth", "gender", "bio", "avatarColor", "preferredLanguage"];
+    const updates = {};
+    allowed.forEach(field => {
+      if (req.body[field] !== undefined) updates[field] = req.body[field];
+    });
+    const user = await User.findByIdAndUpdate(req.user.id, updates, { new: true, select: "-password" });
+    res.json(user);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
 // Public stats endpoint
 router.get("/stats", async (req, res) => {
   try {

@@ -7,6 +7,16 @@ const UserSchema = new mongoose.Schema({
   points: { type: Number, default: 0 },
   level: { type: Number, default: 1 },
   isAdmin: { type: Boolean, default: false },
+  // Extended profile
+  phone: String,
+  country: String,
+  city: String,
+  dateOfBirth: Date,
+  gender: String,
+  bio: String,
+  avatarColor: String, // hex color for avatar background
+  preferredLanguage: { type: String, default: "en" },
+  // Fraud & security
   registrationIp: String,
   flaggedForReview: { type: Boolean, default: false },
   flagReason: String,
