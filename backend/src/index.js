@@ -19,15 +19,10 @@ app.use(helmet({
 }));
 
 // ── CORS ──────────────────────────────────────────────────
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
-  : ["http://localhost:3000", "http://localhost:5173"];
-
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-    if (origin && origin.includes("onrender.com")) return callback(null, true);
-    callback(new Error("Not allowed by CORS"));
+    // Allow all origins — frontend and backend are same-origin via Render
+    return callback(null, true);
   },
   credentials: true,
 }));
