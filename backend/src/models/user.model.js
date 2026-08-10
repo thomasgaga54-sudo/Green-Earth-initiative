@@ -20,6 +20,11 @@ const UserSchema = new mongoose.Schema({
   registrationIp: String,
   flaggedForReview: { type: Boolean, default: false },
   flagReason: String,
+  // Account lockout
+  loginAttempts: { type: Number, default: 0 },
+  lockUntil: Date,
+  lastLoginAt: Date,
+  lastLoginIp: String,
   createdAt: { type: Date, default: Date.now }
 });
 

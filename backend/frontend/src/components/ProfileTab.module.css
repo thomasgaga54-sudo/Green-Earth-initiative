@@ -175,3 +175,89 @@
   .statsPill { width: 100%; justify-content: center; }
   .formGrid { grid-template-columns: 1fr; }
 }
+
+/* Security Section */
+.securitySection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.securityTitle {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--green-dark);
+  margin-bottom: 0.25rem;
+}
+
+.securityCard {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+}
+
+.securityCard strong { font-size: 0.95rem; color: var(--text); display: block; margin-bottom: 0.25rem; }
+.securityCard p { font-size: 0.82rem; color: var(--text-light); }
+
+.securityCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.secToggleBtn {
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--green-mid);
+  background: #fff;
+  color: var(--green-mid);
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.secToggleBtn:hover { background: var(--green-pale); }
+
+.secForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.dangerCard { border-left: 3px solid #c62828; }
+.dangerToggleBtn {
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  border: 1.5px solid #c62828;
+  background: #fff;
+  color: #c62828;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.dangerToggleBtn:hover { background: #fdecea; }
+
+.deleteBtn {
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: none;
+  background: #c62828;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+.deleteBtn:hover { background: #b71c1c; }

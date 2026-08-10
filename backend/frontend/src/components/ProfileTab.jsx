@@ -21,6 +21,21 @@ const AVATAR_COLORS = [
   '#e65100','#c62828','#37474f','#00695c','#4527a0'
 ]
 
+const LANGUAGES = [
+  { code: 'en', label: '🇬🇧 English' },
+  { code: 'fr', label: '🇫🇷 French' },
+  { code: 'es', label: '🇪🇸 Spanish' },
+  { code: 'pt', label: '🇧🇷 Portuguese' },
+  { code: 'ar', label: '🇸🇦 Arabic' },
+  { code: 'sw', label: '🇰🇪 Swahili' },
+  { code: 'yo', label: '🇳🇬 Yoruba' },
+  { code: 'ha', label: '🇳🇬 Hausa' },
+  { code: 'ig', label: '🇳🇬 Igbo' },
+  { code: 'tw', label: '🇬🇭 Twi' },
+  { code: 'de', label: '🇩🇪 German' },
+  { code: 'zh', label: '🇨🇳 Chinese' },
+]
+
 export default function ProfileTab({ currentUser, onUpdate }) {
   const level = Math.floor((currentUser.points || 0) / 100) + 1
 
@@ -40,6 +55,16 @@ export default function ProfileTab({ currentUser, onUpdate }) {
   const [msg, setMsg] = useState('')
   const [error, setError] = useState('')
 
+  const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
+  const [pwMsg, setPwMsg] = useState('')
+  const [pwError, setPwError] = useState('')
+  const [pwSaving, setPwSaving] = useState(false)
+  const [showPwSection, setShowPwSection] = useState(false)
+
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleteError, setDeleteError] = useState('')
+  const [showDeleteSection, setShowDeleteSection] = useState(false)
+
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSave = async e => {
@@ -53,13 +78,41 @@ export default function ProfileTab({ currentUser, onUpdate }) {
       setTimeout(() => setMsg(''), 3000)
     } catch (err) {
       setError(err.response?.data?.msg || 'Failed to update profile.')
-    } finally {
-      setSaving(false)
+    } finally { setSaving(false) }
+  }
+
+  const handlePasswordChange = async e => {
+    e.preventDefault()
+    if (pwForm.newPassword !== pwForm.confirmPassword) { setPwError('New passwords do not match.'); return }
+    setPwSaving(true); setPwError(''); setPwMsg('')
+    try {
+      const { data } = await axios.post('/api/change-password', {
+        currentPassword: pwForm.currentPassword,
+        newPassword: pwForm.newPassword
+      })
+      setPwMsg('✅ ' + data.msg)
+      setPwForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
+      setTimeout(() => { setPwMsg(''); setShowPwSection(false) }, 3000)
+    } catch (err) {
+      setPwError(err.response?.data?.msg || 'Failed to change password.')
+    } finally { setPwSaving(false) }
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) { setDeleteError('Please enter your password to confirm.'); return }
+    if (!window.confirm('Are you absolutely sure? This will permanently delete your account and all your points.')) return
+    try {
+      await axios.delete('/api/me', { data: { password: deletePassword } })
+      localStorage.clear()
+      window.location.href = '/'
+    } catch (err) {
+      setDeleteError(err.response?.data?.msg || 'Failed to delete account.')
     }
   }
 
   const initial = (currentUser.name || 'U')[0].toUpperCase()
   const avatarBg = currentUser.avatarColor || '#1b5e20'
+  const langLabel = LANGUAGES.find(l => l.code === currentUser.preferredLanguage)?.label || '🇬🇧 English'
 
   return (
     <section className={styles.wrap}>
@@ -68,16 +121,14 @@ export default function ProfileTab({ currentUser, onUpdate }) {
       {msg && <div className={styles.success}>{msg}</div>}
       {error && <div className={styles.error}>{error}</div>}
 
-      {/* Profile Header Card */}
+      {/* Profile Header */}
       <div className={styles.headerCard}>
         <div className={styles.avatarWrap}>
           <div className={styles.avatar} style={{ background: avatarBg }}>{initial}</div>
           {editing && (
             <div className={styles.colorPicker}>
               {AVATAR_COLORS.map(c => (
-                <button
-                  key={c}
-                  type="button"
+                <button key={c} type="button"
                   className={`${styles.colorDot} ${form.avatarColor === c ? styles.colorSelected : ''}`}
                   style={{ background: c }}
                   onClick={() => setForm({ ...form, avatarColor: c })}
@@ -98,45 +149,24 @@ export default function ProfileTab({ currentUser, onUpdate }) {
         </div>
       </div>
 
-      {/* Info Grid (view mode) */}
+      {/* Info Grid */}
       {!editing && (
         <div className={styles.infoGrid}>
-          <div className={styles.infoCard}>
-            <div className={styles.infoLabel}>📧 Email</div>
-            <div className={styles.infoValue}>{currentUser.email}</div>
-          </div>
-          <div className={styles.infoCard}>
-            <div className={styles.infoLabel}>📱 Phone</div>
-            <div className={styles.infoValue}>{currentUser.phone || <span className={styles.empty}>Not set</span>}</div>
-          </div>
-          <div className={styles.infoCard}>
-            <div className={styles.infoLabel}>🌍 Country</div>
-            <div className={styles.infoValue}>{currentUser.country || <span className={styles.empty}>Not set</span>}</div>
-          </div>
-          <div className={styles.infoCard}>
-            <div className={styles.infoLabel}>🏙️ City</div>
-            <div className={styles.infoValue}>{currentUser.city || <span className={styles.empty}>Not set</span>}</div>
-          </div>
-          <div className={styles.infoCard}>
-            <div className={styles.infoLabel}>🎂 Date of Birth</div>
-            <div className={styles.infoValue}>
-              {currentUser.dateOfBirth
-                ? new Date(currentUser.dateOfBirth).toLocaleDateString()
-                : <span className={styles.empty}>Not set</span>}
+          {[
+            { icon: '📧', label: 'Email', value: currentUser.email },
+            { icon: '📱', label: 'Phone', value: currentUser.phone },
+            { icon: '🌍', label: 'Country', value: currentUser.country },
+            { icon: '🏙️', label: 'City', value: currentUser.city },
+            { icon: '🎂', label: 'Date of Birth', value: currentUser.dateOfBirth ? new Date(currentUser.dateOfBirth).toLocaleDateString() : null },
+            { icon: '👤', label: 'Gender', value: currentUser.gender },
+            { icon: '🌐', label: 'Language', value: langLabel },
+            { icon: '📅', label: 'Member Since', value: currentUser.createdAt ? new Date(currentUser.createdAt).toLocaleDateString() : null },
+          ].map(({ icon, label, value }) => (
+            <div key={label} className={styles.infoCard}>
+              <div className={styles.infoLabel}>{icon} {label}</div>
+              <div className={styles.infoValue}>{value || <span className={styles.empty}>Not set</span>}</div>
             </div>
-          </div>
-          <div className={styles.infoCard}>
-            <div className={styles.infoLabel}>👤 Gender</div>
-            <div className={styles.infoValue}>{currentUser.gender || <span className={styles.empty}>Not set</span>}</div>
-          </div>
-          <div className={styles.infoCard}>
-            <div className={styles.infoLabel}>🌐 Language</div>
-            <div className={styles.infoValue}>{currentUser.preferredLanguage === 'en' ? '🇬🇧 English' : currentUser.preferredLanguage || 'English'}</div>
-          </div>
-          <div className={styles.infoCard}>
-            <div className={styles.infoLabel}>📅 Member Since</div>
-            <div className={styles.infoValue}>{new Date(currentUser.createdAt).toLocaleDateString()}</div>
-          </div>
+          ))}
         </div>
       )}
 
@@ -149,71 +179,38 @@ export default function ProfileTab({ currentUser, onUpdate }) {
       {editing && (
         <form className={styles.form} onSubmit={handleSave}>
           <div className={styles.formGrid}>
-            <div className={styles.field}>
-              <label>Full Name</label>
-              <input name="name" value={form.name} onChange={handleChange} placeholder="Your full name" required />
-            </div>
-            <div className={styles.field}>
-              <label>Phone Number</label>
-              <input name="phone" value={form.phone} onChange={handleChange} placeholder="+44 7700 900000" type="tel" />
-            </div>
-            <div className={styles.field}>
-              <label>Country</label>
+            <div className={styles.field}><label>Full Name</label>
+              <input name="name" value={form.name} onChange={handleChange} placeholder="Your full name" required /></div>
+            <div className={styles.field}><label>Phone Number</label>
+              <input name="phone" value={form.phone} onChange={handleChange} placeholder="+44 7700 900000" type="tel" /></div>
+            <div className={styles.field}><label>Country</label>
               <select name="country" value={form.country} onChange={handleChange}>
                 <option value="">Select country</option>
                 {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div className={styles.field}>
-              <label>City</label>
-              <input name="city" value={form.city} onChange={handleChange} placeholder="Your city" />
-            </div>
-            <div className={styles.field}>
-              <label>Date of Birth</label>
-              <input name="dateOfBirth" value={form.dateOfBirth} onChange={handleChange} type="date" />
-            </div>
-            <div className={styles.field}>
-              <label>Gender</label>
+              </select></div>
+            <div className={styles.field}><label>City</label>
+              <input name="city" value={form.city} onChange={handleChange} placeholder="Your city" /></div>
+            <div className={styles.field}><label>Date of Birth</label>
+              <input name="dateOfBirth" value={form.dateOfBirth} onChange={handleChange} type="date" /></div>
+            <div className={styles.field}><label>Gender</label>
               <select name="gender" value={form.gender} onChange={handleChange}>
                 <option value="">Prefer not to say</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
                 <option value="Non-binary">Non-binary</option>
                 <option value="Other">Other</option>
-              </select>
-            </div>
-            <div className={styles.field}>
-              <label>Preferred Language</label>
+              </select></div>
+            <div className={styles.field}><label>Preferred Language</label>
               <select name="preferredLanguage" value={form.preferredLanguage} onChange={handleChange}>
-                <option value="en">🇬🇧 English</option>
-                <option value="fr">🇫🇷 French</option>
-                <option value="es">🇪🇸 Spanish</option>
-                <option value="pt">🇧🇷 Portuguese</option>
-                <option value="ar">🇸🇦 Arabic</option>
-                <option value="sw">🇰🇪 Swahili</option>
-                <option value="yo">🇳🇬 Yoruba</option>
-                <option value="ha">🇳🇬 Hausa</option>
-                <option value="ig">🇳🇬 Igbo</option>
-                <option value="tw">🇬🇭 Twi</option>
-                <option value="de">🇩🇪 German</option>
-                <option value="zh">🇨🇳 Chinese</option>
-              </select>
-            </div>
+                {LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
+              </select></div>
           </div>
-
           <div className={styles.field}>
             <label>Bio <span className={styles.optional}>(optional)</span></label>
-            <textarea
-              name="bio"
-              value={form.bio}
-              onChange={handleChange}
-              rows={3}
-              placeholder="Tell us a bit about yourself and your eco journey..."
-              maxLength={200}
-            />
+            <textarea name="bio" value={form.bio} onChange={handleChange} rows={3}
+              placeholder="Tell us a bit about yourself and your eco journey..." maxLength={200} />
             <span className={styles.charCount}>{form.bio.length}/200</span>
           </div>
-
           <div className={styles.formActions}>
             <button type="button" className={styles.cancelBtn} onClick={() => setEditing(false)}>Cancel</button>
             <button type="submit" className={styles.saveBtn} disabled={saving}>
@@ -222,6 +219,72 @@ export default function ProfileTab({ currentUser, onUpdate }) {
           </div>
         </form>
       )}
+
+      {/* ── Security Section ── */}
+      <div className={styles.securitySection}>
+        <h3 className={styles.securityTitle}>🔐 Security</h3>
+
+        {/* Change Password */}
+        <div className={styles.securityCard}>
+          <div className={styles.securityCardHeader}>
+            <div>
+              <strong>🔑 Change Password</strong>
+              <p>Update your password regularly to keep your account safe.</p>
+            </div>
+            <button className={styles.secToggleBtn} onClick={() => setShowPwSection(!showPwSection)}>
+              {showPwSection ? 'Cancel' : 'Change'}
+            </button>
+          </div>
+          {showPwSection && (
+            <form className={styles.secForm} onSubmit={handlePasswordChange}>
+              {pwMsg && <div className={styles.success}>{pwMsg}</div>}
+              {pwError && <div className={styles.error}>{pwError}</div>}
+              <div className={styles.field}><label>Current Password</label>
+                <input type="password" placeholder="••••••••" value={pwForm.currentPassword}
+                  onChange={e => setPwForm({...pwForm, currentPassword: e.target.value})} required /></div>
+              <div className={styles.field}><label>New Password</label>
+                <input type="password" placeholder="Min. 6 characters" value={pwForm.newPassword}
+                  onChange={e => setPwForm({...pwForm, newPassword: e.target.value})} minLength={6} required /></div>
+              <div className={styles.field}><label>Confirm New Password</label>
+                <input type="password" placeholder="Repeat new password" value={pwForm.confirmPassword}
+                  onChange={e => setPwForm({...pwForm, confirmPassword: e.target.value})} required /></div>
+              <button type="submit" className={styles.saveBtn} disabled={pwSaving}>
+                {pwSaving ? 'Updating...' : '🔑 Update Password'}
+              </button>
+            </form>
+          )}
+        </div>
+
+        {/* Last Login */}
+        <div className={styles.securityCard}>
+          <strong>📅 Last Login</strong>
+          <p>{currentUser.lastLoginAt ? new Date(currentUser.lastLoginAt).toLocaleString() : 'Not recorded'}</p>
+        </div>
+
+        {/* Delete Account */}
+        <div className={`${styles.securityCard} ${styles.dangerCard}`}>
+          <div className={styles.securityCardHeader}>
+            <div>
+              <strong>🗑️ Delete Account</strong>
+              <p>Permanently delete your account. All points and data will be lost forever.</p>
+            </div>
+            <button className={styles.dangerToggleBtn} onClick={() => setShowDeleteSection(!showDeleteSection)}>
+              {showDeleteSection ? 'Cancel' : 'Delete'}
+            </button>
+          </div>
+          {showDeleteSection && (
+            <div className={styles.secForm}>
+              {deleteError && <div className={styles.error}>{deleteError}</div>}
+              <div className={styles.field}><label>Enter your password to confirm</label>
+                <input type="password" placeholder="Your password" value={deletePassword}
+                  onChange={e => setDeletePassword(e.target.value)} /></div>
+              <button className={styles.deleteBtn} onClick={handleDeleteAccount}>
+                ⚠️ Yes, permanently delete my account
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </section>
   )
 }

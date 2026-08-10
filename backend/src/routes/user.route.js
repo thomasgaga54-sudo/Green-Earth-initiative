@@ -30,6 +30,39 @@ router.patch("/me", protect, async (req, res) => {
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
+// Change password
+router.post("/change-password", protect, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) return res.status(400).json({ msg: "Both current and new password are required." });
+    if (newPassword.length < 6) return res.status(400).json({ msg: "New password must be at least 6 characters." });
+    if (currentPassword === newPassword) return res.status(400).json({ msg: "New password must be different from your current password." });
+
+    const user = await User.findById(req.user.id);
+    const match = await require("bcrypt").compare(currentPassword, user.password);
+    if (!match) return res.status(400).json({ msg: "Current password is incorrect." });
+
+    const hashed = await require("bcrypt").hash(newPassword, 12);
+    await User.findByIdAndUpdate(req.user.id, { password: hashed });
+    res.json({ msg: "Password changed successfully." });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Delete own account
+router.delete("/me", protect, async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password) return res.status(400).json({ msg: "Please confirm your password to delete your account." });
+
+    const user = await User.findById(req.user.id);
+    const match = await require("bcrypt").compare(password, user.password);
+    if (!match) return res.status(400).json({ msg: "Incorrect password." });
+
+    await User.findByIdAndDelete(req.user.id);
+    res.json({ msg: "Account deleted successfully." });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
 // Public stats endpoint
 router.get("/stats", async (req, res) => {
   try {

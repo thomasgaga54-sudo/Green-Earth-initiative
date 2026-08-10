@@ -6,12 +6,64 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const multer = require("multer");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const mongoSanitize = require("express-mongo-sanitize");
+const xss = require("xss-clean");
 const userRoutes = require("./routes/user.route");
 
 const app = express();
-app.use(cors());
+
+// ── Security Headers (Helmet) ──────────────────────────────
+app.use(helmet({
+  contentSecurityPolicy: false, // Disabled to allow React app to load
+  crossOriginEmbedderPolicy: false,
+}));
+
+// ── CORS ──────────────────────────────────────────────────
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",")
+  : ["http://localhost:3000", "http://localhost:5173"];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, same-origin)
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    // In production also allow the Render domain
+    if (origin && origin.includes("onrender.com")) return callback(null, true);
+    callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+}));
+
+// ── Body Parsing ───────────────────────────────────────────
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ limit: '20mb', extended: true }));
+
+// ── Input Sanitization ─────────────────────────────────────
+app.use(mongoSanitize()); // Prevent NoSQL injection (removes $ and . from inputs)
+app.use(xss());           // Prevent XSS attacks (sanitize HTML in inputs)
+
+// ── Global Rate Limit ──────────────────────────────────────
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200, // max 200 requests per IP per window
+  message: { msg: "Too many requests from this IP. Please try again in 15 minutes." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(globalLimiter);
+
+// ── Auth Rate Limit (stricter for login/register) ──────────
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10, // max 10 login/register attempts per 15 mins
+  message: { msg: "Too many login attempts. Please try again in 15 minutes." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use("/api/login", authLimiter);
+app.use("/api/register", authLimiter);
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, "../uploads");
