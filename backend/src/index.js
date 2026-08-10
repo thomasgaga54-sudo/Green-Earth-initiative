@@ -8,15 +8,13 @@ const cors = require("cors");
 const multer = require("multer");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
-const mongoSanitize = require("express-mongo-sanitize");
-const xss = require("xss-clean");
 const userRoutes = require("./routes/user.route");
 
 const app = express();
 
 // ── Security Headers (Helmet) ──────────────────────────────
 app.use(helmet({
-  contentSecurityPolicy: false, // Disabled to allow React app to load
+  contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
 }));
 
@@ -27,9 +25,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, same-origin)
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-    // In production also allow the Render domain
     if (origin && origin.includes("onrender.com")) return callback(null, true);
     callback(new Error("Not allowed by CORS"));
   },
@@ -40,24 +36,37 @@ app.use(cors({
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ limit: '20mb', extended: true }));
 
-// ── Input Sanitization ─────────────────────────────────────
-app.use(mongoSanitize()); // Prevent NoSQL injection (removes $ and . from inputs)
-app.use(xss());           // Prevent XSS attacks (sanitize HTML in inputs)
+// ── Manual NoSQL Injection Prevention ─────────────────────
+// Strip keys starting with $ or containing . from body (Express 5 compatible)
+app.use((req, res, next) => {
+  const sanitize = (obj) => {
+    if (!obj || typeof obj !== 'object') return;
+    for (const key of Object.keys(obj)) {
+      if (key.startsWith('$') || key.includes('.')) {
+        delete obj[key];
+      } else if (typeof obj[key] === 'object') {
+        sanitize(obj[key]);
+      }
+    }
+  };
+  if (req.body) sanitize(req.body);
+  next();
+});
 
 // ── Global Rate Limit ──────────────────────────────────────
 const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200, // max 200 requests per IP per window
+  windowMs: 15 * 60 * 1000,
+  max: 200,
   message: { msg: "Too many requests from this IP. Please try again in 15 minutes." },
   standardHeaders: true,
   legacyHeaders: false,
 });
 app.use(globalLimiter);
 
-// ── Auth Rate Limit (stricter for login/register) ──────────
+// ── Auth Rate Limit ────────────────────────────────────────
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10, // max 10 login/register attempts per 15 mins
+  max: 10,
   message: { msg: "Too many login attempts. Please try again in 15 minutes." },
   standardHeaders: true,
   legacyHeaders: false,
