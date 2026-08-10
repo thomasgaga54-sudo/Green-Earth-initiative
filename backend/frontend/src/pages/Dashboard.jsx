@@ -112,6 +112,23 @@ export default function Dashboard() {
 
         {submitMsg && <div className={styles.toast}>{submitMsg}</div>}
 
+        {/* ── Task Reminder Banner ── */}
+        {mySubmissions.length === 0 && (
+          <div className={styles.reminderBanner}>
+            <div className={styles.reminderIcon}>🌱</div>
+            <div className={styles.reminderText}>
+              <strong>You haven't completed any tasks yet!</strong>
+              <p>Start your eco journey — pick a task, take a photo, and submit your proof to earn points and climb the leaderboard.</p>
+            </div>
+            <button
+              className={styles.reminderBtn}
+              onClick={() => setActiveTab('tasks')}
+            >
+              Start Now →
+            </button>
+          </div>
+        )}
+
         {/* Stats */}
         <div className={styles.statsRow}>
           <div className={styles.statCard}>

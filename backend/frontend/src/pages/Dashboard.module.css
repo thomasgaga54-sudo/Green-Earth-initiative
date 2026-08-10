@@ -114,6 +114,46 @@
   font-size: 0.95rem;
 }
 
+/* Task Reminder Banner */
+.reminderBanner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+  border: 1.5px solid #c8e6c9;
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  animation: slideDown 0.4s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.reminderIcon { font-size: 2.5rem; flex-shrink: 0; }
+
+.reminderText { flex: 1; min-width: 200px; }
+.reminderText strong { font-size: 1rem; color: var(--green-dark); display: block; margin-bottom: 0.25rem; }
+.reminderText p { font-size: 0.875rem; color: var(--text-light); line-height: 1.5; }
+
+.reminderBtn {
+  background: var(--green-mid);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.reminderBtn:hover { background: var(--green-dark); }
+
 /* Stats row */
 .statsRow {
   display: grid;
