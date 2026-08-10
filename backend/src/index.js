@@ -118,16 +118,17 @@ app.use((err, req, res, next) => {
   res.status(500).json({ msg: err.message || "Something went wrong" });
 });
 
+const PORT = process.env.PORT || 5000;
+
+// Start server first, then connect to MongoDB
+app.listen(PORT, () => console.log("Server running on port", PORT));
+
 const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URL;
 
 if (!mongoUri) {
-  console.error("ERROR: MONGO_URI or MONGODB_URL environment variable is not set. Please configure it in your deployment environment.");
-  process.exit(1);
+  console.error("WARNING: MONGO_URI is not set. Database features will not work.");
+} else {
+  mongoose.connect(mongoUri)
+    .then(() => console.log("MongoDB Connected"))
+    .catch(err => console.error("MongoDB connection error:", err));
 }
-
-mongoose.connect(mongoUri)
-  .then(() => console.log("MongoDB Connected"))
-  .catch(err => console.log(err));
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log("Server running on port", PORT));
