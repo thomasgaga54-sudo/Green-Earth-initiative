@@ -233,42 +233,7 @@ router.patch("/admin/submissions/:id/reject", protect, adminOnly, async (req, re
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
-// Send task reminder emails to inactive users (no submissions)
-router.post("/admin/send-reminders", protect, adminOnly, async (req, res) => {
-  try {
-    // Find all non-admin users who have no submissions at all
-    const usersWithSubmissions = await Submission.distinct("userId");
-    const inactiveUsers = await User.find({
-      isAdmin: false,
-      _id: { $nin: usersWithSubmissions }
-    }, "name email");
 
-    if (inactiveUsers.length === 0) {
-      return res.json({ msg: "No inactive users found.", sent: 0 });
-    }
-
-    let sent = 0;
-    let failed = 0;
-    const errors = [];
-
-    for (const user of inactiveUsers) {
-      try {
-        await sendTaskReminder(user);
-        sent++;
-      } catch (err) {
-        failed++;
-        errors.push({ email: user.email, error: err.message });
-      }
-    }
-
-    res.json({
-      msg: `Reminders sent to ${sent} user(s).${failed > 0 ? ` ${failed} failed.` : ''}`,
-      sent,
-      failed,
-      errors: errors.length > 0 ? errors : undefined
-    });
-  } catch (err) { res.status(500).json({ msg: err.message }); }
-});
 
 // Unflag a user (clear fraud flag)
 router.patch("/admin/users/:id/unflag", protect, adminOnly, async (req, res) => {

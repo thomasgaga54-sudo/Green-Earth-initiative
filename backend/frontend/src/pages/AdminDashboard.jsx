@@ -1,4 +1,4 @@
-continimport { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import styles from './AdminDashboard.module.css'
@@ -19,7 +19,6 @@ export default function AdminDashboard() {
   const [newTask, setNewTask] = useState({ title: '', description: '', points: '' })
   const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(false)
-  const [sendingReminders, setSendingReminders] = useState(false)
   const [sendingReminders, setSendingReminders] = useState(false)
 
   useEffect(() => {
@@ -95,15 +94,6 @@ export default function AdminDashboard() {
     } finally {
       setSendingReminders(false)
     }
-  }
-
-  const sendReminders = async () => {
-    setSendingReminders(true)
-    try {
-      const { data } = await axios.post('/api/admin/send-reminders', {}, api(token))
-      toast(data.msg)
-    } catch (e) { toast(e.response?.data?.msg || 'Failed to send reminders') }
-    setSendingReminders(false)
   }
 
   const pending = submissions.filter(s => s.status === 'pending' || s.status === 'flagged')
