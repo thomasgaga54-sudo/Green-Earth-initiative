@@ -4,6 +4,7 @@ const { register, login } = require("../controllers/auth.controller");
 const { User, Task, Submission, Reward, Redemption } = require("../models/user.model");
 const { protect, adminOnly } = require("../middleware/auth.middleware");
 const { fraudCheck, trackRegistrationIP } = require("../middleware/fraud.middleware");
+const { sendTaskReminder, sendApprovalEmail } = require("../services/email.service");
 
 // Auth
 router.post("/register", trackRegistrationIP, register);
@@ -160,18 +161,65 @@ router.get("/admin/submissions", protect, adminOnly, async (req, res) => {
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
-// Approve submission → award points
+// Approve submission → award points + send email
 router.patch("/admin/submissions/:id/approve", protect, adminOnly, async (req, res) => {
   try {
-    const sub = await Submission.findById(req.params.id).populate("taskId");
+    const sub = await Submission.findById(req.params.id).populate("taskId").populate("userId", "name email");
     if (!sub) return res.status(404).json({ msg: "Submission not found" });
     if (sub.status === "approved") return res.status(400).json({ msg: "Already approved" });
     sub.status = "approved";
     await sub.save();
     if (sub.taskId) {
       await User.findByIdAndUpdate(sub.userId, { $inc: { points: sub.taskId.points } });
+      // Send approval email
+      if (sub.userId?.email) {
+        sendApprovalEmail(sub.userId, sub.taskId.title, sub.taskId.points).catch(err =>
+          console.error("Approval email failed:", err.message)
+        );
+      }
     }
     res.json({ msg: "Approved", submission: sub });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Send reminder emails to users with no submissions
+router.post("/admin/send-reminders", protect, adminOnly, async (req, res) => {
+  try {
+    // Find all non-admin users
+    const users = await User.find({ isAdmin: false }, "name email");
+    // Find users who have at least one submission
+    const activeUserIds = await Submission.distinct("userId");
+    // Filter users with NO submissions
+    const inactiveUsers = users.filter(
+      u => !activeUserIds.some(id => id.toString() === u._id.toString())
+    );
+
+    if (inactiveUsers.length === 0) {
+      return res.json({ msg: "All users have already submitted at least one task!", sent: 0 });
+    }
+
+    let sent = 0;
+    let failed = 0;
+    const errors = [];
+
+    for (const user of inactiveUsers) {
+      try {
+        await sendTaskReminder(user);
+        sent++;
+        // Small delay to avoid rate limits
+        await new Promise(r => setTimeout(r, 100));
+      } catch (err) {
+        failed++;
+        errors.push({ email: user.email, error: err.message });
+      }
+    }
+
+    res.json({
+      msg: `Reminders sent! ${sent} emails delivered, ${failed} failed.`,
+      sent,
+      failed,
+      errors: errors.length > 0 ? errors : undefined
+    });
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
@@ -182,6 +230,43 @@ router.patch("/admin/submissions/:id/reject", protect, adminOnly, async (req, re
       req.params.id, { status: "rejected" }, { new: true }
     );
     res.json({ msg: "Rejected", submission: sub });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Send task reminder emails to inactive users (no submissions)
+router.post("/admin/send-reminders", protect, adminOnly, async (req, res) => {
+  try {
+    // Find all non-admin users who have no submissions at all
+    const usersWithSubmissions = await Submission.distinct("userId");
+    const inactiveUsers = await User.find({
+      isAdmin: false,
+      _id: { $nin: usersWithSubmissions }
+    }, "name email");
+
+    if (inactiveUsers.length === 0) {
+      return res.json({ msg: "No inactive users found.", sent: 0 });
+    }
+
+    let sent = 0;
+    let failed = 0;
+    const errors = [];
+
+    for (const user of inactiveUsers) {
+      try {
+        await sendTaskReminder(user);
+        sent++;
+      } catch (err) {
+        failed++;
+        errors.push({ email: user.email, error: err.message });
+      }
+    }
+
+    res.json({
+      msg: `Reminders sent to ${sent} user(s).${failed > 0 ? ` ${failed} failed.` : ''}`,
+      sent,
+      failed,
+      errors: errors.length > 0 ? errors : undefined
+    });
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+continimport { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import styles from './AdminDashboard.module.css'
@@ -19,6 +19,8 @@ export default function AdminDashboard() {
   const [newTask, setNewTask] = useState({ title: '', description: '', points: '' })
   const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(false)
+  const [sendingReminders, setSendingReminders] = useState(false)
+  const [sendingReminders, setSendingReminders] = useState(false)
 
   useEffect(() => {
     if (!user.isAdmin) { navigate('/dashboard'); return }
@@ -82,6 +84,28 @@ export default function AdminDashboard() {
     navigate('/')
   }
 
+  const sendReminders = async () => {
+    if (!confirm('Send reminder emails to all users who have not completed any tasks?')) return
+    setSendingReminders(true)
+    try {
+      const { data } = await axios.post('/api/admin/send-reminders', {}, api(token))
+      toast(`📧 ${data.msg}`)
+    } catch (e) {
+      toast(e.response?.data?.msg || 'Failed to send reminders')
+    } finally {
+      setSendingReminders(false)
+    }
+  }
+
+  const sendReminders = async () => {
+    setSendingReminders(true)
+    try {
+      const { data } = await axios.post('/api/admin/send-reminders', {}, api(token))
+      toast(data.msg)
+    } catch (e) { toast(e.response?.data?.msg || 'Failed to send reminders') }
+    setSendingReminders(false)
+  }
+
   const pending = submissions.filter(s => s.status === 'pending' || s.status === 'flagged')
   const approved = submissions.filter(s => s.status === 'approved')
 
@@ -107,6 +131,14 @@ export default function AdminDashboard() {
           ))}
         </nav>
         <button className={styles.logout} onClick={logout}>🚪 Logout</button>
+        <button
+          className={styles.reminderBtn}
+          onClick={sendReminders}
+          disabled={sendingReminders}
+          title="Send email reminders to users with no task submissions"
+        >
+          {sendingReminders ? '⏳ Sending...' : '📧 Send Reminders'}
+        </button>
       </aside>
 
       {/* Main */}
@@ -125,6 +157,14 @@ export default function AdminDashboard() {
             <div className={styles.stat}><strong>{tasks.length}</strong><span>Tasks</span></div>
             <div className={styles.stat}><strong>{users.length}</strong><span>Users</span></div>
           </div>
+          <button
+            className={styles.reminderEmailBtn}
+            onClick={sendReminders}
+            disabled={sendingReminders}
+            title="Send reminder emails to inactive users"
+          >
+            {sendingReminders ? '📧 Sending...' : '📧 Send Reminders'}
+          </button>
         </header>
 
         {msg && <div className={styles.toast}>{msg}</div>}
