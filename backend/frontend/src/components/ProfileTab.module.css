@@ -73,6 +73,46 @@
 .statsPill strong { font-size: 1.1rem; font-weight: 900; }
 .statsPill span { font-size: 0.72rem; opacity: 0.8; margin-top: 0.1rem; }
 
+.levelPill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 8px;
+  padding: 0.3rem 0.75rem;
+}
+.levelPill strong { font-size: 1rem; font-weight: 900; }
+.levelPill span { font-size: 0.7rem; font-weight: 600; opacity: 0.85; margin-top: 0.1rem; }
+
+/* Level Progress */
+.levelProgress {
+  background: #fff;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 0.9rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.levelProgressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  margin-bottom: 0.6rem;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.levelProgressRight { color: #888; font-size: 0.8rem; }
+.levelBar {
+  height: 10px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.levelBarFill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
 /* Info Grid */
 .infoGrid {
   display: grid;

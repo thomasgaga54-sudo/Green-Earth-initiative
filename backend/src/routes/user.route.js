@@ -1,10 +1,73 @@
 const express = require("express");
 const router = express.Router();
 const { register, login } = require("../controllers/auth.controller");
-const { User, Task, Submission, Reward, Redemption } = require("../models/user.model");
+const { User, Task, Submission, Reward, Redemption, ChallengeProgress, StreakMilestone } = require("../models/user.model");
 const { protect, adminOnly } = require("../middleware/auth.middleware");
 const { fraudCheck, trackRegistrationIP } = require("../middleware/fraud.middleware");
 const { sendTaskReminder, sendApprovalEmail } = require("../services/email.service");
+const { getLevelFromPoints } = require("../utils/levels");
+
+// ── Earning caps (configurable via .env) ──────────────────
+const DAILY_POINTS_CAP  = parseInt(process.env.DAILY_POINTS_CAP  || "500");
+const WEEKLY_POINTS_CAP = parseInt(process.env.WEEKLY_POINTS_CAP || "1500");
+
+// ── Streak milestones ──────────────────────────────────────
+const STREAK_MILESTONES = [
+  { days: 3,  label: "3-Day Green Start",       icon: "🌱", bonus: 50  },
+  { days: 7,  label: "7-Day Green Streak",       icon: "🔥", bonus: 300 },
+  { days: 14, label: "14-Day Eco Warrior",       icon: "🌿", bonus: 700 },
+  { days: 30, label: "30-Day Earth Champion",    icon: "🌍", bonus: 2000 },
+];
+
+/**
+ * Check if the user just hit a streak milestone and award bonus once.
+ * Returns array of newly awarded milestones (empty if none).
+ */
+const checkStreakMilestones = async (userId, newStreak) => {
+  const awarded = [];
+  for (const m of STREAK_MILESTONES) {
+    if (newStreak >= m.days) {
+      try {
+        // insertOne throws if duplicate (unique index) — safe idempotent guard
+        await StreakMilestone.create({ userId, milestone: m.days, points: m.bonus });
+        await User.findByIdAndUpdate(userId, { $inc: { points: m.bonus } });
+        awarded.push(m);
+      } catch {
+        // already awarded — skip silently
+      }
+    }
+  }
+  return awarded;
+};
+
+// ── Redemption guards ──────────────────────────────────────
+const MIN_LEVEL_TO_REDEEM    = 2;          // must be Green Helper or above
+const MIN_ACCOUNT_AGE_DAYS   = 7;          // account must be at least 7 days old
+const REDEMPTION_COOLDOWN_DAYS = 14;       // one redemption per 14 days
+
+/**
+ * Calculate how many points a user has earned today and this week.
+ */
+const getEarningTotals = async (userId) => {
+  const now = new Date();
+  const startOfDay = new Date(now); startOfDay.setHours(0, 0, 0, 0);
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay()); startOfWeek.setHours(0, 0, 0, 0);
+
+  const approved = await Submission.find({
+    userId,
+    status: "approved",
+    createdAt: { $gte: startOfWeek }
+  }).populate("taskId", "points");
+
+  let daily = 0, weekly = 0;
+  for (const sub of approved) {
+    const pts = sub.taskId?.points || 0;
+    weekly += pts;
+    if (sub.createdAt >= startOfDay) daily += pts;
+  }
+  return { daily, weekly };
+};
 
 // Auth
 router.post("/register", trackRegistrationIP, register);
@@ -90,6 +153,91 @@ router.get("/tasks", async (req, res) => {
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
+// User: submit quiz answers → auto-grade, award points immediately
+router.post("/quiz-submit", protect, async (req, res) => {
+  try {
+    const { taskId, answers } = req.body; // answers: [0,2,1,3,0] — index per question
+    const task = await Task.findById(taskId);
+    if (!task) return res.status(404).json({ msg: "Task not found" });
+    if (task.taskType !== "quiz") return res.status(400).json({ msg: "Not a quiz task" });
+
+    // Check for duplicate approved quiz submission
+    const { Submission } = require("../models/user.model");
+    const existing = await Submission.findOne({ userId: req.user.id, taskId, status: "approved" });
+    if (existing) return res.status(400).json({ msg: "You have already completed this quiz." });
+
+    // Grade answers
+    const results = task.quiz.map((q, i) => ({
+      correct: answers[i] === q.correctIndex,
+      correctIndex: q.correctIndex,
+      yourAnswer: answers[i]
+    }));
+    const score = results.filter(r => r.correct).length;
+    const passed = score >= (task.passMark || 3);
+
+    // Create submission record
+    const submission = await Submission.create({
+      userId: req.user.id,
+      taskId,
+      imageUrl: "",
+      note: `Quiz score: ${score}/${task.quiz.length}`,
+      status: passed ? "approved" : "rejected",
+      fraudFlags: [],
+      submissionIp: req.ip || "unknown"
+    });
+
+    // Award points immediately if passed
+    if (passed) {
+      await User.findByIdAndUpdate(req.user.id, { $inc: { points: task.points } });
+      // Mark eco_quiz step in 7-day challenge
+      const stepKey = getStepKey(task);
+      if (stepKey) {
+        await ChallengeProgress.findOneAndUpdate(
+          { userId: req.user.id },
+          { $addToSet: { completedSteps: stepKey } },
+          { upsert: true, new: true }
+        );
+      }
+    }
+
+    res.json({ passed, score, total: task.quiz.length, pointsAwarded: passed ? task.points : 0, results });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Get user's streak info + milestone progress
+router.get("/streak", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id, "streakDays lastSubmissionDate points");
+    const awarded = await StreakMilestone.find({ userId: req.user.id }).select("milestone points awardedAt");
+    const awardedDays = awarded.map(a => a.milestone);
+
+    const milestones = STREAK_MILESTONES.map(m => ({
+      ...m,
+      achieved: (user.streakDays || 0) >= m.days,
+      claimed:  awardedDays.includes(m.days),
+    }));
+
+    res.json({
+      streakDays: user.streakDays || 0,
+      lastSubmissionDate: user.lastSubmissionDate,
+      milestones,
+      awardedMilestones: awarded,
+    });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Get today's daily challenge (deterministic by date — same task all day for everyone)
+router.get("/daily-challenge", async (req, res) => {
+  try {
+    const tasks = await Task.find({ taskType: { $ne: "quiz" } });
+    if (!tasks.length) return res.status(404).json({ msg: "No tasks available" });
+    // Pick task based on day-of-year so it rotates daily and is consistent for all users
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+    const task = tasks[dayOfYear % tasks.length];
+    res.json(task);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
 // User: submit task
 router.post("/submit", protect, fraudCheck, async (req, res) => {
   try {
@@ -118,6 +266,65 @@ router.get("/my-submissions", protect, async (req, res) => {
   try {
     const submissions = await Submission.find({ userId: req.user.id }).populate("taskId");
     res.json(submissions);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// ── 7-Day Green Champion Challenge ──────────────────────────
+
+// Challenge step definitions — keywords matched against task titles
+const CHALLENGE_STEPS = [
+  { key: "sweep_room",      label: "Sweep your room",                   icon: "🏠", keywords: ["sweep", "clean your room", "mop"] },
+  { key: "plant_water",     label: "Plant or water a plant",            icon: "🌱", keywords: ["plant", "water a plant", "seedling", "garden", "tree"] },
+  { key: "plastic_bottles", label: "Collect 10 plastic bottles",        icon: "♻️", keywords: ["plastic bottle", "collect plastic", "collect 10"] },
+  { key: "save_water",      label: "Save water",                        icon: "💧", keywords: ["tap", "shower", "water", "rainwater", "reuse"] },
+  { key: "lights_off",      label: "Turn off unnecessary lights",       icon: "⚡", keywords: ["light", "appliance", "unplug", "energy", "solar"] },
+  { key: "clean_compound",  label: "Clean your compound",               icon: "🌍", keywords: ["compound", "clean your street", "litter", "clean a public", "cleanup"] },
+  { key: "eco_quiz",        label: "Complete an environmental quiz",    icon: "📚", keywords: [] }, // matched by taskType === "quiz"
+];
+
+const BONUS_POINTS = 200;
+
+// Helper — check which step a task completes
+const getStepKey = (task) => {
+  if (!task) return null;
+  const titleLower = task.title.toLowerCase();
+  for (const step of CHALLENGE_STEPS) {
+    if (step.key === "eco_quiz" && task.taskType === "quiz") return "eco_quiz";
+    if (step.keywords.some(kw => titleLower.includes(kw))) return step.key;
+  }
+  return null;
+};
+
+// GET — user's current challenge progress
+router.get("/seven-day-challenge", protect, async (req, res) => {
+  try {
+    let progress = await ChallengeProgress.findOne({ userId: req.user.id });
+    if (!progress) {
+      progress = await ChallengeProgress.create({ userId: req.user.id, completedSteps: [] });
+    }
+    res.json({
+      steps: CHALLENGE_STEPS,
+      completedSteps: progress.completedSteps,
+      bonusAwarded: progress.bonusAwarded,
+      allComplete: progress.completedSteps.length >= CHALLENGE_STEPS.length
+    });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// POST — claim the 200pt bonus (all steps must be done, once only)
+router.post("/seven-day-challenge/claim-bonus", protect, async (req, res) => {
+  try {
+    const progress = await ChallengeProgress.findOne({ userId: req.user.id });
+    if (!progress) return res.status(400).json({ msg: "No challenge progress found." });
+    if (progress.bonusAwarded) return res.status(400).json({ msg: "Bonus already claimed!" });
+    if (progress.completedSteps.length < CHALLENGE_STEPS.length) {
+      return res.status(400).json({ msg: `Complete all ${CHALLENGE_STEPS.length} steps first!` });
+    }
+    progress.bonusAwarded = true;
+    progress.completedAt = new Date();
+    await progress.save();
+    await User.findByIdAndUpdate(req.user.id, { $inc: { points: BONUS_POINTS } });
+    res.json({ msg: `🎉 Bonus claimed! +${BONUS_POINTS} points awarded!`, pointsAwarded: BONUS_POINTS });
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
@@ -170,7 +377,57 @@ router.patch("/admin/submissions/:id/approve", protect, adminOnly, async (req, r
     sub.status = "approved";
     await sub.save();
     if (sub.taskId) {
-      await User.findByIdAndUpdate(sub.userId, { $inc: { points: sub.taskId.points } });
+      // ── Earning cap check ──────────────────────────────
+      const { daily, weekly } = await getEarningTotals(sub.userId);
+      const taskPts = sub.taskId.points || 0;
+      if (daily + taskPts > DAILY_POINTS_CAP) {
+        return res.status(400).json({
+          msg: `Daily earning cap reached (${DAILY_POINTS_CAP} pts/day). This approval would exceed it. Try again tomorrow.`
+        });
+      }
+      if (weekly + taskPts > WEEKLY_POINTS_CAP) {
+        return res.status(400).json({
+          msg: `Weekly earning cap reached (${WEEKLY_POINTS_CAP} pts/week). This approval would exceed the weekly limit.`
+        });
+      }
+      // Check if this is the daily challenge — award 1.5× bonus
+      const tasks = await Task.find({ taskType: { $ne: "quiz" } });
+      let pointsToAward = sub.taskId.points;
+      if (tasks.length) {
+        const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+        const dailyTask = tasks[dayOfYear % tasks.length];
+        if (dailyTask._id.toString() === sub.taskId._id.toString()) {
+          pointsToAward = Math.round(sub.taskId.points * 1.5); // 50% daily bonus
+        }
+      }
+
+      // Update streak
+      const user = await User.findById(sub.userId);
+      const today = new Date(); today.setHours(0,0,0,0);
+      const lastDate = user.lastSubmissionDate ? new Date(user.lastSubmissionDate) : null;
+      if (lastDate) lastDate.setHours(0,0,0,0);
+      const isYesterday = lastDate && (today - lastDate) === 86400000;
+      const isToday = lastDate && today.getTime() === lastDate.getTime();
+      const newStreak = isYesterday ? (user.streakDays || 0) + 1 : isToday ? (user.streakDays || 0) : 1;
+
+      await User.findByIdAndUpdate(sub.userId, {
+        $inc: { points: pointsToAward },
+        streakDays: newStreak,
+        lastSubmissionDate: new Date()
+      });
+
+      // Check streak milestones (7-day, 30-day bonuses)
+      await checkStreakMilestones(sub.userId, newStreak);
+
+      // Mark 7-day challenge step if applicable
+      const stepKey = getStepKey(sub.taskId);
+      if (stepKey) {
+        await ChallengeProgress.findOneAndUpdate(
+          { userId: sub.userId },
+          { $addToSet: { completedSteps: stepKey } },
+          { upsert: true, new: true }
+        );
+      }
       // Send approval email
       if (sub.userId?.email) {
         sendApprovalEmail(sub.userId, sub.taskId.title, sub.taskId.points).catch(err =>
@@ -279,6 +536,38 @@ router.post("/rewards/:id/redeem", protect, async (req, res) => {
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ msg: "User not found" });
+
+    // ── Redemption Guards ───────────────────────────────
+    // 1. Minimum level
+    const userLevel = getLevelFromPoints(user.points || 0);
+    if (userLevel < MIN_LEVEL_TO_REDEEM) {
+      return res.status(403).json({
+        msg: `You need to reach Level ${MIN_LEVEL_TO_REDEEM} (Green Helper — 501 pts) before redeeming rewards. Keep completing tasks!`
+      });
+    }
+
+    // 2. Minimum account age
+    const accountAgeDays = Math.floor((Date.now() - new Date(user.createdAt)) / 86400000);
+    if (accountAgeDays < MIN_ACCOUNT_AGE_DAYS) {
+      return res.status(403).json({
+        msg: `Your account must be at least ${MIN_ACCOUNT_AGE_DAYS} days old to redeem rewards. You joined ${accountAgeDays} day(s) ago.`
+      });
+    }
+
+    // 3. Redemption cooldown
+    const recentRedemption = await Redemption.findOne({
+      userId,
+      status: { $ne: "cancelled" },
+      createdAt: { $gte: new Date(Date.now() - REDEMPTION_COOLDOWN_DAYS * 86400000) }
+    });
+    if (recentRedemption) {
+      const nextDate = new Date(recentRedemption.createdAt);
+      nextDate.setDate(nextDate.getDate() + REDEMPTION_COOLDOWN_DAYS);
+      return res.status(429).json({
+        msg: `You can only redeem once every ${REDEMPTION_COOLDOWN_DAYS} days. Next redemption available: ${nextDate.toLocaleDateString()}.`
+      });
+    }
+
     if (user.points < reward.pointsCost) {
       return res.status(400).json({ msg: `Not enough points. You need ${reward.pointsCost} pts but have ${user.points} pts.` });
     }

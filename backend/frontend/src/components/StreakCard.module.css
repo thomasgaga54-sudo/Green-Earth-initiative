@@ -1,0 +1,227 @@
+.card {
+  background: #fff;
+  border: 2px solid #ffe082;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 16px rgba(255,160,0,0.1);
+  transition: border-color 0.3s;
+}
+
+.card.broken {
+  border-color: #ef9a9a;
+  box-shadow: 0 4px 16px rgba(198,40,40,0.08);
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #fff8e1, #fffde7);
+  cursor: pointer;
+  user-select: none;
+  gap: 0.75rem;
+}
+.card.broken .header { background: linear-gradient(135deg, #ffebee, #fce4ec); }
+.header:hover { filter: brightness(0.97); }
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.flameWrap {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+}
+
+.flame {
+  font-size: 2.6rem;
+  line-height: 1;
+  display: block;
+  animation: flicker 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes flicker {
+  0%   { transform: scale(1)    rotate(-3deg); }
+  50%  { transform: scale(1.08) rotate(2deg);  }
+  100% { transform: scale(1)    rotate(-2deg); }
+}
+
+.flameDead { filter: grayscale(1); animation: none; opacity: 0.5; }
+.flameWarn { animation: flicker 0.6s ease-in-out infinite alternate; }
+
+.streakNum {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: #ff6f00;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 900;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+}
+.card.broken .streakNum { background: #c62828; }
+
+.label {
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: #f57f17;
+  margin: 0;
+  text-transform: uppercase;
+}
+.card.broken .label { color: #c62828; }
+
+.sub {
+  font-size: 0.82rem;
+  color: #555;
+  margin: 0.2rem 0 0;
+  font-weight: 600;
+}
+
+.chevron { font-size: 0.75rem; color: #aaa; }
+
+/* Body */
+.body {
+  padding: 1rem 1.25rem 1.25rem;
+  border-top: 1.5px solid #ffe082;
+}
+.card.broken .body { border-top-color: #ef9a9a; }
+
+/* Milestone track */
+.track {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.milestone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  min-width: 72px;
+  position: relative;
+}
+
+.line {
+  position: absolute;
+  top: 18px;
+  right: 50%;
+  width: 100%;
+  height: 3px;
+  background: #e0e0e0;
+  z-index: 0;
+}
+.line.lineActive { background: linear-gradient(90deg, #ffa000, #ff6f00); }
+
+.node {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  border: 2px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  z-index: 1;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.nodeDone {
+  background: #e8f5e9;
+  border-color: #66bb6a;
+  box-shadow: 0 0 0 3px rgba(102,187,106,0.2);
+}
+
+.nodeReady {
+  background: #fff8e1;
+  border-color: #ffa000;
+  box-shadow: 0 0 0 4px rgba(255,160,0,0.2);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(255,160,0,0.2); }
+  50%       { box-shadow: 0 0 0 6px rgba(255,160,0,0.3); }
+}
+
+.mInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0.4rem;
+  gap: 0.15rem;
+}
+
+.mDays {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #555;
+}
+
+.mLabel {
+  font-size: 0.65rem;
+  color: #888;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.mBonus {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #f57f17;
+  background: #fff8e1;
+  padding: 0.1rem 0.4rem;
+  border-radius: 20px;
+}
+
+.mBonusDone {
+  color: #2e7d32;
+  background: #e8f5e9;
+}
+
+/* Hint */
+.hint {
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  font-size: 0.85rem;
+  color: #795548;
+  font-weight: 600;
+  text-align: center;
+}
+
+.allDone {
+  background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+  border: 1px solid #a5d6a7;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: #1b5e20;
+  font-weight: 700;
+  text-align: center;
+}
+
+@media (max-width: 500px) {
+  .track { gap: 0; }
+  .mLabel { display: none; }
+}

@@ -47,6 +47,10 @@ export default function SubmitModal({ task, onClose, onSuccess }) {
   const handleSubmit = async e => {
     e.preventDefault()
     if (!image) { setError('Please upload a photo as proof.'); return }
+    if ((task.proofLevel === 'enhanced' || task.proofLevel === 'verified') && !note.trim()) {
+      setError('A detailed description is required for this task.')
+      return
+    }
     setUploading(true)
     setError('')
     try {
@@ -115,15 +119,31 @@ export default function SubmitModal({ task, onClose, onSuccess }) {
 
           {/* Optional note */}
           <div className={styles.field}>
-            <label>Add a note <span className={styles.optional}>(optional)</span></label>
+            <label>
+              {task.proofLevel === 'enhanced' || task.proofLevel === 'verified'
+                ? <>📝 Description <span className={styles.required}>Required</span></>
+                : <>Add a note <span className={styles.optional}>(optional)</span></>
+              }
+            </label>
             <textarea
               rows={3}
-              placeholder="Describe what you did, where, how long it took..."
+              placeholder={
+                task.proofLevel === 'enhanced' || task.proofLevel === 'verified'
+                  ? 'Describe in detail what you did, where, when, and how...'
+                  : 'Describe what you did, where, how long it took...'
+              }
               value={note}
               onChange={e => setNote(e.target.value)}
               className={styles.textarea}
+              required={task.proofLevel === 'enhanced' || task.proofLevel === 'verified'}
             />
           </div>
+
+          {task.proofLevel === 'verified' && (
+            <div className={styles.verifiedNotice}>
+              🔍 <strong>High-value task:</strong> This submission will be carefully reviewed by an admin before points are awarded. Ensure your photo clearly shows the completed task.
+            </div>
+          )}
 
           {error && <div className={styles.error}>{error}</div>}
 

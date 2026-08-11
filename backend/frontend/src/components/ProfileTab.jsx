@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import axios from 'axios'
 import styles from './ProfileTab.module.css'
+import { getLevelInfo, getLevelProgress, pointsToNextLevel } from '../utils/levels'
 
 const COUNTRIES = [
   "Afghanistan","Albania","Algeria","Angola","Argentina","Australia","Austria","Bangladesh",
@@ -37,7 +38,9 @@ const LANGUAGES = [
 ]
 
 export default function ProfileTab({ currentUser, onUpdate }) {
-  const level = Math.floor((currentUser.points || 0) / 100) + 1
+  const levelInfo  = getLevelInfo(currentUser.points || 0)
+  const levelPct   = getLevelProgress(currentUser.points || 0)
+  const ptsToNext  = pointsToNextLevel(currentUser.points || 0)
 
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({
@@ -145,7 +148,31 @@ export default function ProfileTab({ currentUser, onUpdate }) {
         </div>
         <div className={styles.statsPill}>
           <div><strong>{currentUser.points || 0}</strong><span>Points</span></div>
-          <div><strong>Level {level}</strong><span>Rank</span></div>
+          <div
+            className={styles.levelPill}
+            style={{ background: levelInfo.bg, color: levelInfo.color }}
+          >
+            <strong>{levelInfo.icon} {levelInfo.title}</strong>
+            <span>Level {levelInfo.level}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Level Progress Bar */}
+      <div className={styles.levelProgress}>
+        <div className={styles.levelProgressHeader}>
+          <span style={{ color: levelInfo.color, fontWeight: 700 }}>
+            {levelInfo.icon} Level {levelInfo.level} — {levelInfo.title}
+          </span>
+          <span className={styles.levelProgressRight}>
+            {ptsToNext ? `${ptsToNext} pts to Level ${levelInfo.level + 1}` : '👑 Max Level!'}
+          </span>
+        </div>
+        <div className={styles.levelBar}>
+          <div
+            className={styles.levelBarFill}
+            style={{ width: `${levelPct}%`, background: levelInfo.color }}
+          />
         </div>
       </div>
 

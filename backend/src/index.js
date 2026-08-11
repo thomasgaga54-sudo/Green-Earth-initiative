@@ -9,6 +9,7 @@ const multer = require("multer");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const userRoutes = require("./routes/user.route");
+const paymentRoutes = require("./routes/payment.route");
 
 const app = express();
 
@@ -26,6 +27,9 @@ app.use(cors({
   },
   credentials: true,
 }));
+
+// ── Stripe Webhook (raw body — must come BEFORE express.json) ─
+app.use("/api/payment/webhook", express.raw({ type: "application/json" }));
 
 // ── Body Parsing ───────────────────────────────────────────
 app.use(express.json({ limit: '20mb' }));
@@ -99,6 +103,7 @@ app.post("/api/upload", upload.single("image"), (req, res) => {
 });
 
 app.use("/api", userRoutes);
+app.use("/api/payment", paymentRoutes);
 
 // Serve React frontend in production
 const distPath = path.join(__dirname, "../frontend/dist");

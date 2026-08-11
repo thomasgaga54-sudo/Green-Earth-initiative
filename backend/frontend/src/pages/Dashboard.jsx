@@ -5,6 +5,12 @@ import styles from './Dashboard.module.css'
 import SubmitModal from '../components/SubmitModal'
 import RewardsTab from '../components/RewardsTab'
 import ProfileTab from '../components/ProfileTab'
+import ShopTab from '../components/ShopTab'
+import QuizModal from '../components/QuizModal'
+import DailyChallenge from '../components/DailyChallenge'
+import SevenDayChallenge from '../components/SevenDayChallenge'
+import StreakCard from '../components/StreakCard'
+import { getLevelInfo, getLevelProgress, pointsToNextLevel } from '../utils/levels'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -23,6 +29,10 @@ export default function Dashboard() {
 
   const filteredTasks = taskCategory === 'all' ? tasks : tasks.filter(t => t.category === taskCategory)
 
+  const levelInfo    = getLevelInfo(currentUser.points || 0)
+  const levelPct     = getLevelProgress(currentUser.points || 0)
+  const ptsToNext    = pointsToNextLevel(currentUser.points || 0)
+
   const refreshUser = async () => {
     try {
       const { data } = await axios.get('/api/me')
@@ -36,6 +46,26 @@ export default function Dashboard() {
     axios.get('/api/leaderboard').then(r => setLeaderboard(r.data)).catch(() => {})
     axios.get('/api/my-submissions').then(r => setMySubmissions(r.data)).catch(() => {})
     refreshUser()
+
+    // Handle Stripe redirect feedback
+    const params = new URLSearchParams(window.location.search)
+    const payment = params.get('payment')
+    if (payment === 'success') {
+      const pts = params.get('points')
+      setSubmitMsg(`✅ Payment successful! ${pts ? `+${pts} points added to your balance.` : 'Thank you!'}`)
+      refreshUser()
+      window.history.replaceState({}, '', '/dashboard')
+    } else if (payment === 'premium_success') {
+      setSubmitMsg('👑 Welcome to Premium! 200 bonus points have been added to your account.')
+      refreshUser()
+      window.history.replaceState({}, '', '/dashboard')
+    } else if (payment === 'reward_success') {
+      setSubmitMsg('🎁 Purchase successful! Your reward will be delivered within 14–28 business days.')
+      window.history.replaceState({}, '', '/dashboard')
+    } else if (payment === 'cancelled') {
+      setSubmitMsg('ℹ️ Payment was cancelled.')
+      window.history.replaceState({}, '', '/dashboard')
+    }
 
     // Poll for point updates every 30 seconds
     const interval = setInterval(() => {
@@ -64,13 +94,24 @@ export default function Dashboard() {
     <div className={styles.page}>
 
       {/* Submit Modal */}
-      {selectedTask && (
+      {selectedTask && selectedTask.taskType === 'quiz' ? (
+        <QuizModal
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onSuccess={(pointsAwarded) => {
+            setSelectedTask(null)
+            setSubmitMsg(`🎉 Quiz passed! +${pointsAwarded} points added to your balance.`)
+            setTimeout(() => setSubmitMsg(''), 5000)
+            refreshUser()
+          }}
+        />
+      ) : selectedTask ? (
         <SubmitModal
           task={selectedTask}
           onClose={() => setSelectedTask(null)}
           onSuccess={handleSubmitSuccess}
         />
-      )}
+      ) : null}
 
       {/* Sidebar / Bottom Nav */}
       <aside className={styles.sidebar}>
@@ -91,6 +132,9 @@ export default function Dashboard() {
           <button className={`${styles.navItem} ${activeTab === 'profile' ? styles.active : ''}`} onClick={() => setActiveTab('profile')}>
             👤 Profile
           </button>
+          <button className={`${styles.navItem} ${activeTab === 'shop' ? styles.active : ''}`} onClick={() => setActiveTab('shop')}>
+            🛒 Shop
+          </button>
         </nav>
         <button className={styles.logoutBtn} onClick={logout}>🚪 Logout</button>
       </aside>
@@ -108,6 +152,12 @@ export default function Dashboard() {
             <span className={styles.pointsNum}>{currentUser.points || 0}</span>
             <span className={styles.pointsLabel}>Points</span>
           </div>
+          {(currentUser.streakDays || 0) >= 2 && (
+            <div className={styles.streakBadge}>
+              <span className={styles.streakNum}>🔥 {currentUser.streakDays}</span>
+              <span className={styles.streakLabel}>day streak</span>
+            </div>
+          )}
         </header>
 
         {submitMsg && <div className={styles.toast}>{submitMsg}</div>}
@@ -141,8 +191,8 @@ export default function Dashboard() {
           <div className={styles.statCard}>
             <div className={styles.statIcon}>🌟</div>
             <div>
-              <div className={styles.statNum}>Level {level}</div>
-              <div className={styles.statLabel}>Current Level</div>
+              <div className={styles.statNum}>{levelInfo.icon} {levelInfo.title}</div>
+              <div className={styles.statLabel}>Level {levelInfo.level}</div>
             </div>
           </div>
           <div className={styles.statCard}>
@@ -157,11 +207,28 @@ export default function Dashboard() {
         {/* Level Progress */}
         <div className={styles.progressCard}>
           <div className={styles.progressHeader}>
-            <span>Level {level} Progress</span>
-            <span>{progress}/100 pts to Level {level + 1}</span>
+            <span
+              className={styles.levelBadge}
+              style={{ background: levelInfo.bg, color: levelInfo.color }}
+            >
+              {levelInfo.icon} {levelInfo.title}
+            </span>
+            <span className={styles.progressRight}>
+              {ptsToNext
+                ? `${ptsToNext} pts to Level ${levelInfo.level + 1}`
+                : '👑 Maximum Level Reached!'}
+            </span>
           </div>
           <div className={styles.progressBar}>
-            <div className={styles.progressFill} style={{ width: `${progress}%` }} />
+            <div
+              className={styles.progressFill}
+              style={{ width: `${levelPct}%`, background: levelInfo.color }}
+            />
+          </div>
+          <div className={styles.progressFooter}>
+            <span>Level {levelInfo.level}</span>
+            <span>{levelPct}%</span>
+            {levelInfo.level < 5 && <span>Level {levelInfo.level + 1}</span>}
           </div>
         </div>
 
@@ -170,8 +237,22 @@ export default function Dashboard() {
           <section>
             <h2 className={styles.sectionTitle}>🌱 Available Tasks</h2>
 
+            {/* Daily Challenge */}
+            <DailyChallenge
+              currentUser={currentUser}
+              onStartTask={(task) => setSelectedTask(task)}
+            />
+
+            {/* 7-Day Green Champion Challenge */}
+            <SevenDayChallenge
+              onPointsUpdate={refreshUser}
+            />
+
+            {/* Green Streak Milestones */}
+            <StreakCard />
+
             <div className={styles.categoryTabs}>
-              {['all', 'general', 'children', 'hard'].map(cat => (
+              {['all', 'general', 'domestic', 'water', 'energy', 'waste', 'community', 'family', 'school', 'education', 'health', 'children', 'hard'].map(cat => (
                 <button
                   key={cat}
                   className={`${styles.catBtn} ${taskCategory === cat ? styles.catActive : ''}`}
@@ -179,6 +260,15 @@ export default function Dashboard() {
                 >
                   {cat === 'all' && '🌍 All'}
                   {cat === 'general' && '🌿 General'}
+                  {cat === 'domestic' && '🏠 Domestic'}
+                  {cat === 'water' && '💧 Water'}
+                  {cat === 'energy' && '⚡ Energy'}
+                  {cat === 'waste' && '🚮 Waste'}
+                  {cat === 'community' && '🌳 Community'}
+                  {cat === 'family' && '👨‍👩‍👧‍👦 Family'}
+                  {cat === 'school' && '🎓 School'}
+                  {cat === 'education' && '📚 Education'}
+                  {cat === 'health' && '🏃 Health'}
                   {cat === 'children' && '🧒 Kids'}
                   {cat === 'hard' && '🔥 Challenge'}
                 </button>
@@ -195,15 +285,26 @@ export default function Dashboard() {
                       )}
                       <div className={styles.taskBody}>
                         <div className={styles.taskPoints}>+{task.points} pts</div>
+                        {task.category === 'domestic' && <span className={styles.domesticTag}>🏠 Domestic</span>}
+                        {task.category === 'water' && <span className={styles.waterTag}>💧 Water</span>}
+                        {task.category === 'energy' && <span className={styles.energyTag}>⚡ Energy</span>}
+                        {task.category === 'waste' && <span className={styles.wasteTag}>🚮 Waste</span>}
+                        {task.category === 'community' && <span className={styles.communityTag}>🌳 Community</span>}
+                        {task.category === 'family' && <span className={styles.familyTag}>👨‍👩‍👧‍👦 Family</span>}
+                        {task.category === 'school' && <span className={styles.schoolTag}>🎓 School</span>}
                         {task.category === 'children' && <span className={styles.kidsTag}>🧒 Kids</span>}
+                        {task.category === 'education' && <span className={styles.educationTag}>📚 Education</span>}
+                        {task.category === 'health' && <span className={styles.healthTag}>🏃 Health</span>}
                         {task.category === 'hard' && <span className={styles.hardTag}>🔥 Challenge</span>}
+                        {task.proofLevel === 'enhanced' && <span className={styles.enhancedTag}>📝 Note Required</span>}
+                        {task.proofLevel === 'verified' && <span className={styles.verifiedTag}>🔍 Admin Verified</span>}
                         <h3>{task.title}</h3>
                         <p>{task.description}</p>
                         <button
                           className={styles.submitBtn}
                           onClick={() => setSelectedTask(task)}
                         >
-                          📷 Submit Proof
+                          {task.taskType === 'quiz' ? '📚 Take Quiz' : '📷 Submit Proof'}
                         </button>
                       </div>
                     </div>
@@ -270,15 +371,22 @@ export default function Dashboard() {
           <section>
             <h2 className={styles.sectionTitle}>🏆 Leaderboard</h2>
             <div className={styles.leaderboard}>
-              {leaderboard.map((u, i) => (
-                <div key={u._id} className={`${styles.leaderRow} ${u._id === currentUser._id ? styles.myRow : ''}`}>
-                  <span className={styles.rank}>
-                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
-                  </span>
-                  <span className={styles.lName}>{u.name}</span>
-                  <span className={styles.lPoints}>{u.points} pts</span>
-                </div>
-              ))}
+              {leaderboard.map((u, i) => {
+                const uLevel = getLevelInfo(u.points || 0)
+                return (
+                  <div key={u._id} className={`${styles.leaderRow} ${u._id === currentUser._id ? styles.myRow : ''}`}>
+                    <span className={styles.rank}>
+                      {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
+                    </span>
+                    <span className={styles.lName}>{u.name}</span>
+                    <span
+                      className={styles.lLevel}
+                      style={{ color: uLevel.color }}
+                    >{uLevel.icon} {uLevel.title}</span>
+                    <span className={styles.lPoints}>{u.points} pts</span>
+                  </div>
+                )
+              })}
               {leaderboard.length === 0 && <div className={styles.empty}>No data yet. Be the first!</div>}
             </div>
           </section>
@@ -290,6 +398,21 @@ export default function Dashboard() {
             setCurrentUser(updated)
             localStorage.setItem('user', JSON.stringify(updated))
           }} />
+        )}
+
+        {/* ── Shop Tab ── */}
+        {activeTab === 'shop' && (
+          <section>
+            <h2 className={styles.sectionTitle}>🛒 Shop</h2>
+            <ShopTab
+              currentUser={currentUser}
+              onPointsUpdate={(newPoints) => {
+                const updated = { ...currentUser, points: newPoints }
+                setCurrentUser(updated)
+                localStorage.setItem('user', JSON.stringify(updated))
+              }}
+            />
+          </section>
         )}
 
       </main>

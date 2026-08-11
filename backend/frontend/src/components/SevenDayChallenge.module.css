@@ -1,0 +1,246 @@
+.card {
+  background: #fff;
+  border: 2px solid #c8e6c9;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 16px rgba(46,125,50,0.08);
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #f1f8f1, #e8f5e9);
+  cursor: pointer;
+  user-select: none;
+  gap: 0.75rem;
+}
+.header:hover { background: #e8f5e9; }
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.globe { font-size: 2rem; }
+
+.label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #2e7d32;
+  margin: 0;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1b5e20;
+  margin: 0.15rem 0 0;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Circle progress */
+.progressCircle {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+.svg {
+  width: 48px;
+  height: 48px;
+  transform: rotate(-90deg);
+}
+.circleBg {
+  fill: none;
+  stroke: #e0e0e0;
+  stroke-width: 3;
+}
+.circleProgress {
+  fill: none;
+  stroke: #2e7d32;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.5s ease;
+}
+.circleText {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #1b5e20;
+}
+
+.chevron {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+/* Progress bar */
+.barWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem 0;
+}
+.bar {
+  flex: 1;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.barFill {
+  height: 100%;
+  background: linear-gradient(90deg, #2e7d32, #66bb6a);
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+.barLabel {
+  font-size: 0.75rem;
+  color: #888;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+/* Steps */
+.steps {
+  list-style: none;
+  padding: 0.75rem 1.25rem;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.85rem;
+  background: #fafafa;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  transition: all 0.2s;
+}
+
+.step.done {
+  background: #f1f8f1;
+  border-color: #a5d6a7;
+}
+
+.stepIcon { font-size: 1.1rem; flex-shrink: 0; }
+
+.stepLabel {
+  flex: 1;
+  font-size: 0.88rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.step.done .stepLabel {
+  color: #2e7d32;
+}
+
+.tick {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #2e7d32;
+  background: #c8e6c9;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+}
+
+/* Bonus */
+.bonus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  background: linear-gradient(135deg, #fff8e1, #fffde7);
+  border-top: 1.5px solid #ffe082;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.bonusInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.bonusIcon { font-size: 1.6rem; }
+
+.bonusTitle {
+  font-size: 0.8rem;
+  color: #795548;
+  margin: 0;
+  font-weight: 600;
+}
+
+.bonusPts {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #e65100;
+  margin: 0;
+}
+
+.claimBtn {
+  padding: 0.65rem 1.4rem;
+  background: linear-gradient(135deg, #f57f17, #ffa000);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 3px 10px rgba(245,127,23,0.35);
+}
+.claimBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(245,127,23,0.45);
+}
+.claimBtn:disabled { background: #aaa; cursor: not-allowed; box-shadow: none; }
+
+.claimed {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #2e7d32;
+  background: #c8e6c9;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+}
+
+.remaining {
+  font-size: 0.82rem;
+  color: #888;
+  font-weight: 600;
+  margin: 0;
+}
+
+.msg {
+  padding: 0.6rem 1.25rem 0.75rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1b5e20;
+  background: #e8f5e9;
+  border-top: 1px solid #c8e6c9;
+}
+
+@media (max-width: 500px) {
+  .bonus { flex-direction: column; align-items: flex-start; }
+}

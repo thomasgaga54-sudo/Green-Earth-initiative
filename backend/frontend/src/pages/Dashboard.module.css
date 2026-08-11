@@ -100,6 +100,20 @@
   min-width: 90px;
 }
 
+.streakBadge {
+  background: linear-gradient(135deg, #ff6f00, #ffa000);
+  color: #fff;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 90px;
+}
+
+.streakNum { font-size: 1.8rem; font-weight: 900; line-height: 1; }
+.streakLabel { font-size: 0.75rem; opacity: 0.9; margin-top: 0.2rem; font-weight: 600; }
+
 .pointsNum { font-size: 1.8rem; font-weight: 900; line-height: 1; }
 .pointsLabel { font-size: 0.75rem; opacity: 0.8; margin-top: 0.2rem; }
 
@@ -188,10 +202,28 @@
 .progressHeader {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-light);
   margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.levelBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.progressRight {
+  font-size: 0.82rem;
+  color: #888;
 }
 
 .progressBar {
@@ -203,9 +235,17 @@
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--green-mid), var(--green-light));
   border-radius: 50px;
   transition: width 0.6s ease;
+}
+
+.progressFooter {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #aaa;
+  font-weight: 600;
+  margin-top: 0.5rem;
 }
 
 /* Section title */
@@ -248,6 +288,138 @@
   padding: 0.2rem 0.6rem;
   border-radius: 50px;
   border: 1px solid #ffe082;
+  margin-bottom: 0.5rem;
+}
+
+.domesticTag {
+  display: inline-block;
+  background: #e3f2fd;
+  color: #1565c0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  border: 1px solid #90caf9;
+  margin-bottom: 0.5rem;
+}
+
+.waterTag {
+  display: inline-block;
+  background: #e1f5fe;
+  color: #0277bd;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  border: 1px solid #81d4fa;
+  margin-bottom: 0.5rem;
+}
+
+.energyTag {
+  display: inline-block;
+  background: #fffde7;
+  color: #f57f17;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  border: 1px solid #fff176;
+  margin-bottom: 0.5rem;
+}
+
+.wasteTag {
+  display: inline-block;
+  background: #fbe9e7;
+  color: #bf360c;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  border: 1px solid #ffab91;
+  margin-bottom: 0.5rem;
+}
+
+.communityTag {
+  display: inline-block;
+  background: #f1f8e9;
+  color: #33691e;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  border: 1px solid #aed581;
+  margin-bottom: 0.5rem;
+}
+
+.familyTag {
+  display: inline-block;
+  background: #fce4ec;
+  color: #880e4f;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  border: 1px solid #f48fb1;
+  margin-bottom: 0.5rem;
+}
+
+.schoolTag {
+  display: inline-block;
+  background: #ede7f6;
+  color: #4527a0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  border: 1px solid #b39ddb;
+  margin-bottom: 0.5rem;
+}
+
+.educationTag {
+  display: inline-block;
+  background: #e8eaf6;
+  color: #283593;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  border: 1px solid #9fa8da;
+  margin-bottom: 0.5rem;
+}
+
+.healthTag {
+  display: inline-block;
+  background: #e0f7fa;
+  color: #006064;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  border: 1px solid #80deea;
+  margin-bottom: 0.5rem;
+}
+
+.enhancedTag {
+  display: inline-block;
+  background: #fff3e0;
+  color: #e65100;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  border: 1px solid #ffcc80;
+  margin-bottom: 0.5rem;
+}
+
+.verifiedTag {
+  display: inline-block;
+  background: #e8eaf6;
+  color: #283593;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  border: 1px solid #9fa8da;
   margin-bottom: 0.5rem;
 }
 
@@ -413,6 +585,7 @@
 
 .rank { font-size: 1.2rem; width: 2.5rem; text-align: center; }
 .lName { flex: 1; font-size: 0.95rem; color: var(--text); }
+.lLevel { font-size: 0.78rem; font-weight: 700; padding: 0.15rem 0.55rem; border-radius: 20px; background: #f5f5f5; }
 .lPoints { font-weight: 800; color: var(--green-dark); font-size: 0.95rem; }
 
 /* Profile */
