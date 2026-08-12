@@ -330,6 +330,32 @@ router.post("/seven-day-challenge/claim-bonus", protect, async (req, res) => {
 
 // ── Admin routes ────────────────────────────────────────────
 
+// Get a single user's submissions (admin)
+router.get("/admin/users/:id/submissions", protect, adminOnly, async (req, res) => {
+  try {
+    const subs = await Submission.find({ userId: req.params.id })
+      .populate("taskId", "title points")
+      .sort({ createdAt: -1 });
+    res.json(subs);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Adjust user points (admin — can add or deduct)
+router.patch("/admin/users/:id/adjust-points", protect, adminOnly, async (req, res) => {
+  try {
+    const { points, note } = req.body;
+    if (!points || isNaN(points)) return res.status(400).json({ msg: "Invalid points value." });
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { points: parseInt(points) } },
+      { new: true, select: "-password" }
+    );
+    if (!user) return res.status(404).json({ msg: "User not found" });
+    console.log(`Admin adjusted ${user.email} by ${points} pts. Note: ${note || "none"}`);
+    res.json({ msg: `Points adjusted by ${points}`, user });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
 // Get all users
 router.get("/admin/users", protect, adminOnly, async (req, res) => {
   try {

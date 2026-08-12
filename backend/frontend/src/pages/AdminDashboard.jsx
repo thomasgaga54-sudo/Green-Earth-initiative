@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import styles from './AdminDashboard.module.css'
+import { getLevelInfo } from '../utils/levels'
 
 const api = (token) => ({
   headers: { Authorization: `Bearer ${token}` }
@@ -20,6 +21,13 @@ export default function AdminDashboard() {
   const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(false)
   const [sendingReminders, setSendingReminders] = useState(false)
+
+  // User profile modal
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [userSubs, setUserSubs] = useState([])
+  const [profileLoading, setProfileLoading] = useState(false)
+  const [adjustPoints, setAdjustPoints] = useState('')
+  const [adjustNote, setAdjustNote] = useState('')
 
   useEffect(() => {
     if (!user.isAdmin) { navigate('/dashboard'); return }
@@ -40,6 +48,57 @@ export default function AdminDashboard() {
   }
 
   const toast = (m) => { setMsg(m); setTimeout(() => setMsg(''), 3000) }
+
+  const openUserProfile = async (u) => {
+    setSelectedUser(u)
+    setProfileLoading(true)
+    setUserSubs([])
+    setAdjustPoints('')
+    setAdjustNote('')
+    try {
+      const { data } = await axios.get(`/api/admin/users/${u._id}/submissions`, api(token))
+      setUserSubs(data)
+    } catch (err) {
+      console.error('Failed to load user submissions', err)
+    }
+    setProfileLoading(false)
+  }
+
+  const closeProfile = () => setSelectedUser(null)
+
+  const handleBan = async () => {
+    if (!confirm(`Ban ${selectedUser.name}? They will be flagged and unable to earn points.`)) return
+    try {
+      await axios.patch(`/api/admin/users/${selectedUser._id}/ban`, {}, api(token))
+      toast(`🚫 ${selectedUser.name} has been banned.`)
+      fetchAll()
+      setSelectedUser(prev => ({ ...prev, flaggedForReview: true, flagReason: 'banned_by_admin' }))
+    } catch (e) { toast(e.response?.data?.msg || 'Error') }
+  }
+
+  const handleUnflag = async () => {
+    try {
+      await axios.patch(`/api/admin/users/${selectedUser._id}/unflag`, {}, api(token))
+      toast(`✅ ${selectedUser.name} has been unflagged.`)
+      fetchAll()
+      setSelectedUser(prev => ({ ...prev, flaggedForReview: false, flagReason: null }))
+    } catch (e) { toast(e.response?.data?.msg || 'Error') }
+  }
+
+  const handleAdjustPoints = async (e) => {
+    e.preventDefault()
+    const pts = parseInt(adjustPoints)
+    if (isNaN(pts) || pts === 0) { toast('Enter a non-zero number (use negative to deduct)'); return }
+    try {
+      await axios.patch(`/api/admin/users/${selectedUser._id}/adjust-points`,
+        { points: pts, note: adjustNote }, api(token))
+      toast(`✅ Points ${pts > 0 ? 'added' : 'deducted'}: ${pts > 0 ? '+' : ''}${pts} pts`)
+      setAdjustPoints('')
+      setAdjustNote('')
+      fetchAll()
+      setSelectedUser(prev => ({ ...prev, points: (prev.points || 0) + pts }))
+    } catch (e) { toast(e.response?.data?.msg || 'Error') }
+  }
 
   const approveSubmission = async (id) => {
     try {
@@ -284,27 +343,161 @@ export default function AdminDashboard() {
         {activeTab === 'users' && (
           <section>
             <h2 className={styles.sectionTitle}>All Users ({users.length})</h2>
+            <p className={styles.hint}>Click any user to view their full profile.</p>
             <div className={styles.table}>
               <div className={styles.tableHead}>
-                <span>Name</span><span>Email</span><span>Points</span><span>Level</span><span>Role</span>
+                <span>Name</span><span>Email</span><span>Points</span><span>Level</span><span>Streak</span><span>Role</span>
               </div>
-              {users.map(u => (
-                <div key={u._id} className={styles.tableRow}>
-                  <span><strong>{u.name}</strong></span>
-                  <span>{u.email}</span>
-                  <span className={styles.pts}>{u.points} pts</span>
-                  <span>Level {u.level}</span>
-                  <span>
-                    {u.isAdmin
-                      ? <span className={styles.adminBadge}>Admin</span>
-                      : <span className={styles.userBadge}>User</span>
-                    }
-                  </span>
-                </div>
-              ))}
+              {users.map(u => {
+                const lvl = getLevelInfo(u.points || 0)
+                return (
+                  <div
+                    key={u._id}
+                    className={`${styles.tableRow} ${styles.clickableRow} ${u.flaggedForReview ? styles.flaggedRow : ''}`}
+                    onClick={() => openUserProfile(u)}
+                  >
+                    <span><strong>{u.name}</strong>{u.flaggedForReview && <span className={styles.flagIcon}> 🚩</span>}</span>
+                    <span>{u.email}</span>
+                    <span className={styles.pts}>{u.points || 0} pts</span>
+                    <span style={{ color: lvl.color, fontWeight: 700 }}>{lvl.icon} {lvl.title}</span>
+                    <span>{u.streakDays || 0} 🔥</span>
+                    <span>
+                      {u.isAdmin
+                        ? <span className={styles.adminBadge}>Admin</span>
+                        : <span className={styles.userBadge}>User</span>
+                      }
+                    </span>
+                  </div>
+                )
+              })}
               {users.length === 0 && <div className={styles.empty}>No users yet.</div>}
             </div>
           </section>
+        )}
+
+        {/* User Profile Modal */}
+        {selectedUser && (
+          <div className={styles.profileOverlay} onClick={e => e.target === e.currentTarget && closeProfile()}>
+            <div className={styles.profilePanel}>
+              <div className={styles.profileHeader}>
+                <div className={styles.profileAvatar} style={{ background: selectedUser.avatarColor || '#2e7d32' }}>
+                  {(selectedUser.name || 'U')[0].toUpperCase()}
+                </div>
+                <div className={styles.profileInfo}>
+                  <h2>{selectedUser.name}</h2>
+                  <p>{selectedUser.email}</p>
+                  {selectedUser.flaggedForReview && (
+                    <span className={styles.flagBadge}>🚩 {selectedUser.flagReason === 'banned_by_admin' ? 'Banned' : 'Flagged'}</span>
+                  )}
+                </div>
+                <button className={styles.profileClose} onClick={closeProfile}>✕</button>
+              </div>
+
+              {/* Stats */}
+              <div className={styles.profileStats}>
+                {(() => {
+                  const lvl = getLevelInfo(selectedUser.points || 0)
+                  return (
+                    <>
+                      <div className={styles.profileStat}>
+                        <strong>{selectedUser.points || 0}</strong><span>Points</span>
+                      </div>
+                      <div className={styles.profileStat} style={{ color: lvl.color }}>
+                        <strong>{lvl.icon} {lvl.title}</strong><span>Level {lvl.level}</span>
+                      </div>
+                      <div className={styles.profileStat}>
+                        <strong>{selectedUser.streakDays || 0} 🔥</strong><span>Streak</span>
+                      </div>
+                      <div className={styles.profileStat}>
+                        <strong>{selectedUser.isPremium ? '👑 Yes' : 'No'}</strong><span>Premium</span>
+                      </div>
+                    </>
+                  )
+                })()}
+              </div>
+
+              {/* Details */}
+              <div className={styles.profileDetails}>
+                {[
+                  { icon: '📱', label: 'Phone', value: selectedUser.phone },
+                  { icon: '🌍', label: 'Country', value: selectedUser.country },
+                  { icon: '🏙️', label: 'City', value: selectedUser.city },
+                  { icon: '👤', label: 'Gender', value: selectedUser.gender },
+                  { icon: '🎂', label: 'Date of Birth', value: selectedUser.dateOfBirth ? new Date(selectedUser.dateOfBirth).toLocaleDateString() : null },
+                  { icon: '🌐', label: 'Language', value: selectedUser.preferredLanguage },
+                  { icon: '📅', label: 'Joined', value: new Date(selectedUser.createdAt).toLocaleDateString() },
+                  { icon: '🖥️', label: 'Reg. IP', value: selectedUser.registrationIp },
+                ].filter(d => d.value).map(({ icon, label, value }) => (
+                  <div key={label} className={styles.profileDetailRow}>
+                    <span className={styles.profileDetailIcon}>{icon}</span>
+                    <span className={styles.profileDetailLabel}>{label}</span>
+                    <span className={styles.profileDetailValue}>{value}</span>
+                  </div>
+                ))}
+                {selectedUser.bio && (
+                  <div className={styles.profileBio}>
+                    <p className={styles.profileBioLabel}>📝 Bio</p>
+                    <p>{selectedUser.bio}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Adjust Points */}
+              <div className={styles.profileSection}>
+                <h3>⚡ Adjust Points</h3>
+                <form className={styles.adjustForm} onSubmit={handleAdjustPoints}>
+                  <input
+                    type="number"
+                    placeholder="e.g. +50 or -100"
+                    value={adjustPoints}
+                    onChange={e => setAdjustPoints(e.target.value)}
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Reason (optional)"
+                    value={adjustNote}
+                    onChange={e => setAdjustNote(e.target.value)}
+                  />
+                  <button type="submit">Apply</button>
+                </form>
+              </div>
+
+              {/* Admin Actions */}
+              <div className={styles.profileActions}>
+                {selectedUser.flaggedForReview
+                  ? <button className={styles.unflagBtn} onClick={handleUnflag}>✅ Unflag / Unban User</button>
+                  : <button className={styles.banBtn} onClick={handleBan}>🚫 Ban User</button>
+                }
+              </div>
+
+              {/* Submissions */}
+              <div className={styles.profileSection}>
+                <h3>📋 Submission History ({userSubs.length})</h3>
+                {profileLoading
+                  ? <p className={styles.profileLoading}>Loading...</p>
+                  : userSubs.length === 0
+                    ? <p className={styles.empty}>No submissions yet.</p>
+                    : <div className={styles.profileSubList}>
+                        {userSubs.map(s => (
+                          <div key={s._id} className={`${styles.profileSubRow} ${styles[s.status]}`}>
+                            <span className={styles.profileSubTask}>{s.taskId?.title || '—'}</span>
+                            <span className={styles.profileSubPts}>+{s.taskId?.points || 0} pts</span>
+                            <span className={styles.profileSubStatus}>
+                              {s.status === 'approved' && '✅'}
+                              {s.status === 'pending' && '⏳'}
+                              {s.status === 'rejected' && '❌'}
+                              {s.status === 'flagged' && '🚩'}
+                              {' '}{s.status}
+                            </span>
+                            <span className={styles.profileSubDate}>{new Date(s.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        ))}
+                      </div>
+                }
+              </div>
+            </div>
+          </div>
         )}
       </main>
     </div>
