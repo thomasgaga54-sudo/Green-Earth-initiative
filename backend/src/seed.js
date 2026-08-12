@@ -1039,13 +1039,18 @@ async function seed() {
     console.log("✅ Admin already exists, ensured isAdmin=true");
   }
 
-  // Clear and re-seed tasks to pick up image updates
-  await Task.deleteMany({});
-  await Task.insertMany(SEED_TASKS.map(t => ({
-    ...t,
-    proofLevel: proofLevel(t.points, t.taskType),
-  })));
-  console.log(`✅ Seeded ${SEED_TASKS.length} tasks with images and proof levels`);
+  // Only re-seed tasks if count is less than expected (handles new tasks being added)
+  const existingCount = await Task.countDocuments();
+  if (existingCount < SEED_TASKS.length) {
+    await Task.deleteMany({});
+    await Task.insertMany(SEED_TASKS.map(t => ({
+      ...t,
+      proofLevel: proofLevel(t.points, t.taskType),
+    })));
+    console.log(`✅ Seeded ${SEED_TASKS.length} tasks with images and proof levels`);
+  } else {
+    console.log(`ℹ️  Tasks already seeded (${existingCount} in DB, ${SEED_TASKS.length} in seed). Skipping task wipe.`);
+  }
 
   // Seed rewards if none exist
   const rewardCount = await Reward.countDocuments();

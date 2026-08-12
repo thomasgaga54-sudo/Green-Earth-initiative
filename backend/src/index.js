@@ -13,6 +13,9 @@ const paymentRoutes = require("./routes/payment.route");
 
 const app = express();
 
+// ── Trust Render's proxy (required for rate limiting + IP detection) ─
+app.set("trust proxy", 1);
+
 // ── Security Headers (Helmet) ──────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: false,
