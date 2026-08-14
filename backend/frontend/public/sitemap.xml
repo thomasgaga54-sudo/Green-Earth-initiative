@@ -8,6 +8,42 @@
   </url>
 
   <url>
+    <loc>https://greenearthinitiative.online/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://greenearthinitiative.online/how-it-works</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://greenearthinitiative.online/eco-tasks</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://greenearthinitiative.online/rewards</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://greenearthinitiative.online/game</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://greenearthinitiative.online/contact</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
     <loc>https://greenearthinitiative.online/register</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -16,13 +52,7 @@
   <url>
     <loc>https://greenearthinitiative.online/login</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://greenearthinitiative.online/dashboard</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <priority>0.6</priority>
   </url>
 
   <url>

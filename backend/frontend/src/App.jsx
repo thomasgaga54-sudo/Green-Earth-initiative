@@ -6,6 +6,12 @@ import Dashboard from './pages/Dashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import Terms from './pages/Terms'
+import About from './pages/About'
+import HowItWorks from './pages/HowItWorks'
+import EcoTasks from './pages/EcoTasks'
+import RewardsPage from './pages/RewardsPage'
+import GamePage from './pages/GamePage'
+import Contact from './pages/Contact'
 import InstallPrompt from './components/InstallPrompt'
 import './App.css'
 
@@ -28,6 +34,12 @@ function App() {
       <InstallPrompt />
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/eco-tasks" element={<EcoTasks />} />
+        <Route path="/rewards" element={<RewardsPage />} />
+        <Route path="/game" element={<GamePage />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
