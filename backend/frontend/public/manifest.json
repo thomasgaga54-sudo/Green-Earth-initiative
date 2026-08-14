@@ -1,13 +1,15 @@
 {
   "name": "Green Earth Initiative",
-  "short_name": "GreenEarth",
-  "description": "Turn green actions into real rewards. Complete eco tasks, earn points, and make a difference.",
+  "short_name": "Green Earth",
+  "description": "Green Earth Initiative — earn rewards for eco-friendly activities. Complete environmental tasks, earn green points, and redeem real rewards worldwide.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#1b5e20",
   "theme_color": "#1b5e20",
-  "categories": ["lifestyle", "education", "environment"],
+  "categories": ["lifestyle", "education", "environment", "sustainability"],
+  "lang": "en",
+  "scope": "/",
   "icons": [
     {
       "src": "/icons/icon-72.png",
