@@ -850,7 +850,7 @@ const SEED_TASKS = [
     title: "Use a Reusable Shopping Bag",
     description: "Go shopping using a reusable bag instead of a plastic bag. Submit a photo of you shopping with your reusable bag.",
     points: 20, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1610650200733-e8f7f4d3b9e8?w=600&auto=format&fit=crop"
+    imageUrl: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop"
   },
   {
     title: "Avoid Single-Use Plastic for a Day",
@@ -1049,7 +1049,17 @@ async function seed() {
     })));
     console.log(`✅ Seeded ${SEED_TASKS.length} tasks with images and proof levels`);
   } else {
-    console.log(`ℹ️  Tasks already seeded (${existingCount} in DB, ${SEED_TASKS.length} in seed). Skipping task wipe.`);
+    // Patch individual task images that may have changed
+    const imagePatches = SEED_TASKS.map(t => ({
+      title: t.title,
+      imageUrl: t.imageUrl,
+    }));
+    let patched = 0;
+    for (const patch of imagePatches) {
+      const result = await Task.updateOne({ title: patch.title }, { $set: { imageUrl: patch.imageUrl } });
+      if (result.modifiedCount > 0) patched++;
+    }
+    console.log(`ℹ️  Tasks already seeded (${existingCount} in DB). Patched ${patched} image(s).`);
   }
 
   // Seed rewards if none exist
