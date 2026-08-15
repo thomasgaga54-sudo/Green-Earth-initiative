@@ -33,8 +33,7 @@ const UserSchema = new mongoose.Schema({
   lockUntil: Date,
   lastLoginAt: Date,
   lastLoginIp: String,
-  createdAt: { type: Date, default: Date.now }
-});
+}, { timestamps: true });
 
 const TaskSchema = new mongoose.Schema({
   title: String,
