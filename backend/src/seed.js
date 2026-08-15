@@ -844,7 +844,7 @@ const SEED_TASKS = [
     title: "Reuse an Old Container",
     description: "Find a creative way to reuse an old container — as a planter, storage unit, or something else. Submit a photo of the repurposed container.",
     points: 30, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/can.jpg"
   },
   {
     title: "Use a Reusable Shopping Bag",
