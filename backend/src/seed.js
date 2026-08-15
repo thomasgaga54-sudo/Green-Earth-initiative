@@ -850,7 +850,7 @@ const SEED_TASKS = [
     title: "Use a Reusable Shopping Bag",
     description: "Go shopping using a reusable bag instead of a plastic bag. Submit a photo of you shopping with your reusable bag.",
     points: 20, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/bag.jpg"
   },
   {
     title: "Avoid Single-Use Plastic for a Day",
