@@ -373,6 +373,18 @@ router.post("/admin/tasks", protect, adminOnly, async (req, res) => {
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
+// Update task (imageUrl, title, description, points, etc.)
+router.patch("/admin/tasks/:id", protect, adminOnly, async (req, res) => {
+  try {
+    const allowed = ["title", "description", "points", "imageUrl", "category", "taskType", "proofLevel"];
+    const updates = {};
+    allowed.forEach(f => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
+    const task = await Task.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
+    if (!task) return res.status(404).json({ msg: "Task not found" });
+    res.json(task);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
 // Delete task
 router.delete("/admin/tasks/:id", protect, adminOnly, async (req, res) => {
   try {

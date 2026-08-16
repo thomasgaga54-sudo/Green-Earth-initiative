@@ -18,6 +18,8 @@ export default function AdminDashboard() {
   const [tasks, setTasks] = useState([])
   const [users, setUsers] = useState([])
   const [newTask, setNewTask] = useState({ title: '', description: '', points: '' })
+  const [editingImageTaskId, setEditingImageTaskId] = useState(null)
+  const [editImageUrl, setEditImageUrl] = useState('')
   const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(false)
   const [sendingReminders, setSendingReminders] = useState(false)
@@ -133,6 +135,17 @@ export default function AdminDashboard() {
     try {
       await axios.delete(`/api/admin/tasks/${id}`, api(token))
       toast('🗑️ Task deleted.')
+      fetchAll()
+    } catch (e) { toast(e.response?.data?.msg || 'Error') }
+  }
+
+  const updateTaskImage = async (id) => {
+    if (!editImageUrl.trim()) return
+    try {
+      await axios.patch(`/api/admin/tasks/${id}`, { imageUrl: editImageUrl.trim() }, api(token))
+      toast('✅ Task image updated!')
+      setEditingImageTaskId(null)
+      setEditImageUrl('')
       fetchAll()
     } catch (e) { toast(e.response?.data?.msg || 'Error') }
   }
@@ -328,9 +341,40 @@ export default function AdminDashboard() {
             <div className={styles.taskGrid}>
               {tasks.map(t => (
                 <div key={t._id} className={styles.taskCard}>
+                  {t.imageUrl && (
+                    <img
+                      src={t.imageUrl}
+                      alt={t.title}
+                      className={styles.taskCardImg}
+                      onError={e => { e.target.style.display = 'none' }}
+                    />
+                  )}
                   <div className={styles.taskPts}>+{t.points} pts</div>
                   <h3>{t.title}</h3>
                   <p>{t.description}</p>
+
+                  {editingImageTaskId === t._id ? (
+                    <div className={styles.editImageRow}>
+                      <input
+                        type="text"
+                        placeholder="/uploads/filename.jpg or https://..."
+                        value={editImageUrl}
+                        onChange={e => setEditImageUrl(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && updateTaskImage(t._id)}
+                        autoFocus
+                      />
+                      <button className={styles.saveBtn} onClick={() => updateTaskImage(t._id)}>💾 Save</button>
+                      <button className={styles.cancelBtn} onClick={() => { setEditingImageTaskId(null); setEditImageUrl('') }}>✕</button>
+                    </div>
+                  ) : (
+                    <button
+                      className={styles.editImageBtn}
+                      onClick={() => { setEditingImageTaskId(t._id); setEditImageUrl(t.imageUrl || '') }}
+                    >
+                      🖼️ Edit Image
+                    </button>
+                  )}
+
                   <button className={styles.deleteBtn} onClick={() => deleteTask(t._id)}>🗑️ Delete</button>
                 </div>
               ))}

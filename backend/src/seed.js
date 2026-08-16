@@ -826,13 +826,13 @@ const SEED_TASKS = [
     title: "Clean a Public Area",
     description: "Clean a public area such as a park, street, or community space. Submit before and after photos of the area.",
     points: 100, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/clean.avif"
   },
   {
     title: "Collect Plastic Bottles for Recycling",
     description: "Collect plastic bottles and take them to a recycling point or drop-off. Submit a photo of the bottles collected and, if possible, at the recycling point.",
     points: 50, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/bottle.jpg"
   },
   {
     title: "Separate Recyclable Waste",
