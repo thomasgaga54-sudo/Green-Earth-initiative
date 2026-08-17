@@ -393,6 +393,7 @@ router.post("/admin/tasks/patch-images", protect, adminOnly, async (req, res) =>
     { title: "Collect Plastic Bottles for Recycling", file: "bottle.jpg",     mime: "image/jpeg" },
     { title: "Clean a Public Area",                   file: "clean.avif",     mime: "image/avif" },
     { title: "Create a Small Home Garden",            file: "homegarden.jpg", mime: "image/jpeg" },
+    { title: "Fetch Water for Household Use",         file: "water.jpg",      mime: "image/jpeg" },
   ];
   const uploadsDir = path.join(__dirname, "../../uploads");
   const results = [];

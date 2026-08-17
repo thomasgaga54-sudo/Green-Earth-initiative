@@ -27,6 +27,11 @@ const PATCHES = [
     file: path.join(__dirname, "../uploads/homegarden.jpg"),
     mime: "image/jpeg",
   },
+  {
+    title: "Fetch Water for Household Use",
+    file: path.join(__dirname, "../uploads/water.jpg"),
+    mime: "image/jpeg",
+  },
 ];
 
 async function run() {

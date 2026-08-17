@@ -770,7 +770,7 @@ const SEED_TASKS = [
     title: "Fetch Water for Household Use",
     description: "Fetch or carry water for use in your household (cooking, cleaning, or drinking). Submit a photo of you fetching or delivering the water.",
     points: 20, category: "domestic",
-    imageUrl: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/water.jpg"
   },
   {
     title: "Arrange Household Items",
