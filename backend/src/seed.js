@@ -802,7 +802,7 @@ const SEED_TASKS = [
     title: "Remove Weeds Around a Plant",
     description: "Remove weeds from around a plant to help it grow better. Submit a before and after photo showing the area cleared.",
     points: 30, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/removeweed.jpg"
   },
   {
     title: "Create a Small Home Garden",
