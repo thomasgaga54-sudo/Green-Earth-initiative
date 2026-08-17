@@ -150,6 +150,16 @@ export default function AdminDashboard() {
     } catch (e) { toast(e.response?.data?.msg || 'Error') }
   }
 
+  const patchLocalImages = async () => {
+    try {
+      const { data } = await axios.post('/api/admin/tasks/patch-images', {}, api(token))
+      const summary = data.results.map(r => `${r.title}: ${r.status}`).join('\n')
+      toast('✅ Image patch complete — check console for details')
+      console.log('Patch results:\n' + summary)
+      fetchAll()
+    } catch (e) { toast(e.response?.data?.msg || 'Patch failed') }
+  }
+
   const logout = () => {
     localStorage.clear()
     navigate('/')
@@ -338,6 +348,13 @@ export default function AdminDashboard() {
             <h2 className={styles.sectionTitle} style={{ marginTop: '2.5rem' }}>
               All Tasks ({tasks.length})
             </h2>
+            <button
+              className={styles.patchImagesBtn}
+              onClick={patchLocalImages}
+              title="Convert local upload files (bottle.jpg, clean.avif) to base64 and save in DB"
+            >
+              🖼️ Patch Local Images → DB
+            </button>
             <div className={styles.taskGrid}>
               {tasks.map(t => (
                 <div key={t._id} className={styles.taskCard}>

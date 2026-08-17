@@ -600,3 +600,19 @@
 }
 .reminderBtn:hover:not(:disabled) { background: rgba(255,255,255,0.15); color: #b2dfdb; }
 .reminderBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* Patch images button */
+.patchImagesBtn {
+  background: #fff8e1;
+  color: #f57f17;
+  border: 1.5px solid #ffe082;
+  border-radius: 8px;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  display: inline-block;
+  transition: all 0.2s;
+}
+.patchImagesBtn:hover { background: #f57f17; color: #fff; border-color: #f57f17; }

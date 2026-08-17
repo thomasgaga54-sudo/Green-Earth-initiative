@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const path = require("path");
+const fs = require("fs");
 const { register, login } = require("../controllers/auth.controller");
 const { User, Task, Submission, Reward, Redemption, ChallengeProgress, StreakMilestone } = require("../models/user.model");
 const { protect, adminOnly } = require("../middleware/auth.middleware");
@@ -383,6 +385,33 @@ router.patch("/admin/tasks/:id", protect, adminOnly, async (req, res) => {
     if (!task) return res.status(404).json({ msg: "Task not found" });
     res.json(task);
   } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Patch local upload images into DB as base64 (one-time fix for ephemeral filesystems)
+router.post("/admin/tasks/patch-images", protect, adminOnly, async (req, res) => {
+  const PATCHES = [
+    { title: "Collect Plastic Bottles for Recycling", file: "bottle.jpg",  mime: "image/jpeg" },
+    { title: "Clean a Public Area",                   file: "clean.avif",  mime: "image/avif" },
+  ];
+  const uploadsDir = path.join(__dirname, "../../uploads");
+  const results = [];
+
+  for (const patch of PATCHES) {
+    const filePath = path.join(uploadsDir, patch.file);
+    if (!fs.existsSync(filePath)) {
+      results.push({ title: patch.title, status: "file not found" });
+      continue;
+    }
+    const buffer = fs.readFileSync(filePath);
+    const dataUrl = `data:${patch.mime};base64,${buffer.toString("base64")}`;
+    const result = await Task.updateOne({ title: patch.title }, { $set: { imageUrl: dataUrl } });
+    results.push({
+      title: patch.title,
+      status: result.matchedCount === 0 ? "task not found" : result.modifiedCount > 0 ? "updated" : "already set"
+    });
+  }
+
+  res.json({ results });
 });
 
 // Delete task
