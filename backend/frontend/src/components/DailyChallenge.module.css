@@ -73,8 +73,9 @@
 .img {
   width: 130px;
   height: 130px;
-  object-fit: cover;
-  object-position: center top;
+  object-fit: contain;
+  object-position: center;
+  background: rgba(255,255,255,0.15);
   border-radius: 12px;
   flex-shrink: 0;
   border: 2px solid rgba(255,255,255,0.2);

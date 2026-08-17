@@ -458,8 +458,9 @@
 .taskImage {
   width: 100%;
   height: 160px;
-  object-fit: cover;
-  object-position: center top;
+  object-fit: contain;
+  object-position: center;
+  background: #f1f8f1;
   display: block;
 }
 
