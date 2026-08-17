@@ -808,7 +808,7 @@ const SEED_TASKS = [
     title: "Create a Small Home Garden",
     description: "Set up a small garden at home using pots, raised beds, or a patch of soil. Submit a photo of your garden setup with plants growing.",
     points: 100, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/homegarden.jpg"
   },
   {
     title: "Care for an Existing Tree",

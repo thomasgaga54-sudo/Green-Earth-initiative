@@ -22,6 +22,11 @@ const PATCHES = [
     file: path.join(__dirname, "../uploads/clean.avif"),
     mime: "image/avif",
   },
+  {
+    title: "Create a Small Home Garden",
+    file: path.join(__dirname, "../uploads/homegarden.jpg"),
+    mime: "image/jpeg",
+  },
 ];
 
 async function run() {
