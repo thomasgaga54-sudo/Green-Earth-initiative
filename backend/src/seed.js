@@ -820,7 +820,7 @@ const SEED_TASKS = [
     title: "Pick Up Litter Around Your Compound",
     description: "Pick up litter around your home, compound, or immediate surroundings. Submit a photo of the litter collected.",
     points: 50, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/pict.jpg"
   },
   {
     title: "Clean a Public Area",

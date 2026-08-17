@@ -37,6 +37,11 @@ const PATCHES = [
     file: path.join(__dirname, "../uploads/removeweed.jpg"),
     mime: "image/jpeg",
   },
+  {
+    title: "Pick Up Litter Around Your Compound",
+    file: path.join(__dirname, "../uploads/pict.jpg"),
+    mime: "image/jpeg",
+  },
 ];
 
 async function run() {
