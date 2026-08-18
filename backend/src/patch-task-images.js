@@ -87,6 +87,15 @@ const PATCHES = [
     file: path.join(__dirname, "../uploads/off.jpg"),
     mime: "image/jpeg",
   },
+  { title: "Go Car-Free for One Month",            file: path.join(__dirname, "../uploads/carfree.jpg"),     mime: "image/jpeg" },
+  { title: "Draw a Save the Earth Poster",         file: path.join(__dirname, "../uploads/draw.jpg"),        mime: "image/jpeg" },
+  { title: "Plant and Harvest a Vegetable Garden", file: path.join(__dirname, "../uploads/grow.jpg"),        mime: "image/jpeg" },
+  { title: "Pick Up 10 Pieces of Litter",          file: path.join(__dirname, "../uploads/pick.jpg"),        mime: "image/jpeg" },
+  { title: "Learn 5 Recycling Facts",              file: path.join(__dirname, "../uploads/recycle.jpg"),     mime: "image/jpeg" },
+  { title: "Complete a 5km Plogging Run",          file: path.join(__dirname, "../uploads/runpick.jpg"),     mime: "image/jpeg" },
+  { title: "Plant Seeds in a Cup",                 file: path.join(__dirname, "../uploads/seed.jpg"),        mime: "image/jpeg" },
+  { title: "Teach a Friend About Recycling",       file: path.join(__dirname, "../uploads/teachfriend.jpg"), mime: "image/jpeg" },
+  { title: "Water a Plant Every Day for a Week",   file: path.join(__dirname, "../uploads/waterplant.jpg"),  mime: "image/jpeg" },
 ];
 
 async function run() {

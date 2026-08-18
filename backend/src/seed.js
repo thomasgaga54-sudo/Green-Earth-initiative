@@ -950,19 +950,19 @@ const SEED_TASKS = [
     title: "Complete a 5km Plogging Run",
     description: "Plogging is jogging while picking up litter. Run at least 5km collecting rubbish along the way. Submit your route map, a photo of the waste collected, and your run time.",
     points: 75, category: "hard",
-    imageUrl: "https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/runpick.jpg"
   },
   {
     title: "Go Car-Free for One Month",
     description: "Commit to using only public transport, cycling, or walking for an entire month. Submit a weekly travel log with photos and a final reflection on your carbon savings.",
     points: 250, category: "hard",
-    imageUrl: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/carfree.jpg"
   },
   {
     title: "Plant and Harvest a Vegetable Garden",
     description: "Grow your own vegetables from seed to harvest. Document the full journey with photos from planting, growing, and harvesting stages over at least 6 weeks.",
     points: 130, category: "hard",
-    imageUrl: "https://images.unsplash.com/photo-1592150621744-aca64f48394a?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/grow.jpg"
   },
 
   // ── Children's tasks ──────────────────────────────────────
@@ -970,25 +970,25 @@ const SEED_TASKS = [
     title: "Draw a Save the Earth Poster",
     description: "Draw or paint a colourful poster about saving the planet. Ask a grown-up to take a photo of your artwork and submit it!",
     points: 10, category: "children",
-    imageUrl: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/draw.jpg"
   },
   {
     title: "Water a Plant Every Day for a Week",
     description: "Pick a plant at home or school and water it every day for 7 days. Take a photo of the plant on day 1 and day 7 to show how it's growing!",
     points: 15, category: "children",
-    imageUrl: "https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/waterplant.jpg"
   },
   {
     title: "Pick Up 10 Pieces of Litter",
     description: "With a grown-up's help, pick up 10 pieces of litter in your street, park, or school playground. Take a photo of the litter you collected!",
     points: 15, category: "children",
-    imageUrl: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/pick.jpg"
   },
   {
     title: "Learn 5 Recycling Facts",
     description: "Learn 5 interesting facts about recycling and write or draw them on a piece of paper. Ask a grown-up to take a photo and submit it!",
     points: 10, category: "children",
-    imageUrl: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/recycle.jpg"
   },
   {
     title: "Turn Off Lights When Leaving a Room",
@@ -1006,7 +1006,7 @@ const SEED_TASKS = [
     title: "Plant Seeds in a Cup",
     description: "Plant flower or vegetable seeds in a paper cup using soil from your garden. Water them and watch them grow! Submit a photo of your seedlings sprouting.",
     points: 20, category: "children",
-    imageUrl: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/seed.jpg"
   },
   {
     title: "Have a Screen-Free Outdoor Day",
@@ -1018,7 +1018,7 @@ const SEED_TASKS = [
     title: "Teach a Friend About Recycling",
     description: "Explain to a friend or family member how to sort rubbish into the correct recycling bins. Submit a photo of you both with the recycling bins.",
     points: 15, category: "children",
-    imageUrl: "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/teachfriend.jpg"
   },
 ];
 
