@@ -42,6 +42,51 @@ const PATCHES = [
     file: path.join(__dirname, "../uploads/pict.jpg"),
     mime: "image/jpeg",
   },
+  {
+    title: "Clean a Drainage Area Safely",
+    file: path.join(__dirname, "../uploads/Drainage.jpg"),
+    mime: "image/jpeg",
+  },
+  {
+    title: "Clean the Compound",
+    file: path.join(__dirname, "../uploads/compound.jpg"),
+    mime: "image/jpeg",
+  },
+  {
+    title: "Organise Your Wardrobe",
+    file: path.join(__dirname, "../uploads/wardrope.jpg"),
+    mime: "image/jpeg",
+  },
+  {
+    title: "Clean the Bathroom",
+    file: path.join(__dirname, "../uploads/bathroom.jpg"),
+    mime: "image/jpeg",
+  },
+  {
+    title: "Wash Clothes",
+    file: path.join(__dirname, "../uploads/wash.jpg"),
+    mime: "image/jpeg",
+  },
+  {
+    title: "Wash Dishes",
+    file: path.join(__dirname, "../uploads/washdish.jpg"),
+    mime: "image/jpeg",
+  },
+  {
+    title: "Close Taps Properly After Use",
+    file: path.join(__dirname, "../uploads/tap.jpg"),
+    mime: "image/jpeg",
+  },
+  {
+    title: "Take a Shorter Shower",
+    file: path.join(__dirname, "../uploads/shower.jpg"),
+    mime: "image/jpeg",
+  },
+  {
+    title: "Check Appliances Are Off Before Leaving",
+    file: path.join(__dirname, "../uploads/off.jpg"),
+    mime: "image/jpeg",
+  },
 ];
 
 async function run() {

@@ -622,7 +622,7 @@ const SEED_TASKS = [
     title: "Check Appliances Are Off Before Leaving",
     description: "Before leaving your home, check that all appliances and lights are switched off. Submit a photo showing appliances and lights off as you leave.",
     points: 20, category: "energy",
-    imageUrl: "/uploads/offlight.jpg"
+    imageUrl: "/uploads/off.jpg"
   },
 
   // ── Water-Saving Tasks ────────────────────────────────────
@@ -642,7 +642,7 @@ const SEED_TASKS = [
     title: "Take a Shorter Shower",
     description: "Limit your shower to 5 minutes or less. Ask someone to verify or set a timer and take a photo of the timer showing 5 minutes or under.",
     points: 20, category: "water",
-    imageUrl: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/shower.jpg"
   },
   {
     title: "Reuse Suitable Household Water",
@@ -660,7 +660,7 @@ const SEED_TASKS = [
     title: "Close Taps Properly After Use",
     description: "Make sure all taps in your home are properly closed after use and check for any that were left dripping. Submit a photo of you checking and closing taps around your home.",
     points: 10, category: "water",
-    imageUrl: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/tap.jpg"
   },
 
   // ── Domestic Chores ───────────────────────────────────────
@@ -680,7 +680,7 @@ const SEED_TASKS = [
     title: "Wash Dishes",
     description: "Wash all the dirty dishes in the kitchen. Submit a photo of the clean, stacked dishes.",
     points: 20, category: "domestic",
-    imageUrl: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/washdish.jpg"
   },
   {
     title: "Clean Your Room",
@@ -698,7 +698,7 @@ const SEED_TASKS = [
     title: "Wash Clothes",
     description: "Wash a load of clothes by hand or machine. Submit a photo of the clean, washed clothes.",
     points: 30, category: "domestic",
-    imageUrl: "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/wash.jpg"
   },
   {
     title: "Fold and Arrange Clothes",
@@ -716,7 +716,7 @@ const SEED_TASKS = [
     title: "Clean the Bathroom",
     description: "Scrub and clean the bathroom including the toilet, sink, and floor. Submit a photo of the clean bathroom.",
     points: 40, category: "domestic",
-    imageUrl: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/bathroom.jpg"
   },
   {
     title: "Clean Windows",
@@ -734,7 +734,7 @@ const SEED_TASKS = [
     title: "Organise Your Wardrobe",
     description: "Sort, organise, and arrange your wardrobe neatly. Submit a before and after photo of the inside of your wardrobe.",
     points: 30, category: "domestic",
-    imageUrl: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/wardrope.jpg"
   },
   {
     title: "Clean Your Study/Work Area",
@@ -752,7 +752,7 @@ const SEED_TASKS = [
     title: "Clean the Compound",
     description: "Sweep, tidy, and clean the outdoor compound or yard around your home. Submit a photo of the clean compound.",
     points: 50, category: "domestic",
-    imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/compound.jpg"
   },
   {
     title: "Help Prepare a Meal",
@@ -862,7 +862,7 @@ const SEED_TASKS = [
     title: "Clean a Drainage Area Safely",
     description: "Safely help clean a blocked or dirty drainage area in your community. Submit a before and after photo. Always prioritise your safety.",
     points: 80, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1605792657660-596af9009e82?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/Drainage.jpg"
   },
   {
     title: "Report Illegal Dumping",

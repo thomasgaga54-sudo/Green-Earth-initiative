@@ -396,6 +396,15 @@ router.post("/admin/tasks/patch-images", protect, adminOnly, async (req, res) =>
     { title: "Fetch Water for Household Use",         file: "water.jpg",       mime: "image/jpeg" },
     { title: "Remove Weeds Around a Plant",           file: "removeweed.jpg",  mime: "image/jpeg" },
     { title: "Pick Up Litter Around Your Compound",   file: "pict.jpg",        mime: "image/jpeg" },
+    { title: "Clean a Drainage Area Safely",          file: "Drainage.jpg",    mime: "image/jpeg" },
+    { title: "Clean the Compound",                    file: "compound.jpg",    mime: "image/jpeg" },
+    { title: "Organise Your Wardrobe",                file: "wardrope.jpg",    mime: "image/jpeg" },
+    { title: "Clean the Bathroom",                    file: "bathroom.jpg",    mime: "image/jpeg" },
+    { title: "Wash Clothes",                          file: "wash.jpg",        mime: "image/jpeg" },
+    { title: "Wash Dishes",                           file: "washdish.jpg",    mime: "image/jpeg" },
+    { title: "Close Taps Properly After Use",         file: "tap.jpg",         mime: "image/jpeg" },
+    { title: "Take a Shorter Shower",                 file: "shower.jpg",      mime: "image/jpeg" },
+    { title: "Check Appliances Are Off Before Leaving", file: "off.jpg",       mime: "image/jpeg" },
   ];
   const uploadsDir = path.join(__dirname, "../../uploads");
   const results = [];
