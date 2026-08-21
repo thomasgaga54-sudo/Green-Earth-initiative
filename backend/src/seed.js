@@ -874,7 +874,7 @@ const SEED_TASKS = [
     title: "Create a Compost Pile",
     description: "Set up a compost pile or bin at home using food scraps and garden waste. Submit a photo of your compost setup and what you've added to it.",
     points: 100, category: "general",
-    imageUrl: "/uploads/createbin.jpg"
+    imageUrl: "/uploads/compostbin.jpg"
   },
 
   // ── General tasks ─────────────────────────────────────────
@@ -894,13 +894,13 @@ const SEED_TASKS = [
     title: "Bike to Work",
     description: "Use a bicycle instead of a car for your commute. Submit a photo of your bike at your destination.",
     points: 25, category: "general",
-    imageUrl: "/uploads/biketowork.jpg"
+    imageUrl: "/uploads/Biketowork.jpg"
   },
   {
     title: "Community Clean-Up",
     description: "Participate in or organise a local clean-up event. Submit a before and after photo.",
     points: 40, category: "general",
-    imageUrl: "/uploads/comunityclean.jpg"
+    imageUrl: "/uploads/communityclean.jpg"
   },
   {
     title: "Reduce Energy Use",
