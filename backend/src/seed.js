@@ -868,13 +868,13 @@ const SEED_TASKS = [
     title: "Report Illegal Dumping",
     description: "Report a case of illegal dumping to your local council or environmental authority. Submit a photo of the dumping site and a screenshot or photo of your report submission.",
     points: 50, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/report.jpg"
   },
   {
     title: "Create a Compost Pile",
     description: "Set up a compost pile or bin at home using food scraps and garden waste. Submit a photo of your compost setup and what you've added to it.",
     points: 100, category: "general",
-    imageUrl: "/uploads/bins.jpg"
+    imageUrl: "/uploads/createbin.jpg"
   },
 
   // ── General tasks ─────────────────────────────────────────
@@ -882,37 +882,37 @@ const SEED_TASKS = [
     title: "Plant a Tree",
     description: "Plant a tree in your neighborhood or local park and submit a photo of you with the planted tree.",
     points: 50, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/planttree1.jpg"
   },
   {
     title: "Plastic-Free Day",
     description: "Go an entire day without using single-use plastic. Document your plastic-free choices.",
     points: 30, category: "general",
-    imageUrl: "/uploads/plastic.jpg"
+    imageUrl: "/uploads/plasticbag.jpg"
   },
   {
     title: "Bike to Work",
     description: "Use a bicycle instead of a car for your commute. Submit a photo of your bike at your destination.",
     points: 25, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/biketowork.jpg"
   },
   {
     title: "Community Clean-Up",
     description: "Participate in or organise a local clean-up event. Submit a before and after photo.",
     points: 40, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/comunityclean.jpg"
   },
   {
     title: "Reduce Energy Use",
     description: "Turn off all non-essential appliances for 24 hours and document the steps you took.",
     points: 20, category: "general",
-    imageUrl: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600&auto=format&fit=crop"
+    imageUrl: "/uploads/turnoff.jpg"
   },
   {
     title: "Compost Waste",
     description: "Set up a compost bin at home and submit a photo of your compost setup.",
     points: 35, category: "general",
-    imageUrl: "/uploads/bins.jpg"
+    imageUrl: "/uploads/setbin.jpg"
   },
 
   // ── Hard tasks ────────────────────────────────────────────

@@ -96,6 +96,14 @@ const PATCHES = [
   { title: "Plant Seeds in a Cup",                 file: path.join(__dirname, "../uploads/seed.jpg"),        mime: "image/jpeg" },
   { title: "Teach a Friend About Recycling",       file: path.join(__dirname, "../uploads/teachfriend.jpg"), mime: "image/jpeg" },
   { title: "Water a Plant Every Day for a Week",   file: path.join(__dirname, "../uploads/waterplant.jpg"),  mime: "image/jpeg" },
+  { title: "Plant a Tree",                         file: path.join(__dirname, "../uploads/planttree1.jpg"),  mime: "image/jpeg" },
+  { title: "Plastic-Free Day",                     file: path.join(__dirname, "../uploads/plasticbag.jpg"),  mime: "image/jpeg" },
+  { title: "Create a Compost Pile",                file: path.join(__dirname, "../uploads/createbin.jpg"),   mime: "image/jpeg" },
+  { title: "Report Illegal Dumping",               file: path.join(__dirname, "../uploads/report.jpg"),      mime: "image/jpeg" },
+  { title: "Community Clean-Up",                   file: path.join(__dirname, "../uploads/comunityclean.jpg"),mime: "image/jpeg" },
+  { title: "Bike to Work",                         file: path.join(__dirname, "../uploads/biketowork.jpg"),  mime: "image/jpeg" },
+  { title: "Reduce Energy Use",                    file: path.join(__dirname, "../uploads/turnoff.jpg"),     mime: "image/jpeg" },
+  { title: "Compost Waste",                        file: path.join(__dirname, "../uploads/setbin.jpg"),      mime: "image/jpeg" },
 ];
 
 async function run() {
