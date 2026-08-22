@@ -3,28 +3,61 @@ import axios from 'axios'
 import styles from './ScreenFreeGame.module.css'
 
 const ACTIVITIES = [
-  { id: 'walk',    icon: '🚶', label: 'WALK',   desc: 'Walk around your neighborhood or a safe outdoor area.',          points: 20 },
-  { id: 'explore', icon: '🌱', label: 'EXPLORE',desc: 'Find 3 different plants in nature.',                             points: 20 },
-  { id: 'clean',   icon: '🧹', label: 'CLEAN',  desc: 'Pick up safe litter and dispose of it properly.',                points: 30 },
-  { id: 'play',    icon: '🏃', label: 'PLAY',   desc: 'Play football, jump rope, ride a bicycle, garden, or exercise.', points: 30 },
-  { id: 'social',  icon: '👨‍👩‍👧', label: 'CONNECT',desc: 'Talk, play a board game, or have a picnic without screens.',   points: 20 },
+  {
+    id: 'walk',
+    icon: '🚶',
+    label: 'Take a Walk Outside',
+    desc: 'Step away from all screens and walk around your neighborhood, a park, or any outdoor space.',
+    reflection: 'What did you notice around you that you usually miss when you\'re on a screen?',
+    points: 20,
+  },
+  {
+    id: 'explore',
+    icon: '🌱',
+    label: 'Observe Nature',
+    desc: 'Spend time finding and looking closely at plants, insects, birds, or anything living in your surroundings.',
+    reflection: 'Describe one living thing you found. What was it doing?',
+    points: 20,
+  },
+  {
+    id: 'clean',
+    icon: '🧹',
+    label: 'Care for Your Environment',
+    desc: 'Pick up litter you find outside and dispose of it properly. Leave your space cleaner than you found it.',
+    reflection: 'How did it feel to take care of a shared space?',
+    points: 30,
+  },
+  {
+    id: 'play',
+    icon: '🏃',
+    label: 'Move Your Body',
+    desc: 'Play football, ride a bike, jump rope, garden, or do any physical activity without a screen.',
+    reflection: 'What activity did you do, and how did your body feel afterwards?',
+    points: 30,
+  },
+  {
+    id: 'social',
+    icon: '👨‍👩‍👧',
+    label: 'Connect with People',
+    desc: 'Have a real conversation, play a board game, cook together, or share a meal — all without screens.',
+    reflection: 'Who did you connect with, and what did you talk about or do together?',
+    points: 20,
+  },
 ]
 
 const TOTAL_POINTS = ACTIVITIES.reduce((s, a) => s + a.points, 0)
 
 export default function ScreenFreeGame({ onClose, onComplete, token }) {
-  const [completed, setCompleted]   = useState(new Set())
-  const [started, setStarted]       = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [done, setDone]             = useState(false)
-  const [error, setError]           = useState('')
+  const [step, setStep]                   = useState('intro')       // intro | checkin | reflect | done
+  const [completed, setCompleted]         = useState(new Set())
+  const [activeReflect, setActiveReflect] = useState(null)          // activity id being reflected on
+  const [reflections, setReflections]     = useState({})            // id -> text
+  const [submitting, setSubmitting]       = useState(false)
+  const [error, setError]                 = useState('')
 
-  const earned     = ACTIVITIES.filter(a => completed.has(a.id)).reduce((s, a) => s + a.points, 0)
-  const progress   = Math.round((earned / TOTAL_POINTS) * 100)
-  const allDone    = completed.size === ACTIVITIES.length
+  const earned = ACTIVITIES.filter(a => completed.has(a.id)).reduce((s, a) => s + a.points, 0)
 
-  const toggle = (id) => {
-    if (!started) return
+  const toggleDone = (id) => {
     setCompleted(prev => {
       const next = new Set(prev)
       next.has(id) ? next.delete(id) : next.add(id)
@@ -32,113 +65,214 @@ export default function ScreenFreeGame({ onClose, onComplete, token }) {
     })
   }
 
+  const openReflect = (id) => setActiveReflect(id)
+  const closeReflect = () => setActiveReflect(null)
+  const saveReflection = (id, text) => {
+    setReflections(prev => ({ ...prev, [id]: text }))
+    setActiveReflect(null)
+  }
+
   const handleSubmit = async () => {
-    if (completed.size === 0) { setError('Complete at least one activity first!'); return }
+    if (completed.size === 0) { setError('Please mark at least one activity you actually did.'); return }
     setSubmitting(true)
     setError('')
     try {
-      const completedList = ACTIVITIES.filter(a => completed.has(a.id)).map(a => `${a.icon} ${a.label} (+${a.points} pts)`).join(', ')
-      const note = `Screen-Free Outdoor Day game completed. Activities: ${completedList}. Total earned: ${earned}/${TOTAL_POINTS} pts.`
+      const lines = ACTIVITIES
+        .filter(a => completed.has(a.id))
+        .map(a => {
+          const r = reflections[a.id]
+          return `${a.icon} ${a.label}${r ? ` — "${r}"` : ''}`
+        })
+        .join(' | ')
+      const note = `Screen-Free Outdoor Day. Activities completed: ${lines}. Points: ${earned}/${TOTAL_POINTS}.`
       await axios.post('/api/submit-screenfree', { note, earnedPoints: earned }, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      setDone(true)
+      setStep('done')
       onComplete && onComplete(earned)
     } catch (e) {
-      setError(e.response?.data?.msg || 'Submission failed. Try again.')
+      setError(e.response?.data?.msg || 'Could not save your entry. Please try again.')
     }
     setSubmitting(false)
   }
 
-  if (done) {
+  /* ── Reflection overlay ── */
+  if (activeReflect) {
+    const act = ACTIVITIES.find(a => a.id === activeReflect)
     return (
-      <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className={styles.overlay} onClick={e => e.target === e.currentTarget && closeReflect()}>
         <div className={styles.modal}>
-          <div className={styles.badge}>🏆</div>
-          <h2 className={styles.badgeTitle}>Screen-Free Eco Champion!</h2>
-          <p className={styles.badgeDesc}>You earned <strong>{earned} Eco Points</strong> by completing real outdoor activities without a screen!</p>
-          {allDone && <p className={styles.badgeFull}>🌟 Full completion! All activities done!</p>}
-          <button className={styles.closeBtn} onClick={onClose}>Back to Dashboard</button>
+          <div className={styles.reflectHeader}>
+            <span className={styles.reflectIcon}>{act.icon}</span>
+            <h3 className={styles.reflectTitle}>{act.label}</h3>
+          </div>
+          <div className={styles.reflectBody}>
+            <p className={styles.reflectPrompt}>{act.reflection}</p>
+            <textarea
+              className={styles.reflectInput}
+              placeholder="Write a few words — even one sentence is enough."
+              defaultValue={reflections[act.id] || ''}
+              id={`reflect-${act.id}`}
+              rows={5}
+              autoFocus
+            />
+            <div className={styles.reflectActions}>
+              <button className={styles.skipBtn} onClick={closeReflect}>Skip for now</button>
+              <button
+                className={styles.saveBtn}
+                onClick={() => {
+                  const val = document.getElementById(`reflect-${act.id}`).value.trim()
+                  saveReflection(act.id, val)
+                }}
+              >
+                Save reflection
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     )
   }
 
+  /* ── Done screen ── */
+  if (step === 'done') {
+    const completedActs = ACTIVITIES.filter(a => completed.has(a.id))
+    return (
+      <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
+        <div className={styles.modal}>
+          <div className={styles.doneHeader}>
+            <span className={styles.doneLeaf}>🌿</span>
+            <h2 className={styles.doneTitle}>Well done.</h2>
+            <p className={styles.doneSubtitle}>
+              You spent real time outdoors today. That's a habit worth building.
+            </p>
+          </div>
+          <div className={styles.doneSummary}>
+            <p className={styles.doneSummaryLabel}>What you did today</p>
+            {completedActs.map(a => (
+              <div key={a.id} className={styles.doneLine}>
+                <span>{a.icon}</span>
+                <span className={styles.doneLineText}>
+                  {a.label}
+                  {reflections[a.id] && (
+                    <span className={styles.doneReflect}>"{reflections[a.id]}"</span>
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className={styles.donePoints}>
+            +{earned} eco points quietly added to your account.
+          </p>
+          <button className={styles.doneBtn} onClick={onClose}>Back to Dashboard</button>
+        </div>
+      </div>
+    )
+  }
+
+  /* ── Intro screen ── */
+  if (step === 'intro') {
+    return (
+      <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
+        <div className={styles.modal}>
+          <button className={styles.closeX} onClick={onClose}>✕</button>
+          <div className={styles.introWrap}>
+            <span className={styles.introLeaf}>🌳</span>
+            <h2 className={styles.introTitle}>Screen-Free Outdoor Day</h2>
+            <p className={styles.introBody}>
+              This isn't a game. It's a simple invitation to step outside, move your body,
+              and pay attention to the world around you — without a screen.
+            </p>
+            <p className={styles.introBody}>
+              When you come back, log what you actually did. There are no wrong answers
+              and nothing to win — just a record of time well spent.
+            </p>
+            <div className={styles.introActivities}>
+              {ACTIVITIES.map(a => (
+                <div key={a.id} className={styles.introRow}>
+                  <span className={styles.introIcon}>{a.icon}</span>
+                  <span className={styles.introRowText}>{a.label}</span>
+                </div>
+              ))}
+            </div>
+            <button className={styles.beginBtn} onClick={() => setStep('checkin')}>
+              I'm ready — show me the activities
+            </button>
+            <button className={styles.laterBtn} onClick={onClose}>Maybe later</button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  /* ── Check-in screen ── */
   return (
     <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
       <div className={styles.modal}>
         {/* Header */}
-        <div className={styles.header}>
-          <div className={styles.headerTop}>
-            <span className={styles.gameTag}>🎮 MINI GAME</span>
-            <button className={styles.closeBtn2} onClick={onClose}>✕</button>
-          </div>
-          <h2 className={styles.title}>🌳 Screen-Free Outdoor Day</h2>
-          <p className={styles.subtitle}>Put your phone away and earn up to <strong>{TOTAL_POINTS} Eco Points</strong> by completing outdoor activities!</p>
+        <div className={styles.checkinHeader}>
+          <button className={styles.closeX} onClick={onClose}>✕</button>
+          <h2 className={styles.checkinTitle}>🌳 Screen-Free Outdoor Day</h2>
+          <p className={styles.checkinSub}>
+            Tick each activity you genuinely completed. Add a reflection if you'd like — it's for you, not a score.
+          </p>
         </div>
 
-        {/* Progress bar */}
-        <div className={styles.progressWrap}>
-          <div className={styles.progressLabel}>
-            <span>Eco Day Progress</span>
-            <span>{earned}/{TOTAL_POINTS} pts</span>
-          </div>
-          <div className={styles.progressBar}>
-            <div className={styles.progressFill} style={{ width: `${progress}%` }} />
-          </div>
-          <div className={styles.progressPct}>{progress}%</div>
-        </div>
-
-        {/* Start banner */}
-        {!started && (
-          <div className={styles.startBanner}>
-            <p>🌞 Ready to go screen-free? Put your phone away and start the challenge!</p>
-            <button className={styles.startBtn} onClick={() => setStarted(true)}>
-              🚀 Start the Challenge
-            </button>
-          </div>
-        )}
-
-        {/* Activity cards */}
-        <div className={styles.cards}>
+        {/* Activity list */}
+        <div className={styles.actList}>
           {ACTIVITIES.map(a => {
             const isDone = completed.has(a.id)
+            const hasNote = !!reflections[a.id]
             return (
-              <button
-                key={a.id}
-                className={`${styles.card} ${isDone ? styles.cardDone : ''} ${!started ? styles.cardLocked : ''}`}
-                onClick={() => toggle(a.id)}
-                disabled={!started}
-              >
-                <span className={styles.cardIcon}>{a.icon}</span>
-                <span className={styles.cardLabel}>{a.label}</span>
-                <span className={styles.cardDesc}>{a.desc}</span>
-                <span className={styles.cardPts}>+{a.points} pts</span>
-                {isDone && <span className={styles.cardCheck}>✅</span>}
-              </button>
+              <div key={a.id} className={`${styles.actRow} ${isDone ? styles.actDone : ''}`}>
+                <button
+                  className={styles.actCheck}
+                  onClick={() => toggleDone(a.id)}
+                  aria-label={isDone ? `Unmark ${a.label}` : `Mark ${a.label} as done`}
+                >
+                  {isDone ? '✅' : <span className={styles.emptyCheck} />}
+                </button>
+                <div className={styles.actInfo}>
+                  <span className={styles.actIcon}>{a.icon}</span>
+                  <div>
+                    <p className={styles.actLabel}>{a.label}</p>
+                    <p className={styles.actDesc}>{a.desc}</p>
+                    {isDone && (
+                      <button className={styles.reflectBtn} onClick={() => openReflect(a.id)}>
+                        {hasNote ? `✏️ Edit reflection` : `💬 Add a reflection`}
+                      </button>
+                    )}
+                    {hasNote && (
+                      <p className={styles.previewNote}>"{reflections[a.id]}"</p>
+                    )}
+                  </div>
+                </div>
+                <span className={styles.actPts}>+{a.points}</span>
+              </div>
             )
           })}
         </div>
 
-        {allDone && (
-          <div className={styles.allDoneBanner}>
-            🌟 Amazing! You completed all outdoor activities! Submit to claim your <strong>Screen-Free Eco Champion 🏆</strong> badge!
-          </div>
+        {completed.size > 0 && (
+          <p className={styles.tally}>
+            {completed.size} of {ACTIVITIES.length} activities · {earned} eco points
+          </p>
         )}
 
         {error && <p className={styles.error}>{error}</p>}
 
-        {started && (
+        <div className={styles.checkinFooter}>
           <button
-            className={styles.submitBtn}
+            className={styles.logBtn}
             onClick={handleSubmit}
             disabled={submitting || completed.size === 0}
           >
-            {submitting ? '⏳ Submitting...' : `✅ Submit & Claim ${earned} Eco Points`}
+            {submitting ? 'Saving...' : 'Log my outdoor time'}
           </button>
-        )}
-
-        <p className={styles.hint}>Tap each card when you've completed that activity outside.</p>
+          <p className={styles.footerHint}>
+            Only log what you actually did. Honest tracking is what makes this meaningful.
+          </p>
+        </div>
       </div>
     </div>
   )

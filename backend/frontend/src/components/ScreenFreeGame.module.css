@@ -1,7 +1,8 @@
+/* ── Shared overlay & modal shell ── */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.45);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -10,289 +11,461 @@
 }
 
 .modal {
-  background: #fff;
-  border-radius: 20px;
+  background: #fafdf8;
+  border-radius: 18px;
   width: 100%;
-  max-width: 540px;
-  max-height: 90vh;
+  max-width: 520px;
+  max-height: 92vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+.closeX {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+  z-index: 10;
+}
+.closeX:hover { color: #333; }
+
+/* ── Intro screen ── */
+.introWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.5rem 2rem 2rem;
   gap: 0;
 }
 
-/* Header */
-.header {
-  background: linear-gradient(135deg, #1b5e20, #2e7d32);
-  color: #fff;
-  padding: 1.5rem;
-  border-radius: 20px 20px 0 0;
-}
-.headerTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-.gameTag {
-  background: rgba(255,255,255,0.2);
-  border-radius: 50px;
-  padding: 0.25rem 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
-.closeBtn2 {
-  background: rgba(255,255,255,0.15);
-  border: none;
-  color: #fff;
-  width: 30px; height: 30px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-.closeBtn2:hover { background: rgba(255,255,255,0.25); }
-.title {
-  font-size: 1.3rem;
-  font-weight: 900;
-  margin: 0 0 0.4rem;
-}
-.subtitle {
-  font-size: 0.88rem;
-  opacity: 0.9;
-  margin: 0;
-  line-height: 1.5;
+.introLeaf {
+  font-size: 3rem;
+  margin-bottom: 1rem;
 }
 
-/* Progress */
-.progressWrap {
-  padding: 1.25rem 1.5rem 0.75rem;
-  background: #f9fdf9;
-  border-bottom: 1px solid #e8f5e9;
-}
-.progressLabel {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #2e7d32;
-  margin-bottom: 0.5rem;
-}
-.progressBar {
-  height: 14px;
-  background: #e8f5e9;
-  border-radius: 50px;
-  overflow: hidden;
-  border: 1px solid #c8e6c9;
-}
-.progressFill {
-  height: 100%;
-  background: linear-gradient(90deg, #43a047, #66bb6a);
-  border-radius: 50px;
-  transition: width 0.5s ease;
-}
-.progressPct {
-  text-align: right;
-  font-size: 0.75rem;
-  color: #81c784;
-  font-weight: 700;
-  margin-top: 0.25rem;
-}
-
-/* Start banner */
-.startBanner {
-  background: #fff8e1;
-  border-left: 4px solid #ffd54f;
-  margin: 1rem 1.5rem 0;
-  border-radius: 0 10px 10px 0;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.startBanner p {
-  font-size: 0.9rem;
-  color: #5d4037;
-  margin: 0;
-}
-.startBtn {
-  background: #fdd835;
-  color: #333;
-  border: none;
-  border-radius: 10px;
-  padding: 0.65rem 1.25rem;
+.introTitle {
+  font-size: 1.35rem;
   font-weight: 800;
-  font-size: 0.95rem;
-  cursor: pointer;
-  align-self: flex-start;
-  transition: background 0.2s;
-}
-.startBtn:hover { background: #f9a825; color: #fff; }
-
-/* Activity cards */
-.cards {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  padding: 1rem 1.5rem;
-}
-
-.card {
-  display: grid;
-  grid-template-columns: 2.5rem 1fr auto;
-  grid-template-rows: auto auto;
-  column-gap: 0.75rem;
-  align-items: center;
-  background: #f9fdf9;
-  border: 2px solid #e8f5e9;
-  border-radius: 12px;
-  padding: 0.85rem 1rem;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.2s;
-  position: relative;
-}
-.card:hover:not(:disabled) {
-  border-color: #66bb6a;
-  background: #f1f8f1;
-  transform: translateX(3px);
-}
-.cardDone {
-  background: #e8f5e9 !important;
-  border-color: #43a047 !important;
-}
-.cardLocked {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.cardIcon {
-  font-size: 1.6rem;
-  grid-row: 1 / 3;
-  display: flex;
-  align-items: center;
-}
-.cardLabel {
-  font-size: 0.78rem;
-  font-weight: 800;
-  color: #1b5e20;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.cardDesc {
-  font-size: 0.82rem;
-  color: #555;
-  grid-column: 2;
-}
-.cardPts {
-  grid-row: 1 / 3;
-  background: #e8f5e9;
-  color: #2e7d32;
-  font-weight: 800;
-  font-size: 0.82rem;
-  padding: 0.3rem 0.6rem;
-  border-radius: 50px;
-  border: 1px solid #c8e6c9;
-  white-space: nowrap;
-  align-self: center;
-}
-.cardCheck {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  font-size: 0.9rem;
-}
-
-/* All done banner */
-.allDoneBanner {
-  margin: 0 1.5rem;
-  background: #e8f5e9;
-  border: 2px solid #43a047;
-  border-radius: 12px;
-  padding: 0.85rem 1rem;
-  font-size: 0.9rem;
-  color: #1b5e20;
+  color: #1b4332;
   text-align: center;
-  line-height: 1.5;
+  margin: 0 0 1rem;
 }
 
-/* Submit */
-.submitBtn {
-  margin: 0.75rem 1.5rem 0;
-  background: linear-gradient(135deg, #2e7d32, #43a047);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 1rem;
-  font-size: 1rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition: opacity 0.2s;
-  width: calc(100% - 3rem);
+.introBody {
+  font-size: 0.92rem;
+  color: #4a5568;
+  text-align: center;
+  line-height: 1.7;
+  margin: 0 0 0.75rem;
+  max-width: 400px;
 }
-.submitBtn:hover:not(:disabled) { opacity: 0.9; }
-.submitBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.error {
-  margin: 0 1.5rem;
-  color: #c62828;
-  font-size: 0.85rem;
+.introActivities {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1.25rem 0 1.75rem;
+  border-top: 1px solid #e2ede7;
+  border-bottom: 1px solid #e2ede7;
+  padding: 1rem 0;
+}
+
+.introRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.25rem 0;
+}
+
+.introIcon {
+  font-size: 1.25rem;
+  width: 2rem;
+  text-align: center;
+}
+
+.introRowText {
+  font-size: 0.9rem;
+  color: #2d6a4f;
   font-weight: 600;
 }
 
-.hint {
-  text-align: center;
-  font-size: 0.78rem;
-  color: #aaa;
-  padding: 0.75rem 1.5rem 1.5rem;
-  margin: 0;
-}
-
-/* Completion badge screen */
-.badge {
-  font-size: 4rem;
-  text-align: center;
-  padding: 2rem 0 0.5rem;
-}
-.badgeTitle {
-  text-align: center;
-  font-size: 1.4rem;
-  font-weight: 900;
-  color: #1b5e20;
-  margin: 0 0 0.5rem;
-}
-.badgeDesc {
-  text-align: center;
-  color: #555;
-  font-size: 0.95rem;
-  padding: 0 1.5rem;
-  line-height: 1.6;
-}
-.badgeFull {
-  text-align: center;
-  font-size: 0.9rem;
-  color: #2e7d32;
-  font-weight: 700;
-  padding: 0 1.5rem;
-}
-.closeBtn {
-  margin: 1.5rem auto;
-  display: block;
-  background: #2e7d32;
+.beginBtn {
+  background: #2d6a4f;
   color: #fff;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 0.85rem 2rem;
   font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
   transition: background 0.2s;
+  margin-bottom: 0.75rem;
+  width: 100%;
 }
-.closeBtn:hover { background: #1b5e20; }
+.beginBtn:hover { background: #1b4332; }
 
-@media (max-width: 600px) {
-  .modal { border-radius: 16px; }
-  .cards { padding: 0.75rem 1rem; }
-  .submitBtn { width: calc(100% - 2rem); margin: 0.75rem 1rem 0; }
-  .startBanner { margin: 1rem 1rem 0; }
+.laterBtn {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0.25rem;
+}
+.laterBtn:hover { color: #555; }
+
+/* ── Check-in screen ── */
+.checkinHeader {
+  padding: 1.75rem 1.75rem 1rem;
+  border-bottom: 1px solid #e2ede7;
+}
+
+.checkinTitle {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1b4332;
+  margin: 0 0 0.5rem;
+  padding-right: 2rem;
+}
+
+.checkinSub {
+  font-size: 0.85rem;
+  color: #5a7367;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Activity list ── */
+.actList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.actRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.75rem;
+  border-bottom: 1px solid #edf5ef;
+  transition: background 0.15s;
+}
+.actRow:last-child { border-bottom: none; }
+.actDone { background: #f0faf2; }
+
+.actCheck {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+  padding: 0;
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+  width: 1.5rem;
+  text-align: center;
+}
+
+.emptyCheck {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid #b7d4c0;
+  border-radius: 5px;
+  vertical-align: middle;
+}
+
+.actInfo {
+  display: flex;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.actIcon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+}
+
+.actLabel {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1b4332;
+  margin: 0 0 0.2rem;
+}
+
+.actDesc {
+  font-size: 0.82rem;
+  color: #5a7367;
+  margin: 0 0 0.5rem;
+  line-height: 1.5;
+}
+
+.reflectBtn {
+  background: none;
+  border: 1px solid #b7d4c0;
+  border-radius: 6px;
+  color: #2d6a4f;
+  font-size: 0.78rem;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.reflectBtn:hover { background: #e8f5ec; border-color: #2d6a4f; }
+
+.previewNote {
+  font-size: 0.78rem;
+  color: #5a7367;
+  font-style: italic;
+  margin: 0.35rem 0 0;
+  line-height: 1.4;
+}
+
+.actPts {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #52b788;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+/* ── Tally line ── */
+.tally {
+  text-align: center;
+  font-size: 0.82rem;
+  color: #2d6a4f;
+  font-weight: 600;
+  padding: 0.6rem 1.75rem 0;
+  margin: 0;
+}
+
+.error {
+  margin: 0.5rem 1.75rem 0;
+  color: #c62828;
+  font-size: 0.83rem;
+}
+
+/* ── Footer ── */
+.checkinFooter {
+  padding: 1rem 1.75rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.logBtn {
+  background: #2d6a4f;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.logBtn:hover:not(:disabled) { background: #1b4332; }
+.logBtn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.footerHint {
+  font-size: 0.78rem;
+  color: #8aa89a;
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Reflection overlay ── */
+.reflectHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #f0faf2;
+  padding: 1.5rem 1.75rem 1rem;
+  border-radius: 18px 18px 0 0;
+  border-bottom: 1px solid #e2ede7;
+}
+
+.reflectIcon { font-size: 1.75rem; }
+
+.reflectTitle {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1b4332;
+  margin: 0;
+}
+
+.reflectBody {
+  padding: 1.25rem 1.75rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.reflectPrompt {
+  font-size: 0.92rem;
+  color: #2d3748;
+  line-height: 1.65;
+  margin: 0;
+  font-style: italic;
+}
+
+.reflectInput {
+  width: 100%;
+  border: 1.5px solid #c6dece;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  font-size: 0.88rem;
+  color: #2d3748;
+  background: #fff;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.6;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.reflectInput:focus {
+  outline: none;
+  border-color: #2d6a4f;
+}
+
+.reflectActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.skipBtn {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0.25rem;
+}
+.skipBtn:hover { color: #555; }
+
+.saveBtn {
+  background: #2d6a4f;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.saveBtn:hover { background: #1b4332; }
+
+/* ── Done / Summary screen ── */
+.doneHeader {
+  padding: 2.5rem 2rem 1.5rem;
+  text-align: center;
+  border-bottom: 1px solid #e2ede7;
+}
+
+.doneLeaf {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.doneTitle {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #1b4332;
+  margin: 0 0 0.5rem;
+}
+
+.doneSubtitle {
+  font-size: 0.92rem;
+  color: #5a7367;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.doneSummary {
+  padding: 1.25rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.doneSummaryLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #8aa89a;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+}
+
+.doneLine {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.doneLineText {
+  font-size: 0.9rem;
+  color: #2d3748;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.doneReflect {
+  font-size: 0.82rem;
+  color: #5a7367;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.donePoints {
+  text-align: center;
+  font-size: 0.82rem;
+  color: #8aa89a;
+  padding: 0 1.75rem;
+  margin: 0;
+}
+
+.doneBtn {
+  margin: 1.25rem 1.75rem 1.75rem;
+  background: #2d6a4f;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.doneBtn:hover { background: #1b4332; }
+
+/* ── Responsive ── */
+@media (max-width: 560px) {
+  .modal { border-radius: 14px; }
+  .introWrap { padding: 2rem 1.25rem 1.5rem; }
+  .checkinHeader,
+  .actRow,
+  .checkinFooter,
+  .reflectBody,
+  .doneSummary { padding-left: 1.25rem; padding-right: 1.25rem; }
+  .doneBtn { margin-left: 1.25rem; margin-right: 1.25rem; }
 }

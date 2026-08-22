@@ -110,7 +110,7 @@ export default function Dashboard() {
           onClose={() => setShowScreenFreeGame(false)}
           onComplete={(pts) => {
             setShowScreenFreeGame(false)
-            setSubmitMsg(`🏆 Screen-Free Eco Champion! +${pts} Eco Points added!`)
+            setSubmitMsg(`🌿 Outdoor time logged! +${pts} eco points added.`)
             setTimeout(() => setSubmitMsg(''), 6000)
             refreshUser()
             fetchData()
@@ -329,7 +329,7 @@ export default function Dashboard() {
                           className={styles.submitBtn}
                           onClick={() => handleStartTask(task)}
                         >
-                          {task.taskType === 'quiz' ? '📚 Take Quiz' : task.title === 'Have a Screen-Free Outdoor Day' ? '🌳 Play Game' : '📷 Submit Proof'}
+                          {task.taskType === 'quiz' ? '📚 Take Quiz' : task.title === 'Have a Screen-Free Outdoor Day' ? '🌳 Start Challenge' : '📷 Submit Proof'}
                         </button>
                       </div>
                     </div>
