@@ -10,6 +10,7 @@ import QuizModal from '../components/QuizModal'
 import DailyChallenge from '../components/DailyChallenge'
 import SevenDayChallenge from '../components/SevenDayChallenge'
 import StreakCard from '../components/StreakCard'
+import ScreenFreeGame from '../components/ScreenFreeGame'
 import { getLevelInfo, getLevelProgress, pointsToNextLevel } from '../utils/levels'
 
 export default function Dashboard() {
@@ -26,6 +27,15 @@ export default function Dashboard() {
   const [taskCategory, setTaskCategory] = useState('all')
   const [submitMsg, setSubmitMsg] = useState('')
   const [selectedTask, setSelectedTask] = useState(null)
+  const [showScreenFreeGame, setShowScreenFreeGame] = useState(false)
+
+  const handleStartTask = (task) => {
+    if (task.title === 'Have a Screen-Free Outdoor Day') {
+      setShowScreenFreeGame(true)
+    } else {
+      setSelectedTask(task)
+    }
+  }
 
   const filteredTasks = taskCategory === 'all' ? tasks : tasks.filter(t => t.category === taskCategory)
 
@@ -92,6 +102,21 @@ export default function Dashboard() {
 
   return (
     <div className={styles.page}>
+
+      {/* Screen-Free Outdoor Day Game */}
+      {showScreenFreeGame && (
+        <ScreenFreeGame
+          token={token}
+          onClose={() => setShowScreenFreeGame(false)}
+          onComplete={(pts) => {
+            setShowScreenFreeGame(false)
+            setSubmitMsg(`🏆 Screen-Free Eco Champion! +${pts} Eco Points added!`)
+            setTimeout(() => setSubmitMsg(''), 6000)
+            refreshUser()
+            fetchData()
+          }}
+        />
+      )}
 
       {/* Submit Modal */}
       {selectedTask && selectedTask.taskType === 'quiz' ? (
@@ -240,7 +265,7 @@ export default function Dashboard() {
             {/* Daily Challenge */}
             <DailyChallenge
               currentUser={currentUser}
-              onStartTask={(task) => setSelectedTask(task)}
+              onStartTask={(task) => handleStartTask(task)}
             />
 
             {/* 7-Day Green Champion Challenge */}
@@ -302,9 +327,9 @@ export default function Dashboard() {
                         <p>{task.description}</p>
                         <button
                           className={styles.submitBtn}
-                          onClick={() => setSelectedTask(task)}
+                          onClick={() => handleStartTask(task)}
                         >
-                          {task.taskType === 'quiz' ? '📚 Take Quiz' : '📷 Submit Proof'}
+                          {task.taskType === 'quiz' ? '📚 Take Quiz' : task.title === 'Have a Screen-Free Outdoor Day' ? '🌳 Play Game' : '📷 Submit Proof'}
                         </button>
                       </div>
                     </div>

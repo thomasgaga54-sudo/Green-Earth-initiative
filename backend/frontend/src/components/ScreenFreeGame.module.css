@@ -1,0 +1,298 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, #1b5e20, #2e7d32);
+  color: #fff;
+  padding: 1.5rem;
+  border-radius: 20px 20px 0 0;
+}
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.gameTag {
+  background: rgba(255,255,255,0.2);
+  border-radius: 50px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.closeBtn2 {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: #fff;
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.closeBtn2:hover { background: rgba(255,255,255,0.25); }
+.title {
+  font-size: 1.3rem;
+  font-weight: 900;
+  margin: 0 0 0.4rem;
+}
+.subtitle {
+  font-size: 0.88rem;
+  opacity: 0.9;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Progress */
+.progressWrap {
+  padding: 1.25rem 1.5rem 0.75rem;
+  background: #f9fdf9;
+  border-bottom: 1px solid #e8f5e9;
+}
+.progressLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #2e7d32;
+  margin-bottom: 0.5rem;
+}
+.progressBar {
+  height: 14px;
+  background: #e8f5e9;
+  border-radius: 50px;
+  overflow: hidden;
+  border: 1px solid #c8e6c9;
+}
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #43a047, #66bb6a);
+  border-radius: 50px;
+  transition: width 0.5s ease;
+}
+.progressPct {
+  text-align: right;
+  font-size: 0.75rem;
+  color: #81c784;
+  font-weight: 700;
+  margin-top: 0.25rem;
+}
+
+/* Start banner */
+.startBanner {
+  background: #fff8e1;
+  border-left: 4px solid #ffd54f;
+  margin: 1rem 1.5rem 0;
+  border-radius: 0 10px 10px 0;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.startBanner p {
+  font-size: 0.9rem;
+  color: #5d4037;
+  margin: 0;
+}
+.startBtn {
+  background: #fdd835;
+  color: #333;
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem 1.25rem;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background 0.2s;
+}
+.startBtn:hover { background: #f9a825; color: #fff; }
+
+/* Activity cards */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1rem 1.5rem;
+}
+
+.card {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 0.75rem;
+  align-items: center;
+  background: #f9fdf9;
+  border: 2px solid #e8f5e9;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  position: relative;
+}
+.card:hover:not(:disabled) {
+  border-color: #66bb6a;
+  background: #f1f8f1;
+  transform: translateX(3px);
+}
+.cardDone {
+  background: #e8f5e9 !important;
+  border-color: #43a047 !important;
+}
+.cardLocked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.cardIcon {
+  font-size: 1.6rem;
+  grid-row: 1 / 3;
+  display: flex;
+  align-items: center;
+}
+.cardLabel {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #1b5e20;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.cardDesc {
+  font-size: 0.82rem;
+  color: #555;
+  grid-column: 2;
+}
+.cardPts {
+  grid-row: 1 / 3;
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-weight: 800;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 50px;
+  border: 1px solid #c8e6c9;
+  white-space: nowrap;
+  align-self: center;
+}
+.cardCheck {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 0.9rem;
+}
+
+/* All done banner */
+.allDoneBanner {
+  margin: 0 1.5rem;
+  background: #e8f5e9;
+  border: 2px solid #43a047;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  color: #1b5e20;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Submit */
+.submitBtn {
+  margin: 0.75rem 1.5rem 0;
+  background: linear-gradient(135deg, #2e7d32, #43a047);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  width: calc(100% - 3rem);
+}
+.submitBtn:hover:not(:disabled) { opacity: 0.9; }
+.submitBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.error {
+  margin: 0 1.5rem;
+  color: #c62828;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.hint {
+  text-align: center;
+  font-size: 0.78rem;
+  color: #aaa;
+  padding: 0.75rem 1.5rem 1.5rem;
+  margin: 0;
+}
+
+/* Completion badge screen */
+.badge {
+  font-size: 4rem;
+  text-align: center;
+  padding: 2rem 0 0.5rem;
+}
+.badgeTitle {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #1b5e20;
+  margin: 0 0 0.5rem;
+}
+.badgeDesc {
+  text-align: center;
+  color: #555;
+  font-size: 0.95rem;
+  padding: 0 1.5rem;
+  line-height: 1.6;
+}
+.badgeFull {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #2e7d32;
+  font-weight: 700;
+  padding: 0 1.5rem;
+}
+.closeBtn {
+  margin: 1.5rem auto;
+  display: block;
+  background: #2e7d32;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 0.85rem 2rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.closeBtn:hover { background: #1b5e20; }
+
+@media (max-width: 600px) {
+  .modal { border-radius: 16px; }
+  .cards { padding: 0.75rem 1rem; }
+  .submitBtn { width: calc(100% - 2rem); margin: 0.75rem 1rem 0; }
+  .startBanner { margin: 1rem 1rem 0; }
+}

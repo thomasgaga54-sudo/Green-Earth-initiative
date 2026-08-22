@@ -332,6 +332,46 @@ router.post("/seven-day-challenge/claim-bonus", protect, async (req, res) => {
 
 // ── Admin routes ────────────────────────────────────────────
 
+// Screen-Free Outdoor Day game submission — awards points immediately
+router.post("/submit-screenfree", protect, async (req, res) => {
+  try {
+    const { note, earnedPoints } = req.body;
+    if (!earnedPoints || earnedPoints <= 0) return res.status(400).json({ msg: "No activities completed." });
+
+    // Find the task
+    const task = await Task.findOne({ title: "Have a Screen-Free Outdoor Day" });
+    if (!task) return res.status(404).json({ msg: "Task not found." });
+
+    // Check not already submitted today
+    const today = new Date(); today.setHours(0,0,0,0);
+    const existing = await Submission.findOne({
+      userId: req.user.id,
+      taskId: task._id,
+      createdAt: { $gte: today },
+      status: { $in: ["approved", "pending"] }
+    });
+    if (existing) return res.status(400).json({ msg: "You've already submitted this game today!" });
+
+    // Cap points to task max
+    const pts = Math.min(earnedPoints, task.points || 120);
+
+    // Create submission and auto-approve
+    const sub = await Submission.create({
+      userId: req.user.id,
+      taskId: task._id,
+      imageUrl: "",
+      note: note || "Screen-Free Outdoor Day game completed.",
+      status: "approved",
+      submissionIp: req.ip || "unknown",
+    });
+
+    // Award points
+    await User.findByIdAndUpdate(req.user.id, { $inc: { points: pts } });
+
+    res.json({ msg: `🏆 Screen-Free Eco Champion! +${pts} Eco Points awarded!`, pointsAwarded: pts, submissionId: sub._id });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
 // Get a single user's submissions (admin)
 router.get("/admin/users/:id/submissions", protect, adminOnly, async (req, res) => {
   try {
