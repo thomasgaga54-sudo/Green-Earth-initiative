@@ -102,7 +102,7 @@ export default function SubmitModal({ task, onClose, onSuccess }) {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      onSuccess(data.pointsAwarded || task.points)
+      onSuccess(data.autoApproved !== false ? data.pointsAwarded : null, data.autoApproved !== false)
     } catch (err) {
       setError(err.response?.data?.msg || 'Submission failed. Please try again.')
     } finally {
@@ -245,12 +245,21 @@ export default function SubmitModal({ task, onClose, onSuccess }) {
           <div className={styles.actions}>
             <button type="button" className={styles.cancelBtn} onClick={onClose}>Cancel</button>
             <button type="submit" className={styles.submitBtn} disabled={uploading}>
-              {uploading ? '⏳ Submitting...' : rcPassed ? `✅ Submit & Earn +${task.points + REFLECTION_BONUS} pts` : `✅ Submit & Earn +${task.points} pts`}
+              {uploading
+                ? '⏳ Submitting...'
+                : task.points >= 50
+                  ? '📋 Submit for Review'
+                  : rcPassed
+                    ? `✅ Submit & Earn +${task.points + REFLECTION_BONUS} pts`
+                    : `✅ Submit & Earn +${task.points} pts`
+              }
             </button>
           </div>
 
           <p className={styles.hint}>
-            ⚡ Points are awarded instantly when you submit.
+            {task.points >= 50
+              ? '🔍 This task requires admin review before points are awarded.'
+              : '⚡ Points are awarded instantly when you submit.'}
           </p>
         </form>
       </div>

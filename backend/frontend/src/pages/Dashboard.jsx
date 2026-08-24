@@ -85,12 +85,16 @@ export default function Dashboard() {
     return () => clearInterval(interval)
   }, [])
 
-  const handleSubmitSuccess = (pointsAwarded) => {
+  const handleSubmitSuccess = (pointsAwarded, autoApproved) => {
     setSelectedTask(null)
-    const pts = pointsAwarded || selectedTask?.points || 0
-    setSubmitMsg(`✅ Task submitted! +${pts} points added to your balance.`)
-    setTimeout(() => setSubmitMsg(''), 5000)
-    refreshUser()
+    if (autoApproved === false) {
+      setSubmitMsg('📋 Submitted for review! Points will be awarded once an admin approves.')
+    } else {
+      const pts = pointsAwarded || selectedTask?.points || 0
+      setSubmitMsg(`✅ +${pts} points added to your balance!`)
+      refreshUser()
+    }
+    setTimeout(() => setSubmitMsg(''), 6000)
   }
 
   const logout = () => {
@@ -331,7 +335,7 @@ export default function Dashboard() {
                           className={styles.submitBtn}
                           onClick={() => handleStartTask(task)}
                         >
-                          {task.taskType === 'quiz' ? '📚 Take Quiz' : task.title === 'Have a Screen-Free Outdoor Day' ? '🌳 Start Challenge' : '📷 Submit & Earn Points'}
+                          {task.taskType === 'quiz' ? '📚 Take Quiz' : task.title === 'Have a Screen-Free Outdoor Day' ? '🌳 Start Challenge' : task.points >= 50 ? '📋 Submit for Review' : '📷 Submit & Earn Points'}
                         </button>
                       </div>
                     </div>

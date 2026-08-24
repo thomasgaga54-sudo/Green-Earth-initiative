@@ -263,9 +263,28 @@ router.post("/submit", protect, fraudCheck, async (req, res) => {
       return res.json({ submission, flagged: true });
     }
 
-    // ── Auto-approve: find the task and award points immediately ──
+    // ── Auto-approve low-value tasks (< 50 pts), pending review for 50+ pts ──
     const task = await Task.findById(taskId);
     if (!task) return res.status(404).json({ msg: "Task not found." });
+
+    const isHighValue = (task.points || 0) >= 50;
+
+    // High-value tasks go to pending for admin review
+    if (isHighValue) {
+      const submission = await Submission.create({
+        userId, taskId, imageUrl, note,
+        fraudFlags, submissionIp: ip,
+        status: "pending",
+        reflectionAnswer: reflectionAnswer || "",
+        reflectionBonusPoints: reflectionBonusPoints || 0,
+      });
+      return res.json({
+        submission,
+        flagged: false,
+        autoApproved: false,
+        msg: `📋 Submission received! Your photo will be reviewed by an admin before your ${task.points} points are awarded.`,
+      });
+    }
 
     // Earning cap check
     const { daily, weekly } = await getEarningTotals(userId);
