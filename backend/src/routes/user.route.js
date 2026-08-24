@@ -240,7 +240,7 @@ router.get("/daily-challenge", async (req, res) => {
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
-// User: submit task — auto-approve and award points immediately
+// User: submit task — goes to pending for admin approval
 router.post("/submit", protect, fraudCheck, async (req, res) => {
   try {
     const { taskId, imageUrl, note, reflectionAnswer, reflectionBonusPoints } = req.body;
@@ -250,110 +250,20 @@ router.post("/submit", protect, fraudCheck, async (req, res) => {
 
     const fraudFlags = req.fraudFlags || [];
     const seriousFlags = fraudFlags.filter(f => f !== 'new_account_submission');
+    const status = seriousFlags.length > 0 ? "flagged" : "pending";
 
-    // Flagged submissions still get created but held for review, no auto-award
-    if (seriousFlags.length > 0) {
-      const submission = await Submission.create({
-        userId, taskId, imageUrl, note,
-        fraudFlags, submissionIp: ip,
-        status: "flagged",
-        reflectionAnswer: reflectionAnswer || "",
-        reflectionBonusPoints: reflectionBonusPoints || 0,
-      });
-      return res.json({ submission, flagged: true });
-    }
-
-    // ── Auto-approve low-value tasks (< 50 pts), pending review for 50+ pts ──
-    const task = await Task.findById(taskId);
-    if (!task) return res.status(404).json({ msg: "Task not found." });
-
-    const isHighValue = (task.points || 0) >= 50;
-
-    // High-value tasks go to pending for admin review
-    if (isHighValue) {
-      const submission = await Submission.create({
-        userId, taskId, imageUrl, note,
-        fraudFlags, submissionIp: ip,
-        status: "pending",
-        reflectionAnswer: reflectionAnswer || "",
-        reflectionBonusPoints: reflectionBonusPoints || 0,
-      });
-      return res.json({
-        submission,
-        flagged: false,
-        autoApproved: false,
-        msg: `📋 Submission received! Your photo will be reviewed by an admin before your ${task.points} points are awarded.`,
-      });
-    }
-
-    // Earning cap check
-    const { daily, weekly } = await getEarningTotals(userId);
-    const taskPts = task.points || 0;
-    if (daily + taskPts > DAILY_POINTS_CAP) {
-      return res.status(400).json({ msg: `Daily earning cap reached (${DAILY_POINTS_CAP} pts/day). Try again tomorrow.` });
-    }
-    if (weekly + taskPts > WEEKLY_POINTS_CAP) {
-      return res.status(400).json({ msg: `Weekly earning cap reached (${WEEKLY_POINTS_CAP} pts/week). Try again next week.` });
-    }
-
-    // Check if this is the daily challenge — award 1.5× bonus
-    const allTasks = await Task.find({ taskType: { $ne: "quiz" } });
-    let pointsToAward = taskPts;
-    if (allTasks.length) {
-      const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-      const dailyTask = allTasks[dayOfYear % allTasks.length];
-      if (dailyTask._id.toString() === task._id.toString()) {
-        pointsToAward = Math.round(taskPts * 1.5);
-      }
-    }
-
-    // Add reflection bonus if passed
-    const bonusPoints = reflectionBonusPoints || 0;
-    const totalPoints = pointsToAward + bonusPoints;
-
-    // Update streak
-    const user = await User.findById(userId);
-    const today = new Date(); today.setHours(0,0,0,0);
-    const lastDate = user.lastSubmissionDate ? new Date(user.lastSubmissionDate) : null;
-    if (lastDate) lastDate.setHours(0,0,0,0);
-    const isYesterday = lastDate && (today - lastDate) === 86400000;
-    const isToday = lastDate && today.getTime() === lastDate.getTime();
-    const newStreak = isYesterday ? (user.streakDays || 0) + 1 : isToday ? (user.streakDays || 0) : 1;
-
-    // Create submission as auto-approved
     const submission = await Submission.create({
       userId, taskId, imageUrl, note,
-      fraudFlags, submissionIp: ip,
-      status: "approved",
+      fraudFlags,
+      submissionIp: ip,
+      status,
       reflectionAnswer: reflectionAnswer || "",
-      reflectionBonusPoints: bonusPoints,
+      reflectionBonusPoints: reflectionBonusPoints || 0,
     });
-
-    // Award points + update streak
-    await User.findByIdAndUpdate(userId, {
-      $inc: { points: totalPoints },
-      streakDays: newStreak,
-      lastSubmissionDate: new Date(),
-    });
-
-    // Check streak milestones
-    await checkStreakMilestones(userId, newStreak);
-
-    // Mark 7-day challenge step if applicable
-    const stepKey = getStepKey(task);
-    if (stepKey) {
-      await ChallengeProgress.findOneAndUpdate(
-        { userId },
-        { $addToSet: { completedSteps: stepKey } },
-        { upsert: true, new: true }
-      );
-    }
-
     res.json({
       submission,
-      flagged: false,
-      pointsAwarded: totalPoints,
-      msg: `✅ +${totalPoints} points awarded!${bonusPoints > 0 ? ` (includes +${bonusPoints} reflection bonus)` : ''}`,
+      flagged: fraudFlags.length > 0,
+      msg: '📋 Proof submitted! Awaiting admin approval.',
     });
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
@@ -691,23 +601,13 @@ router.delete("/admin/tasks/:id", protect, adminOnly, async (req, res) => {
 // Get all submissions (pending + flagged)
 router.get("/admin/submissions", protect, adminOnly, async (req, res) => {
   try {
-    const { status } = req.query;
+    const { status } = req.query; // ?status=flagged | pending | approved | rejected
     const filter = status ? { status } : {};
-    // Exclude imageUrl from list — it's large base64 data, loaded separately per submission
-    const submissions = await Submission.find(filter, "-imageUrl")
+    const submissions = await Submission.find(filter)
       .populate("userId", "name email flaggedForReview flagReason registrationIp")
       .populate("taskId", "title points")
       .sort({ createdAt: -1 });
     res.json(submissions);
-  } catch (err) { res.status(500).json({ msg: err.message }); }
-});
-
-// Get a single submission's image (admin — loads base64 on demand)
-router.get("/admin/submissions/:id/image", protect, adminOnly, async (req, res) => {
-  try {
-    const sub = await Submission.findById(req.params.id, "imageUrl");
-    if (!sub) return res.status(404).json({ msg: "Not found" });
-    res.json({ imageUrl: sub.imageUrl });
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
