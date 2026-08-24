@@ -330,6 +330,98 @@ router.post("/seven-day-challenge/claim-bonus", protect, async (req, res) => {
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
+// ── AI Reflection Checker (GPT-4o-mini) ────────────────────
+router.post("/check-reflection", protect, async (req, res) => {
+  try {
+    const { answer } = req.body;
+    if (!answer || typeof answer !== "string") {
+      return res.status(400).json({ msg: "No answer provided." });
+    }
+
+    const wordCount = answer.trim().split(/\s+/).filter(Boolean).length;
+    if (wordCount < 40) {
+      return res.json({
+        pass: false,
+        wordCount,
+        feedback: `Your answer is only ${wordCount} words. Write at least 40 words.`,
+        missing: ["Minimum 40 words required."],
+      });
+    }
+
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (!openaiKey || openaiKey === "your_openai_api_key_here") {
+      // Fallback: basic check if key not configured
+      return res.status(503).json({ msg: "AI checker not configured. Please add your OPENAI_API_KEY." });
+    }
+
+    const { OpenAI } = require("openai");
+    const openai = new OpenAI({ apiKey: openaiKey });
+
+    const systemPrompt = `You are a strict but fair evaluator for a children's eco-challenge app.
+A player has submitted a reflection answer about a physical outdoor activity they completed.
+Your job is to check if their answer genuinely includes ALL 6 required elements.
+
+The 6 required elements are:
+1. ACTIVITY: They name the specific activity they did (e.g. planted a seed, played football, walked in a park)
+2. WHAT_DID: They describe what they physically did — the actual steps or actions, not just the activity name
+3. BEFORE_FEELING: They describe how they felt BEFORE starting the activity
+4. AFTER_FEELING: They describe how they felt AFTER completing the activity
+5. PHYSICAL_CHANGE: They mention at least one specific physical change they noticed in their body (e.g. tired, sweaty, heart racing, muscles sore, refreshed, out of breath)
+6. REASON: They explain WHY their body felt that way — a reason or cause for the physical change
+
+IMPORTANT RULES:
+- Reject generic, vague answers like "I felt good" or "I felt happy" with no physical specifics
+- The answer must be genuinely descriptive, not just keyword-stuffing the requirements
+- A child who writes thoughtfully and mentions real physical sensations with reasons should pass
+- If an element is clearly present, mark it as passed even if briefly stated
+- Be strict about REASON — "because I was working hard" is acceptable; "just because" is not
+
+Respond with ONLY valid JSON in this exact format:
+{
+  "pass": true or false,
+  "elements": {
+    "activity": true or false,
+    "what_did": true or false,
+    "before_feeling": true or false,
+    "after_feeling": true or false,
+    "physical_change": true or false,
+    "reason": true or false
+  },
+  "feedback": "One or two sentences of friendly, specific feedback explaining what was good and what is missing. Address the player directly as 'you'.",
+  "missing": ["Short label of each missing element, e.g. 'How you felt before'"]
+}`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `Player's answer (${wordCount} words):\n\n"${answer}"` },
+      ],
+      temperature: 0.1,
+      max_tokens: 400,
+      response_format: { type: "json_object" },
+    });
+
+    let result;
+    try {
+      result = JSON.parse(completion.choices[0].message.content);
+    } catch {
+      return res.status(500).json({ msg: "Could not parse AI response. Please try again." });
+    }
+
+    // Validate structure
+    if (typeof result.pass !== "boolean" || !result.elements) {
+      return res.status(500).json({ msg: "Unexpected AI response format. Please try again." });
+    }
+
+    res.json({ ...result, wordCount });
+  } catch (err) {
+    console.error("Reflection check error:", err.message);
+    // Don't expose OpenAI errors to client
+    res.status(500).json({ msg: "AI check failed. Please try again in a moment." });
+  }
+});
+
 // ── Admin routes ────────────────────────────────────────────
 
 // Screen-Free Outdoor Day game submission — awards points immediately

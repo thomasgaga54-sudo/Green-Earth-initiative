@@ -469,3 +469,330 @@
   .doneSummary { padding-left: 1.25rem; padding-right: 1.25rem; }
   .doneBtn { margin-left: 1.25rem; margin-right: 1.25rem; }
 }
+
+/* ── Intro badge ── */
+.introBadge {
+  display: inline-block;
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1rem 0.35rem;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+}
+
+/* ── Reflection Challenge card ── */
+.rcCard {
+  display: block;
+  padding: 0;
+  background: #fdfaf2;
+  border-top: 2px solid #f0e0a0;
+}
+
+.rcCardInner {
+  padding: 1rem 1.75rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rcCardTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.rcIcon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.rcCardMeta {
+  flex: 1;
+  min-width: 0;
+}
+
+.rcCardTitle {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #1b4332;
+  margin: 0 0 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.rcBadge {
+  background: #fff0c0;
+  color: #7a5c00;
+  border: 1px solid #e0c040;
+  border-radius: 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+}
+
+.rcCardSub {
+  font-size: 0.8rem;
+  color: #7a6a30;
+  margin: 0;
+}
+
+.rcOpenBtn {
+  background: #f5c842;
+  color: #3d2e00;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  align-self: flex-start;
+}
+.rcOpenBtn:hover { background: #e0b030; }
+
+/* ── Passed state ── */
+.rcPassedBanner {
+  background: #e8f5ec;
+  border: 1px solid #a3d9b1;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1b4332;
+}
+
+.rcPassedPreview {
+  font-size: 0.8rem;
+  color: #5a7367;
+  font-weight: 400;
+  font-style: italic;
+  margin: 0.35rem 0 0;
+  line-height: 1.45;
+}
+
+/* ── Expanded challenge form ── */
+.rcExpanded {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.rcQuestion {
+  background: #fff8e1;
+  border-left: 3px solid #f5c842;
+  border-radius: 0 8px 8px 0;
+  padding: 0.75rem 1rem;
+}
+
+.rcQuestionLabel {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #856404;
+  margin: 0 0 0.35rem;
+}
+
+.rcQuestionText {
+  font-size: 0.88rem;
+  color: #3d2e00;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* Requirements checklist */
+.rcRequirements {
+  background: #f9fdf9;
+  border: 1px solid #d4edda;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.rcReqLabel {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #2d6a4f;
+  margin: 0 0 0.5rem;
+}
+
+.rcReqList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.rcReqItem {
+  font-size: 0.82rem;
+  color: #2d3748;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  line-height: 1.4;
+}
+
+.rcReqTick {
+  flex-shrink: 0;
+  font-size: 0.88rem;
+  width: 1.25rem;
+}
+
+.rcWordCount {
+  color: #888;
+  font-size: 0.78rem;
+  font-weight: 400;
+}
+
+/* Example answer */
+.rcExample {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.rcExampleToggle {
+  cursor: pointer;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #2d6a4f;
+  background: #f4fbf6;
+  list-style: none;
+  user-select: none;
+}
+.rcExampleToggle::-webkit-details-marker { display: none; }
+.rcExampleToggle:hover { background: #e8f5ec; }
+
+.rcExampleText {
+  font-size: 0.82rem;
+  color: #4a5568;
+  font-style: italic;
+  line-height: 1.65;
+  padding: 0.75rem 0.9rem;
+  margin: 0;
+  background: #fff;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Textarea */
+.rcTextarea {
+  width: 100%;
+  border: 1.5px solid #c6dece;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  font-size: 0.88rem;
+  color: #2d3748;
+  background: #fff;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.6;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+  min-height: 140px;
+}
+.rcTextarea:focus {
+  outline: none;
+  border-color: #2d6a4f;
+}
+
+/* Live word count */
+.rcLiveCount {
+  font-size: 0.78rem;
+  color: #888;
+  text-align: right;
+  margin: -0.5rem 0 0;
+}
+
+/* Feedback block */
+.rcFeedback {
+  background: #fff4e5;
+  border: 1px solid #f5c179;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.rcFeedbackTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #7a4000;
+  margin: 0 0 0.4rem;
+}
+
+.rcFeedbackList {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.rcFeedbackList li {
+  font-size: 0.82rem;
+  color: #6b3a00;
+  line-height: 1.45;
+}
+
+/* Action buttons */
+.rcActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.rcCancelBtn {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  color: #666;
+  font-size: 0.85rem;
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.rcCancelBtn:hover { border-color: #888; color: #333; }
+
+.rcCheckBtn {
+  background: #2d6a4f;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.rcCheckBtn:hover:not(:disabled) { background: #1b4332; }
+.rcCheckBtn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+@media (max-width: 560px) {
+  .rcCardInner { padding-left: 1.25rem; padding-right: 1.25rem; }
+}
+
+/* ── AI feedback additions ── */
+.rcFeedbackText {
+  font-size: 0.84rem;
+  color: #6b3a00;
+  line-height: 1.55;
+  margin: 0 0 0.4rem;
+}
+
+.rcPassBanner {
+  background: #e8f5ec;
+  border: 1px solid #a3d9b1;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1b4332;
+  line-height: 1.5;
+}
