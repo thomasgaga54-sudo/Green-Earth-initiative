@@ -85,10 +85,12 @@ export default function Dashboard() {
     return () => clearInterval(interval)
   }, [])
 
-  const handleSubmitSuccess = () => {
+  const handleSubmitSuccess = (pointsAwarded) => {
     setSelectedTask(null)
-    setSubmitMsg('✅ Proof submitted! Awaiting admin approval.')
+    const pts = pointsAwarded || selectedTask?.points || 0
+    setSubmitMsg(`✅ Task submitted! +${pts} points added to your balance.`)
     setTimeout(() => setSubmitMsg(''), 5000)
+    refreshUser()
   }
 
   const logout = () => {
@@ -329,7 +331,7 @@ export default function Dashboard() {
                           className={styles.submitBtn}
                           onClick={() => handleStartTask(task)}
                         >
-                          {task.taskType === 'quiz' ? '📚 Take Quiz' : task.title === 'Have a Screen-Free Outdoor Day' ? '🌳 Start Challenge' : '📷 Submit Proof'}
+                          {task.taskType === 'quiz' ? '📚 Take Quiz' : task.title === 'Have a Screen-Free Outdoor Day' ? '🌳 Start Challenge' : '📷 Submit & Earn Points'}
                         </button>
                       </div>
                     </div>

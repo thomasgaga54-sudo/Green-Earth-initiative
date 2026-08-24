@@ -91,7 +91,7 @@ export default function SubmitModal({ task, onClose, onSuccess }) {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       const token = localStorage.getItem('token')
-      await axios.post(
+      const { data } = await axios.post(
         '/api/submit',
         {
           taskId: task._id,
@@ -102,7 +102,7 @@ export default function SubmitModal({ task, onClose, onSuccess }) {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      onSuccess()
+      onSuccess(data.pointsAwarded || task.points)
     } catch (err) {
       setError(err.response?.data?.msg || 'Submission failed. Please try again.')
     } finally {
@@ -245,12 +245,12 @@ export default function SubmitModal({ task, onClose, onSuccess }) {
           <div className={styles.actions}>
             <button type="button" className={styles.cancelBtn} onClick={onClose}>Cancel</button>
             <button type="submit" className={styles.submitBtn} disabled={uploading}>
-              {uploading ? '⏳ Submitting...' : rcPassed ? `✅ Submit (+${REFLECTION_BONUS} bonus pts)` : '✅ Submit for Approval'}
+              {uploading ? '⏳ Submitting...' : rcPassed ? `✅ Submit & Earn +${task.points + REFLECTION_BONUS} pts` : `✅ Submit & Earn +${task.points} pts`}
             </button>
           </div>
 
           <p className={styles.hint}>
-            🔍 Your submission will be reviewed by an admin before points are awarded.
+            ⚡ Points are awarded instantly when you submit.
           </p>
         </form>
       </div>

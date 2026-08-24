@@ -240,7 +240,7 @@ router.get("/daily-challenge", async (req, res) => {
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
-// User: submit task
+// User: submit task — auto-approve and award points immediately
 router.post("/submit", protect, fraudCheck, async (req, res) => {
   try {
     const { taskId, imageUrl, note, reflectionAnswer, reflectionBonusPoints } = req.body;
@@ -250,17 +250,92 @@ router.post("/submit", protect, fraudCheck, async (req, res) => {
 
     const fraudFlags = req.fraudFlags || [];
     const seriousFlags = fraudFlags.filter(f => f !== 'new_account_submission');
-    const status = seriousFlags.length > 0 ? "flagged" : "pending";
 
+    // Flagged submissions still get created but held for review, no auto-award
+    if (seriousFlags.length > 0) {
+      const submission = await Submission.create({
+        userId, taskId, imageUrl, note,
+        fraudFlags, submissionIp: ip,
+        status: "flagged",
+        reflectionAnswer: reflectionAnswer || "",
+        reflectionBonusPoints: reflectionBonusPoints || 0,
+      });
+      return res.json({ submission, flagged: true });
+    }
+
+    // ── Auto-approve: find the task and award points immediately ──
+    const task = await Task.findById(taskId);
+    if (!task) return res.status(404).json({ msg: "Task not found." });
+
+    // Earning cap check
+    const { daily, weekly } = await getEarningTotals(userId);
+    const taskPts = task.points || 0;
+    if (daily + taskPts > DAILY_POINTS_CAP) {
+      return res.status(400).json({ msg: `Daily earning cap reached (${DAILY_POINTS_CAP} pts/day). Try again tomorrow.` });
+    }
+    if (weekly + taskPts > WEEKLY_POINTS_CAP) {
+      return res.status(400).json({ msg: `Weekly earning cap reached (${WEEKLY_POINTS_CAP} pts/week). Try again next week.` });
+    }
+
+    // Check if this is the daily challenge — award 1.5× bonus
+    const allTasks = await Task.find({ taskType: { $ne: "quiz" } });
+    let pointsToAward = taskPts;
+    if (allTasks.length) {
+      const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+      const dailyTask = allTasks[dayOfYear % allTasks.length];
+      if (dailyTask._id.toString() === task._id.toString()) {
+        pointsToAward = Math.round(taskPts * 1.5);
+      }
+    }
+
+    // Add reflection bonus if passed
+    const bonusPoints = reflectionBonusPoints || 0;
+    const totalPoints = pointsToAward + bonusPoints;
+
+    // Update streak
+    const user = await User.findById(userId);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const lastDate = user.lastSubmissionDate ? new Date(user.lastSubmissionDate) : null;
+    if (lastDate) lastDate.setHours(0,0,0,0);
+    const isYesterday = lastDate && (today - lastDate) === 86400000;
+    const isToday = lastDate && today.getTime() === lastDate.getTime();
+    const newStreak = isYesterday ? (user.streakDays || 0) + 1 : isToday ? (user.streakDays || 0) : 1;
+
+    // Create submission as auto-approved
     const submission = await Submission.create({
       userId, taskId, imageUrl, note,
-      fraudFlags,
-      submissionIp: ip,
-      status,
+      fraudFlags, submissionIp: ip,
+      status: "approved",
       reflectionAnswer: reflectionAnswer || "",
-      reflectionBonusPoints: reflectionBonusPoints || 0,
+      reflectionBonusPoints: bonusPoints,
     });
-    res.json({ submission, flagged: fraudFlags.length > 0 });
+
+    // Award points + update streak
+    await User.findByIdAndUpdate(userId, {
+      $inc: { points: totalPoints },
+      streakDays: newStreak,
+      lastSubmissionDate: new Date(),
+    });
+
+    // Check streak milestones
+    await checkStreakMilestones(userId, newStreak);
+
+    // Mark 7-day challenge step if applicable
+    const stepKey = getStepKey(task);
+    if (stepKey) {
+      await ChallengeProgress.findOneAndUpdate(
+        { userId },
+        { $addToSet: { completedSteps: stepKey } },
+        { upsert: true, new: true }
+      );
+    }
+
+    res.json({
+      submission,
+      flagged: false,
+      pointsAwarded: totalPoints,
+      msg: `✅ +${totalPoints} points awarded!${bonusPoints > 0 ? ` (includes +${bonusPoints} reflection bonus)` : ''}`,
+    });
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
