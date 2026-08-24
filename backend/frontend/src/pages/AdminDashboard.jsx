@@ -8,6 +8,48 @@ const api = (token) => ({
   headers: { Authorization: `Bearer ${token}` }
 })
 
+// Lazy-load proof photo for a submission
+function SubPhoto({ submissionId, token }) {
+  const [imageUrl, setImageUrl] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [loaded, setLoaded] = useState(false)
+
+  const load = async () => {
+    if (loaded || loading) return
+    setLoading(true)
+    try {
+      const { data } = await axios.get(`/api/admin/submissions/${submissionId}/image`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setImageUrl(data.imageUrl)
+      setLoaded(true)
+    } catch { setImageUrl(null) }
+    setLoading(false)
+  }
+
+  if (!loaded) {
+    return (
+      <div className={styles.subPhotoPlaceholder} onClick={load}>
+        {loading ? '⏳ Loading...' : '📷 View Photo'}
+      </div>
+    )
+  }
+
+  if (!imageUrl) return <div className={styles.noPhoto}>📷 No photo</div>
+
+  return (
+    <img
+      src={imageUrl}
+      alt="proof"
+      className={styles.subPhoto}
+      onClick={() => {
+        const w = window.open()
+        w.document.write(`<img src="${imageUrl}" style="max-width:100%;height:auto;" />`)
+      }}
+    />
+  )
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate()
   const token = localStorage.getItem('token')
@@ -252,18 +294,7 @@ export default function AdminDashboard() {
                     <div key={s._id} className={`${styles.subCard} ${s.status === 'flagged' ? styles.flaggedCard : ''}`}>
                       {/* Proof Photo */}
                       <div className={styles.subPhotoWrap}>
-                        {s.imageUrl
-                          ? <img
-                              src={s.imageUrl}
-                              alt="proof"
-                              className={styles.subPhoto}
-                              onClick={() => {
-                                const w = window.open()
-                                w.document.write(`<img src="${s.imageUrl}" style="max-width:100%;height:auto;" />`)
-                              }}
-                            />
-                          : <div className={styles.noPhoto}>📷 No photo</div>
-                        }
+                        <SubPhoto submissionId={s._id} token={token} />
                         {s.status === 'flagged' && <span className={styles.flagBadge}>🚩 Flagged</span>}
                       </div>
 

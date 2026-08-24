@@ -617,3 +617,20 @@
   transition: all 0.2s;
 }
 .patchImagesBtn:hover { background: #f57f17; color: #fff; border-color: #f57f17; }
+
+/* Lazy-load photo placeholder */
+.subPhotoPlaceholder {
+  width: 100%;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0faf0;
+  color: #2e7d32;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 2px dashed #c8e6c9;
+  transition: background 0.2s;
+}
+.subPhotoPlaceholder:hover { background: #e8f5e9; }

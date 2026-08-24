@@ -691,13 +691,23 @@ router.delete("/admin/tasks/:id", protect, adminOnly, async (req, res) => {
 // Get all submissions (pending + flagged)
 router.get("/admin/submissions", protect, adminOnly, async (req, res) => {
   try {
-    const { status } = req.query; // ?status=flagged | pending | approved | rejected
+    const { status } = req.query;
     const filter = status ? { status } : {};
-    const submissions = await Submission.find(filter)
+    // Exclude imageUrl from list — it's large base64 data, loaded separately per submission
+    const submissions = await Submission.find(filter, "-imageUrl")
       .populate("userId", "name email flaggedForReview flagReason registrationIp")
       .populate("taskId", "title points")
       .sort({ createdAt: -1 });
     res.json(submissions);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Get a single submission's image (admin — loads base64 on demand)
+router.get("/admin/submissions/:id/image", protect, adminOnly, async (req, res) => {
+  try {
+    const sub = await Submission.findById(req.params.id, "imageUrl");
+    if (!sub) return res.status(404).json({ msg: "Not found" });
+    res.json({ imageUrl: sub.imageUrl });
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
