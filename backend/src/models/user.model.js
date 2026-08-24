@@ -60,6 +60,8 @@ const SubmissionSchema = new mongoose.Schema({
   status: { type: String, default: "pending" },
   fraudFlags: [String],
   submissionIp: String,
+  reflectionAnswer: { type: String, default: "" },
+  reflectionBonusPoints: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });
 

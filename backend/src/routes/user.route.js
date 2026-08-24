@@ -243,13 +243,12 @@ router.get("/daily-challenge", async (req, res) => {
 // User: submit task
 router.post("/submit", protect, fraudCheck, async (req, res) => {
   try {
-    const { taskId, imageUrl, note } = req.body;
+    const { taskId, imageUrl, note, reflectionAnswer, reflectionBonusPoints } = req.body;
     const userId = req.user.id;
     const ip = req.ip || req.headers["x-forwarded-for"] || "unknown";
     if (!imageUrl) return res.status(400).json({ msg: "Please upload a photo as proof." });
 
     const fraudFlags = req.fraudFlags || [];
-    // Only flag status if there are serious fraud signals (not just new account)
     const seriousFlags = fraudFlags.filter(f => f !== 'new_account_submission');
     const status = seriousFlags.length > 0 ? "flagged" : "pending";
 
@@ -257,7 +256,9 @@ router.post("/submit", protect, fraudCheck, async (req, res) => {
       userId, taskId, imageUrl, note,
       fraudFlags,
       submissionIp: ip,
-      status
+      status,
+      reflectionAnswer: reflectionAnswer || "",
+      reflectionBonusPoints: reflectionBonusPoints || 0,
     });
     res.json({ submission, flagged: fraudFlags.length > 0 });
   } catch (err) { res.status(500).json({ msg: err.message }); }
@@ -649,7 +650,7 @@ router.patch("/admin/submissions/:id/approve", protect, adminOnly, async (req, r
       const newStreak = isYesterday ? (user.streakDays || 0) + 1 : isToday ? (user.streakDays || 0) : 1;
 
       await User.findByIdAndUpdate(sub.userId, {
-        $inc: { points: pointsToAward },
+        $inc: { points: pointsToAward + (sub.reflectionBonusPoints || 0) },
         streakDays: newStreak,
         lastSubmissionDate: new Date()
       });

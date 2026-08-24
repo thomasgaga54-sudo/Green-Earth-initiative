@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import axios from 'axios'
 import styles from './ScreenFreeGame.module.css'
 
@@ -8,88 +8,69 @@ const ACTIVITIES = [
     icon: '🚶',
     label: 'Take a Walk Outside',
     desc: 'Step away from all screens and walk around your neighborhood, a park, or any outdoor space.',
-    reflection: 'What did you notice around you that you usually miss when you\'re on a screen?',
+    challenge: 'What did you notice around you that you usually miss when you\'re on a screen? Describe where you walked, what you saw, heard, or felt, and one thing that surprised or caught your attention.',
     points: 20,
+    challengePoints: 5,
   },
   {
     id: 'explore',
     icon: '🌱',
     label: 'Observe Nature',
     desc: 'Spend time finding and looking closely at plants, insects, birds, or anything living in your surroundings.',
-    reflection: 'Describe one living thing you found. What was it doing?',
+    challenge: 'Describe one living thing you found. What was it doing? How did it look up close? What did observing it make you think or feel?',
     points: 20,
+    challengePoints: 5,
   },
   {
     id: 'clean',
     icon: '🧹',
     label: 'Care for Your Environment',
     desc: 'Pick up litter you find outside and dispose of it properly. Leave your space cleaner than you found it.',
-    reflection: 'How did it feel to take care of a shared space?',
+    challenge: 'How did it feel to take care of a shared space? Describe what you cleaned, how much you collected, and what you thought about while doing it.',
     points: 30,
+    challengePoints: 5,
   },
   {
     id: 'play',
     icon: '🏃',
     label: 'Move Your Body',
     desc: 'Play football, ride a bike, jump rope, garden, or do any physical activity without a screen.',
-    reflection: 'What activity did you do, and how did your body feel afterwards?',
+    challenge: 'What activity did you do? Describe exactly what you did physically, how your body felt before and after, and one physical change you noticed in yourself.',
     points: 30,
-    // Standard reflection — no special challenge
+    challengePoints: 5,
   },
   {
     id: 'social',
     icon: '👨‍👩‍👧',
     label: 'Connect with People',
     desc: 'Have a real conversation, play a board game, cook together, or share a meal — all without screens.',
-    reflection: 'Who did you connect with, and what did you talk about or do together?',
+    challenge: 'Who did you connect with, and what did you talk about or do together? How was the conversation different without phones around?',
     points: 20,
+    challengePoints: 5,
   },
 ]
 
-// ── The special 1-point Reflection Challenge ──────────────────────────────
-const REFLECTION_CHALLENGE = {
-  id: 'reflection_challenge',
-  icon: '🧠',
-  label: 'Reflection Challenge',
-  points: 1,
-  minWords: 40,
-  requiredElements: [
-    { key: 'activity',       label: 'The specific activity you did' },
-    { key: 'what_did',       label: 'What you physically did (step-by-step)' },
-    { key: 'before_feeling', label: 'How you felt before' },
-    { key: 'after_feeling',  label: 'How you felt after' },
-    { key: 'physical_change',label: 'At least one physical change you noticed' },
-    { key: 'reason',         label: 'A reason explaining that change' },
-  ],
-}
+const BASE_TOTAL   = ACTIVITIES.reduce((s, a) => s + a.points, 0)
+const BONUS_TOTAL  = ACTIVITIES.reduce((s, a) => s + a.challengePoints, 0)
+const TOTAL_POINTS = BASE_TOTAL + BONUS_TOTAL
 
-const TOTAL_POINTS = ACTIVITIES.reduce((s, a) => s + a.points, 0) + REFLECTION_CHALLENGE.points
-
-// ── Client-side AI checker — replaced by backend GPT call ──
-// (kept as fallback only — real check happens server-side)
-function quickWordCheck(text) {
-  const words = text.trim().split(/\s+/).filter(Boolean).length
-  return words >= 40
-}
+const MIN_WORDS = 30
 
 export default function ScreenFreeGame({ onClose, onComplete, token }) {
-  const [step, setStep]                   = useState('intro')
-  const [completed, setCompleted]         = useState(new Set())
-  const [activeReflect, setActiveReflect] = useState(null)
-  const [reflections, setReflections]     = useState({})
-  const [submitting, setSubmitting]       = useState(false)
-  const [error, setError]                 = useState('')
+  const [step, setStep]               = useState('intro')
+  const [completed, setCompleted]     = useState(new Set())
+  const [activeChallenge, setActiveChallenge] = useState(null) // activity id
+  const [challenges, setChallenges]   = useState({})  // { id: { text, passed } }
+  const [submitting, setSubmitting]   = useState(false)
+  const [checking, setChecking]       = useState(false)
+  const [draftText, setDraftText]     = useState('')
+  const [checkResult, setCheckResult] = useState(null)
+  const [error, setError]             = useState('')
 
-  // Reflection Challenge state
-  const [rcText, setRcText]               = useState('')
-  const [rcChecking, setRcChecking]       = useState(false)
-  const [rcResult, setRcResult]           = useState(null)   // { pass, wordCount, missing[] }
-  const [rcPassed, setRcPassed]           = useState(false)
-  const [showRcChallenge, setShowRcChallenge] = useState(false)
-  const rcRef = useRef(null)
-
-  const rcEarned = rcPassed ? REFLECTION_CHALLENGE.points : 0
-  const earned = ACTIVITIES.filter(a => completed.has(a.id)).reduce((s, a) => s + a.points, 0) + rcEarned
+  const earned = ACTIVITIES.filter(a => completed.has(a.id)).reduce((s, a) => {
+    const bonus = challenges[a.id]?.passed ? a.challengePoints : 0
+    return s + a.points + bonus
+  }, 0)
 
   const toggleDone = (id) => {
     setCompleted(prev => {
@@ -99,49 +80,57 @@ export default function ScreenFreeGame({ onClose, onComplete, token }) {
     })
   }
 
-  const openReflect = (id) => setActiveReflect(id)
-  const closeReflect = () => setActiveReflect(null)
-  const saveReflection = (id, text) => {
-    setReflections(prev => ({ ...prev, [id]: text }))
-    setActiveReflect(null)
+  const openChallenge = (id) => {
+    setDraftText(challenges[id]?.text || '')
+    setCheckResult(null)
+    setActiveChallenge(id)
   }
 
-  // Check the reflection challenge answer via GPT-4o-mini
-  const handleCheckReflection = async () => {
-    setRcChecking(true)
-    setRcResult(null)
+  const closeChallenge = () => {
+    setActiveChallenge(null)
+    setCheckResult(null)
+    setDraftText('')
+  }
+
+  const handleCheckChallenge = async () => {
+    const wordCount = draftText.trim().split(/\s+/).filter(Boolean).length
+    if (wordCount < MIN_WORDS) {
+      setCheckResult({ pass: false, feedback: `Please write at least ${MIN_WORDS} words (you have ${wordCount}).` })
+      return
+    }
+    setChecking(true)
+    setCheckResult(null)
     try {
-      const { data } = await axios.post('/api/check-reflection', { answer: rcText }, {
+      const { data } = await axios.post('/api/check-reflection', { answer: draftText }, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      setRcResult(data)
-      if (data.pass) setRcPassed(true)
-    } catch (e) {
-      setRcResult({
-        pass: false,
-        wordCount: rcText.trim().split(/\s+/).filter(Boolean).length,
-        feedback: e.response?.data?.msg || 'Could not check your answer right now. Please try again.',
-        missing: [],
-      })
+      setCheckResult(data)
+      if (data.pass) {
+        setChallenges(prev => ({ ...prev, [activeChallenge]: { text: draftText, passed: true } }))
+      }
+    } catch {
+      // fallback: if API fails, accept answer if enough words
+      const passed = wordCount >= MIN_WORDS
+      setCheckResult({ pass: passed, feedback: passed ? 'Great answer!' : 'Please add more detail.' })
+      if (passed) setChallenges(prev => ({ ...prev, [activeChallenge]: { text: draftText, passed: true } }))
     }
-    setRcChecking(false)
+    setChecking(false)
+  }
+
+  const saveDraft = () => {
+    setChallenges(prev => ({ ...prev, [activeChallenge]: { text: draftText, passed: challenges[activeChallenge]?.passed || false } }))
+    closeChallenge()
   }
 
   const handleSubmit = async () => {
-    if (completed.size === 0 && !rcPassed) {
-      setError('Please complete at least one activity or the Reflection Challenge.')
-      return
-    }
+    if (completed.size === 0) { setError('Please tick at least one activity.'); return }
     setSubmitting(true)
     setError('')
     try {
-      const lines = ACTIVITIES
-        .filter(a => completed.has(a.id))
-        .map(a => {
-          const r = reflections[a.id]
-          return `${a.icon} ${a.label}${r ? ` — "${r}"` : ''}`
-        })
-      if (rcPassed) lines.push(`🧠 Reflection Challenge — "${rcText.slice(0, 120)}..."`)
+      const lines = ACTIVITIES.filter(a => completed.has(a.id)).map(a => {
+        const c = challenges[a.id]
+        return `${a.icon} ${a.label}${c?.passed ? ` [Challenge passed] "${c.text.slice(0, 80)}…"` : ''}`
+      })
       const note = `Screen-Free Outdoor Day. Activities: ${lines.join(' | ')}. Points: ${earned}/${TOTAL_POINTS}.`
       await axios.post('/api/submit-screenfree', { note, earnedPoints: earned }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -149,43 +138,85 @@ export default function ScreenFreeGame({ onClose, onComplete, token }) {
       setStep('done')
       onComplete && onComplete(earned)
     } catch (e) {
-      setError(e.response?.data?.msg || 'Could not save your entry. Please try again.')
+      setError(e.response?.data?.msg || 'Could not save. Please try again.')
     }
     setSubmitting(false)
   }
 
-  /* ── Standard Reflection overlay (for regular activities) ── */
-  if (activeReflect) {
-    const act = ACTIVITIES.find(a => a.id === activeReflect)
+  /* ── Reflection Challenge overlay ── */
+  if (activeChallenge) {
+    const act = ACTIVITIES.find(a => a.id === activeChallenge)
+    const wordCount = draftText.trim().split(/\s+/).filter(Boolean).length
+    const alreadyPassed = challenges[activeChallenge]?.passed
+
     return (
-      <div className={styles.overlay} onClick={e => e.target === e.currentTarget && closeReflect()}>
+      <div className={styles.overlay} onClick={e => e.target === e.currentTarget && closeChallenge()}>
         <div className={styles.modal}>
-          <div className={styles.reflectHeader}>
-            <span className={styles.reflectIcon}>{act.icon}</span>
-            <h3 className={styles.reflectTitle}>{act.label}</h3>
-          </div>
-          <div className={styles.reflectBody}>
-            <p className={styles.reflectPrompt}>{act.reflection}</p>
-            <textarea
-              className={styles.reflectInput}
-              placeholder="Write a few words — even one sentence is enough."
-              defaultValue={reflections[act.id] || ''}
-              id={`reflect-${act.id}`}
-              rows={5}
-              autoFocus
-            />
-            <div className={styles.reflectActions}>
-              <button className={styles.skipBtn} onClick={closeReflect}>Skip for now</button>
-              <button
-                className={styles.saveBtn}
-                onClick={() => {
-                  const val = document.getElementById(`reflect-${act.id}`).value.trim()
-                  saveReflection(act.id, val)
-                }}
-              >
-                Save reflection
-              </button>
+          <div className={styles.rcHeader}>
+            <button className={styles.closeX} onClick={closeChallenge}>✕</button>
+            <div className={styles.rcHeaderTop}>
+              <span className={styles.rcActIcon}>{act.icon}</span>
+              <div>
+                <p className={styles.rcActLabel}>{act.label}</p>
+                <p className={styles.rcHardBadge}>🔥 Reflection Challenge — Hard</p>
+              </div>
+              <span className={styles.rcBonusPts}>+{act.challengePoints} pts</span>
             </div>
+          </div>
+
+          <div className={styles.rcBody}>
+            <p className={styles.rcPrompt}>{act.challenge}</p>
+
+            <div className={styles.rcRequirements}>
+              <p className={styles.rcReqLabel}>To earn the bonus points, your answer must:</p>
+              <ul className={styles.rcReqList}>
+                <li>Be at least {MIN_WORDS} words</li>
+                <li>Be specific about what you actually did</li>
+                <li>Include how you felt or what you noticed</li>
+              </ul>
+            </div>
+
+            {alreadyPassed ? (
+              <div className={styles.rcPassedBanner}>
+                ✅ Challenge passed! +{act.challengePoints} pts earned.
+                <p className={styles.rcPassedPreview}>"{challenges[activeChallenge].text.slice(0, 120)}{challenges[activeChallenge].text.length > 120 ? '…' : ''}"</p>
+                <button className={styles.rcEditBtn} onClick={() => setChallenges(prev => ({ ...prev, [activeChallenge]: { ...prev[activeChallenge], passed: false } }))}>
+                  Edit answer
+                </button>
+              </div>
+            ) : (
+              <>
+                <textarea
+                  className={styles.rcTextarea}
+                  placeholder="Write your answer here. Be honest and specific."
+                  value={draftText}
+                  onChange={e => { setDraftText(e.target.value); setCheckResult(null) }}
+                  rows={6}
+                  autoFocus
+                />
+                <p className={styles.rcWordCount}>{wordCount} / {MIN_WORDS} words minimum</p>
+
+                {checkResult && !checkResult.pass && (
+                  <div className={styles.rcFeedback}>
+                    <p className={styles.rcFeedbackText}>{checkResult.feedback}</p>
+                  </div>
+                )}
+                {checkResult && checkResult.pass && (
+                  <div className={styles.rcPassBanner}>✅ {checkResult.feedback || 'Great answer! Bonus points earned.'}</div>
+                )}
+
+                <div className={styles.rcActions}>
+                  <button className={styles.rcSaveBtn} onClick={saveDraft}>Save without submitting</button>
+                  <button
+                    className={styles.rcCheckBtn}
+                    onClick={handleCheckChallenge}
+                    disabled={checking || wordCount < 5}
+                  >
+                    {checking ? '🔍 Checking…' : '🤖 Check & earn points'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -201,9 +232,7 @@ export default function ScreenFreeGame({ onClose, onComplete, token }) {
           <div className={styles.doneHeader}>
             <span className={styles.doneLeaf}>🌿</span>
             <h2 className={styles.doneTitle}>Well done.</h2>
-            <p className={styles.doneSubtitle}>
-              You spent real time outdoors today. That's a habit worth building.
-            </p>
+            <p className={styles.doneSubtitle}>You spent real time outdoors today. That's a habit worth building.</p>
           </div>
           <div className={styles.doneSummary}>
             <p className={styles.doneSummaryLabel}>What you did today</p>
@@ -212,25 +241,15 @@ export default function ScreenFreeGame({ onClose, onComplete, token }) {
                 <span>{a.icon}</span>
                 <span className={styles.doneLineText}>
                   {a.label}
-                  {reflections[a.id] && (
-                    <span className={styles.doneReflect}>"{reflections[a.id]}"</span>
+                  {challenges[a.id]?.passed && <span className={styles.doneBonusBadge}>+{a.challengePoints} pts challenge ✅</span>}
+                  {challenges[a.id]?.text && !challenges[a.id]?.passed && (
+                    <span className={styles.doneReflect}>"{challenges[a.id].text.slice(0, 80)}{challenges[a.id].text.length > 80 ? '…' : ''}"</span>
                   )}
                 </span>
               </div>
             ))}
-            {rcPassed && (
-              <div className={styles.doneLine}>
-                <span>🧠</span>
-                <span className={styles.doneLineText}>
-                  Reflection Challenge
-                  <span className={styles.doneReflect}>"{rcText.slice(0, 100)}{rcText.length > 100 ? '…' : ''}"</span>
-                </span>
-              </div>
-            )}
           </div>
-          <p className={styles.donePoints}>
-            +{earned} eco point{earned !== 1 ? 's' : ''} quietly added to your account.
-          </p>
+          <p className={styles.donePoints}>+{earned} eco point{earned !== 1 ? 's' : ''} added to your account.</p>
           <button className={styles.doneBtn} onClick={onClose}>Back to Dashboard</button>
         </div>
       </div>
@@ -247,27 +266,27 @@ export default function ScreenFreeGame({ onClose, onComplete, token }) {
             <span className={styles.introLeaf}>🌳</span>
             <h2 className={styles.introTitle}>Screen-Free Outdoor Day</h2>
             <p className={styles.introBody}>
-              This isn't a game. It's a simple invitation to step outside, move your body,
-              and pay attention to the world around you — without a screen.
+              A simple invitation to step outside, move your body, and pay attention to the world
+              around you — without a screen.
             </p>
             <p className={styles.introBody}>
-              When you come back, log what you actually did. There are no wrong answers
-              and nothing to win — just a record of time well spent.
+              Tick each activity you complete. Each one has a <strong>🔥 Reflection Challenge</strong> —
+              answer it well to earn bonus points.
             </p>
             <div className={styles.introActivities}>
               {ACTIVITIES.map(a => (
                 <div key={a.id} className={styles.introRow}>
                   <span className={styles.introIcon}>{a.icon}</span>
-                  <span className={styles.introRowText}>{a.label}</span>
+                  <span className={styles.introRowText}>
+                    {a.label}
+                    <span className={styles.introPts}> +{a.points} pts</span>
+                    <span className={styles.introBonusPts}> +{a.challengePoints} challenge bonus</span>
+                  </span>
                 </div>
               ))}
-              <div className={styles.introRow}>
-                <span className={styles.introIcon}>🧠</span>
-                <span className={styles.introRowText}>Reflection Challenge <span className={styles.introBadge}>+1 pt</span></span>
-              </div>
             </div>
             <button className={styles.beginBtn} onClick={() => setStep('checkin')}>
-              I'm ready — show me the activities
+              I'm ready — let's go
             </button>
             <button className={styles.laterBtn} onClick={onClose}>Maybe later</button>
           </div>
@@ -280,20 +299,19 @@ export default function ScreenFreeGame({ onClose, onComplete, token }) {
   return (
     <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
       <div className={styles.modal}>
-        {/* Header */}
         <div className={styles.checkinHeader}>
           <button className={styles.closeX} onClick={onClose}>✕</button>
           <h2 className={styles.checkinTitle}>🌳 Screen-Free Outdoor Day</h2>
           <p className={styles.checkinSub}>
-            Tick each activity you genuinely completed. Add a reflection if you'd like — it's for you, not a score.
+            Tick each activity you genuinely completed. Each has a <strong>🔥 Reflection Challenge</strong> for bonus points.
           </p>
         </div>
 
-        {/* Activity list */}
         <div className={styles.actList}>
           {ACTIVITIES.map(a => {
-            const isDone = completed.has(a.id)
-            const hasNote = !!reflections[a.id]
+            const isDone       = completed.has(a.id)
+            const chalPassed   = challenges[a.id]?.passed
+            const chalDraft    = !!challenges[a.id]?.text
             return (
               <div key={a.id} className={`${styles.actRow} ${isDone ? styles.actDone : ''}`}>
                 <button
@@ -305,16 +323,20 @@ export default function ScreenFreeGame({ onClose, onComplete, token }) {
                 </button>
                 <div className={styles.actInfo}>
                   <span className={styles.actIcon}>{a.icon}</span>
-                  <div>
+                  <div className={styles.actInfoText}>
                     <p className={styles.actLabel}>{a.label}</p>
                     <p className={styles.actDesc}>{a.desc}</p>
                     {isDone && (
-                      <button className={styles.reflectBtn} onClick={() => openReflect(a.id)}>
-                        {hasNote ? `✏️ Edit reflection` : `💬 Add a reflection`}
+                      <button
+                        className={`${styles.challengeBtn} ${chalPassed ? styles.challengeBtnPassed : ''}`}
+                        onClick={() => openChallenge(a.id)}
+                      >
+                        {chalPassed
+                          ? `✅ Challenge passed (+${a.challengePoints} pts)`
+                          : chalDraft
+                            ? `✏️ Edit Reflection Challenge 🔥`
+                            : `🔥 Take Reflection Challenge (+${a.challengePoints} pts)`}
                       </button>
-                    )}
-                    {hasNote && (
-                      <p className={styles.previewNote}>"{reflections[a.id]}"</p>
                     )}
                   </div>
                 </div>
@@ -322,146 +344,13 @@ export default function ScreenFreeGame({ onClose, onComplete, token }) {
               </div>
             )
           })}
-
-          {/* ── Reflection Challenge card ── */}
-          <div className={`${styles.actRow} ${styles.rcCard} ${rcPassed ? styles.actDone : ''}`}>
-            <div className={styles.rcCardInner}>
-              <div className={styles.rcCardTop}>
-                <span className={styles.rcIcon}>🧠</span>
-                <div className={styles.rcCardMeta}>
-                  <p className={styles.rcCardTitle}>
-                    Reflection Challenge
-                    <span className={styles.rcBadge}>🔥 Hard</span>
-                  </p>
-                  <p className={styles.rcCardSub}>Answer deeply to earn 1 bonus Eco Point</p>
-                </div>
-                <span className={styles.actPts}>+1 🪙</span>
-              </div>
-
-              {!showRcChallenge && !rcPassed && (
-                <button
-                  className={styles.rcOpenBtn}
-                  onClick={() => setShowRcChallenge(true)}
-                >
-                  Take the challenge →
-                </button>
-              )}
-
-              {rcPassed && (
-                <div className={styles.rcPassedBanner}>
-                  ✅ Challenge passed! +1 Eco Point earned.
-                  <p className={styles.rcPassedPreview}>"{rcText.slice(0, 100)}{rcText.length > 100 ? '…' : ''}"</p>
-                </div>
-              )}
-
-              {showRcChallenge && !rcPassed && (
-                <div className={styles.rcExpanded}>
-                  {/* Question */}
-                  <div className={styles.rcQuestion}>
-                    <p className={styles.rcQuestionLabel}>❓ Question</p>
-                    <p className={styles.rcQuestionText}>
-                      What activity did you complete? Describe exactly what you did, how your
-                      body felt before and after the activity, and explain one physical change
-                      you noticed. Why do you think your body felt that way?
-                    </p>
-                  </div>
-
-                  {/* Requirements */}
-                  <div className={styles.rcRequirements}>
-                    <p className={styles.rcReqLabel}>To earn the point, your answer must include:</p>
-                    <ul className={styles.rcReqList}>
-                      {REFLECTION_CHALLENGE.requiredElements.map(el => {
-                        const checked = rcResult?.elements?.[el.key] === true
-                        return (
-                          <li key={el.key} className={styles.rcReqItem}>
-                            <span className={styles.rcReqTick}>{checked ? '✅' : '☐'}</span>
-                            {el.label}
-                          </li>
-                        )
-                      })}
-                      <li className={styles.rcReqItem}>
-                        <span className={styles.rcReqTick}>
-                          {rcResult ? (rcResult.wordCount >= REFLECTION_CHALLENGE.minWords ? '✅' : '☐') : '☐'}
-                        </span>
-                        Minimum {REFLECTION_CHALLENGE.minWords} words
-                        {rcResult && <span className={styles.rcWordCount}> ({rcResult.wordCount} written)</span>}
-                      </li>
-                    </ul>
-                  </div>
-
-                  {/* Example */}
-                  <details className={styles.rcExample}>
-                    <summary className={styles.rcExampleToggle}>💡 See an example strong answer</summary>
-                    <p className={styles.rcExampleText}>
-                      "I planted a seed by preparing the soil, making a small hole, placing the seed inside,
-                      covering it and watering it. Before starting, I felt normal, but afterwards I felt slightly
-                      tired because I was bending and working with the soil. I also felt satisfied because I
-                      completed something useful for nature."
-                    </p>
-                  </details>
-
-                  {/* Textarea */}
-                  <textarea
-                    ref={rcRef}
-                    className={styles.rcTextarea}
-                    placeholder="Write your answer here. Be specific — describe the activity, what you did physically, how you felt before and after, a physical change, and why it happened."
-                    value={rcText}
-                    onChange={e => { setRcText(e.target.value); setRcResult(null) }}
-                    rows={7}
-                  />
-
-                  {/* Word count live */}
-                  <p className={styles.rcLiveCount}>
-                    {rcText.trim().split(/\s+/).filter(Boolean).length} / {REFLECTION_CHALLENGE.minWords} words minimum
-                  </p>
-
-                  {/* Feedback from GPT */}
-                  {rcResult && !rcResult.pass && (
-                    <div className={styles.rcFeedback}>
-                      <p className={styles.rcFeedbackTitle}>✏️ Not quite — here's what to improve:</p>
-                      {rcResult.feedback && (
-                        <p className={styles.rcFeedbackText}>{rcResult.feedback}</p>
-                      )}
-                      {rcResult.missing && rcResult.missing.length > 0 && (
-                        <ul className={styles.rcFeedbackList}>
-                          {rcResult.missing.map((m, i) => (
-                            <li key={i}>{m}</li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  )}
-
-                  {rcResult && rcResult.pass && (
-                    <div className={styles.rcPassBanner}>
-                      ✅ {rcResult.feedback || 'Great answer! You earned the point.'}
-                    </div>
-                  )}
-
-                  <div className={styles.rcActions}>
-                    <button
-                      className={styles.rcCancelBtn}
-                      onClick={() => { setShowRcChallenge(false); setRcResult(null) }}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className={styles.rcCheckBtn}
-                      onClick={handleCheckReflection}
-                      disabled={rcChecking || rcText.trim().split(/\s+/).filter(Boolean).length < 10}
-                    >
-                      {rcChecking ? '🔍 Checking…' : '🤖 Check my answer'}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
 
-        {(completed.size > 0 || rcPassed) && (
+        {completed.size > 0 && (
           <p className={styles.tally}>
-            {completed.size} activit{completed.size !== 1 ? 'ies' : 'y'}{rcPassed ? ' + Reflection Challenge' : ''} · {earned} eco point{earned !== 1 ? 's' : ''}
+            {completed.size} activit{completed.size !== 1 ? 'ies' : 'y'} ·{' '}
+            {Object.values(challenges).filter(c => c.passed).length} challenge{Object.values(challenges).filter(c => c.passed).length !== 1 ? 's' : ''} passed ·{' '}
+            <strong>{earned} eco points</strong>
           </p>
         )}
 
@@ -471,13 +360,11 @@ export default function ScreenFreeGame({ onClose, onComplete, token }) {
           <button
             className={styles.logBtn}
             onClick={handleSubmit}
-            disabled={submitting || (completed.size === 0 && !rcPassed)}
+            disabled={submitting || completed.size === 0}
           >
             {submitting ? 'Saving...' : 'Log my outdoor time'}
           </button>
-          <p className={styles.footerHint}>
-            Only log what you actually did. Honest tracking is what makes this meaningful.
-          </p>
+          <p className={styles.footerHint}>Only log what you actually did.</p>
         </div>
       </div>
     </div>

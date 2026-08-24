@@ -2,26 +2,34 @@ import { useState, useRef } from 'react'
 import axios from 'axios'
 import styles from './SubmitModal.module.css'
 
+const REFLECTION_BONUS = 5
+const MIN_WORDS = 30
+
 export default function SubmitModal({ task, onClose, onSuccess }) {
-  const [image, setImage] = useState(null)
-  const [preview, setPreview] = useState(null)
-  const [note, setNote] = useState('')
+  const [image, setImage]         = useState(null)
+  const [preview, setPreview]     = useState(null)
+  const [note, setNote]           = useState('')
   const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError]         = useState('')
   const fileRef = useRef()
+
+  // Reflection Challenge state
+  const [showReflection, setShowReflection]   = useState(false)
+  const [reflectionText, setReflectionText]   = useState('')
+  const [rcChecking, setRcChecking]           = useState(false)
+  const [rcResult, setRcResult]               = useState(null)
+  const [rcPassed, setRcPassed]               = useState(false)
+
+  const wordCount = reflectionText.trim().split(/\s+/).filter(Boolean).length
+
+  // Generate a reflection prompt based on the task
+  const reflectionPrompt = `Describe what you did for "${task.title}". Include where you did it, how it felt, what you noticed, and why it matters to you or your environment.`
 
   const handleFile = e => {
     const file = e.target.files[0]
     if (!file) return
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file.')
-      return
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      setError('Image must be under 10MB.')
-      return
-    }
-    // Compress image before upload
+    if (!file.type.startsWith('image/')) { setError('Please select an image file.'); return }
+    if (file.size > 10 * 1024 * 1024) { setError('Image must be under 10MB.'); return }
     const reader = new FileReader()
     reader.onload = ev => {
       const img = new Image()
@@ -44,6 +52,29 @@ export default function SubmitModal({ task, onClose, onSuccess }) {
     reader.readAsDataURL(file)
   }
 
+  const handleCheckReflection = async () => {
+    if (wordCount < MIN_WORDS) {
+      setRcResult({ pass: false, feedback: `Please write at least ${MIN_WORDS} words (you have ${wordCount}).` })
+      return
+    }
+    setRcChecking(true)
+    setRcResult(null)
+    try {
+      const token = localStorage.getItem('token')
+      const { data } = await axios.post('/api/check-reflection', { answer: reflectionText }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setRcResult(data)
+      if (data.pass) setRcPassed(true)
+    } catch {
+      // fallback: accept if enough words
+      const passed = wordCount >= MIN_WORDS
+      setRcResult({ pass: passed, feedback: passed ? 'Good answer!' : 'Please add more detail.' })
+      if (passed) setRcPassed(true)
+    }
+    setRcChecking(false)
+  }
+
   const handleSubmit = async e => {
     e.preventDefault()
     if (!image) { setError('Please upload a photo as proof.'); return }
@@ -54,21 +85,23 @@ export default function SubmitModal({ task, onClose, onSuccess }) {
     setUploading(true)
     setError('')
     try {
-      // 1. Upload image
       const formData = new FormData()
       formData.append('image', image)
       const { data: uploadData } = await axios.post('/api/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
-
-      // 2. Submit task with image URL
       const token = localStorage.getItem('token')
       await axios.post(
         '/api/submit',
-        { taskId: task._id, imageUrl: uploadData.imageUrl, note },
+        {
+          taskId: task._id,
+          imageUrl: uploadData.imageUrl,
+          note,
+          reflectionAnswer: rcPassed ? reflectionText : '',
+          reflectionBonusPoints: rcPassed ? REFLECTION_BONUS : 0,
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       )
-
       onSuccess()
     } catch (err) {
       setError(err.response?.data?.msg || 'Submission failed. Please try again.')
@@ -102,13 +135,7 @@ export default function SubmitModal({ task, onClose, onSuccess }) {
                   <p className={styles.dropHint}>JPG, PNG, WEBP — max 10MB</p>
                 </>
             }
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFile}
-              className={styles.fileInput}
-            />
+            <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className={styles.fileInput} />
           </div>
 
           {preview && (
@@ -117,7 +144,7 @@ export default function SubmitModal({ task, onClose, onSuccess }) {
             </button>
           )}
 
-          {/* Optional note */}
+          {/* Note / description */}
           <div className={styles.field}>
             <label>
               {task.proofLevel === 'enhanced' || task.proofLevel === 'verified'
@@ -141,16 +168,84 @@ export default function SubmitModal({ task, onClose, onSuccess }) {
 
           {task.proofLevel === 'verified' && (
             <div className={styles.verifiedNotice}>
-              🔍 <strong>High-value task:</strong> This submission will be carefully reviewed by an admin before points are awarded. Ensure your photo clearly shows the completed task.
+              🔍 <strong>High-value task:</strong> This submission will be carefully reviewed by an admin before points are awarded.
             </div>
           )}
+
+          {/* ── Reflection Challenge ── */}
+          <div className={styles.rcSection}>
+            <div className={styles.rcSectionHeader}>
+              <div>
+                <p className={styles.rcSectionTitle}>
+                  🔥 Reflection Challenge
+                  <span className={styles.rcHardBadge}>Hard</span>
+                  {rcPassed && <span className={styles.rcPassedTag}>✅ +{REFLECTION_BONUS} pts earned</span>}
+                </p>
+                <p className={styles.rcSectionSub}>
+                  Answer the reflection question to earn <strong>+{REFLECTION_BONUS} bonus points</strong> when approved.
+                </p>
+              </div>
+              {!rcPassed && (
+                <button
+                  type="button"
+                  className={`${styles.rcToggleBtn} ${showReflection ? styles.rcToggleOpen : ''}`}
+                  onClick={() => setShowReflection(v => !v)}
+                >
+                  {showReflection ? 'Hide ▲' : 'Try it ▼'}
+                </button>
+              )}
+            </div>
+
+            {(showReflection || rcPassed) && (
+              <div className={styles.rcBody}>
+                <p className={styles.rcPrompt}>{reflectionPrompt}</p>
+
+                {rcPassed ? (
+                  <div className={styles.rcPassedBanner}>
+                    ✅ Challenge passed! +{REFLECTION_BONUS} bonus points will be awarded on approval.
+                    <p className={styles.rcPassedPreview}>"{reflectionText.slice(0, 120)}{reflectionText.length > 120 ? '…' : ''}"</p>
+                    <button type="button" className={styles.rcEditBtn} onClick={() => setRcPassed(false)}>Edit answer</button>
+                  </div>
+                ) : (
+                  <>
+                    <textarea
+                      className={styles.rcTextarea}
+                      placeholder="Write your answer here. Be honest and specific — at least 30 words."
+                      value={reflectionText}
+                      onChange={e => { setReflectionText(e.target.value); setRcResult(null) }}
+                      rows={5}
+                    />
+                    <p className={styles.rcWordCount}>{wordCount} / {MIN_WORDS} words minimum</p>
+
+                    {rcResult && !rcResult.pass && (
+                      <div className={styles.rcFeedback}>
+                        <p>{rcResult.feedback}</p>
+                      </div>
+                    )}
+                    {rcResult && rcResult.pass && (
+                      <div className={styles.rcPassBanner}>✅ {rcResult.feedback || 'Great answer!'}</div>
+                    )}
+
+                    <button
+                      type="button"
+                      className={styles.rcCheckBtn}
+                      onClick={handleCheckReflection}
+                      disabled={rcChecking || wordCount < 5}
+                    >
+                      {rcChecking ? '🔍 Checking…' : '🤖 Check & earn bonus'}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
 
           {error && <div className={styles.error}>{error}</div>}
 
           <div className={styles.actions}>
             <button type="button" className={styles.cancelBtn} onClick={onClose}>Cancel</button>
             <button type="submit" className={styles.submitBtn} disabled={uploading}>
-              {uploading ? '⏳ Submitting...' : '✅ Submit for Approval'}
+              {uploading ? '⏳ Submitting...' : rcPassed ? `✅ Submit (+${REFLECTION_BONUS} bonus pts)` : '✅ Submit for Approval'}
             </button>
           </div>
 
