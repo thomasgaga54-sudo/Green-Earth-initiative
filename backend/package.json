@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "build": "npm install --prefix frontend && npm run build --prefix frontend"
+    "build": "npm install --prefix frontend && npm run build --prefix frontend",
+    "backfill:payments": "node src/stripe-backfill.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

@@ -17,6 +17,8 @@ export default function AdminDashboard() {
   const [submissions, setSubmissions] = useState([])
   const [tasks, setTasks] = useState([])
   const [users, setUsers] = useState([])
+  const [payments, setPayments] = useState([])
+  const [paymentTypeFilter, setPaymentTypeFilter] = useState('all')
   const [newTask, setNewTask] = useState({ title: '', description: '', points: '' })
   const [editingImageTaskId, setEditingImageTaskId] = useState(null)
   const [editImageUrl, setEditImageUrl] = useState('')
@@ -38,14 +40,16 @@ export default function AdminDashboard() {
 
   const fetchAll = async () => {
     try {
-      const [s, t, u] = await Promise.all([
+      const [s, t, u, p] = await Promise.all([
         axios.get('/api/admin/submissions', api(token)),
         axios.get('/api/tasks'),
         axios.get('/api/admin/users', api(token)),
+        axios.get('/api/admin/payments', api(token)),
       ])
       setSubmissions(s.data)
       setTasks(t.data)
       setUsers(u.data)
+      setPayments(p.data)
     } catch { navigate('/login') }
   }
 
@@ -191,6 +195,7 @@ export default function AdminDashboard() {
             { key: 'submissions', label: '📋 Submissions', badge: pending.length },
             { key: 'tasks', label: '🌱 Tasks' },
             { key: 'users', label: '👥 Users' },
+            { key: 'payments', label: '💳 Payments' },
           ].map(({ key, label, badge }) => (
             <button
               key={key}
@@ -221,6 +226,7 @@ export default function AdminDashboard() {
               {activeTab === 'submissions' && '📋 Submissions'}
               {activeTab === 'tasks' && '🌱 Manage Tasks'}
               {activeTab === 'users' && '👥 All Users'}
+              {activeTab === 'payments' && '💳 Payment Transactions'}
             </h1>
             <p>Welcome, {user.name} · Admin</p>
           </div>
@@ -435,6 +441,116 @@ export default function AdminDashboard() {
             </div>
           </section>
         )}
+
+        {/* Payments Tab */}
+        {activeTab === 'payments' && (() => {
+          // Format amount from cents to readable string
+          const fmt = (cents, currency) => {
+            const major = (cents / 100).toFixed(2)
+            const sym = currency === 'gbp' ? '£' : currency === 'eur' ? '€' : currency === 'ngn' ? '₦' : '$'
+            return `${sym}${major}`
+          }
+
+          const filtered = paymentTypeFilter === 'all'
+            ? payments
+            : payments.filter(p => p.type === paymentTypeFilter)
+
+          // Summary totals
+          const totalRevenue = payments.reduce((sum, p) => sum + (p.amountTotal || 0), 0)
+          const totalPoints = payments.filter(p => p.type === 'points').length
+          const totalSubs   = payments.filter(p => p.type === 'subscription').length
+          const totalRewards = payments.filter(p => p.type === 'reward').length
+
+          const typeMeta = {
+            points:       { label: '🌱 Points',       cls: styles.typePoints },
+            subscription: { label: '👑 Premium',      cls: styles.typeSubscription },
+            reward:       { label: '🎁 Reward',       cls: styles.typeReward },
+          }
+
+          return (
+            <section>
+              {/* Summary cards */}
+              <div className={styles.paymentsSummary}>
+                <div className={styles.paymentSumCard}>
+                  <strong>{payments.length}</strong>
+                  <span>Total Transactions</span>
+                </div>
+                <div className={styles.paymentSumCard}>
+                  <strong>${(totalRevenue / 100).toFixed(2)}</strong>
+                  <span>Total Revenue</span>
+                </div>
+                <div className={styles.paymentSumCard}>
+                  <strong>{totalPoints}</strong>
+                  <span>Points Sales</span>
+                </div>
+                <div className={styles.paymentSumCard}>
+                  <strong>{totalSubs}</strong>
+                  <span>Subscriptions</span>
+                </div>
+                <div className={styles.paymentSumCard}>
+                  <strong>{totalRewards}</strong>
+                  <span>Reward Purchases</span>
+                </div>
+              </div>
+
+              {/* Filter bar */}
+              <div className={styles.paymentsToolbar}>
+                {['all', 'points', 'subscription', 'reward'].map(f => (
+                  <button
+                    key={f}
+                    className={`${styles.filterBtn} ${paymentTypeFilter === f ? styles.filterActive : ''}`}
+                    onClick={() => setPaymentTypeFilter(f)}
+                  >
+                    {f === 'all' ? '🗂 All' : f === 'points' ? '🌱 Points' : f === 'subscription' ? '👑 Premium' : '🎁 Rewards'}
+                  </button>
+                ))}
+                <span style={{ marginLeft: 'auto', fontSize: '0.82rem', color: '#888' }}>
+                  {filtered.length} transaction{filtered.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+
+              {/* Table */}
+              {filtered.length === 0
+                ? <div className={styles.empty}>No payment transactions found.</div>
+                : <div className={styles.paymentsTable}>
+                    <div className={styles.paymentsHead}>
+                      <span>User</span>
+                      <span>Description</span>
+                      <span>Type</span>
+                      <span>Amount</span>
+                      <span>Status</span>
+                      <span>Date</span>
+                    </div>
+                    {filtered.map(p => (
+                      <div key={p._id} className={styles.paymentsRow}>
+                        <div>
+                          <div className={styles.paymentUser}>{p.userId?.name || '—'}</div>
+                          <div className={styles.paymentEmail}>{p.userId?.email || ''}</div>
+                        </div>
+                        <span style={{ fontSize: '0.85rem', color: '#424242' }}>{p.description || '—'}</span>
+                        <span>
+                          <span className={`${styles.paymentTypeBadge} ${typeMeta[p.type]?.cls || ''}`}>
+                            {typeMeta[p.type]?.label || p.type}
+                          </span>
+                        </span>
+                        <span className={styles.paymentAmount}>
+                          {fmt(p.amountTotal || 0, p.currency || 'usd')}
+                        </span>
+                        <span>
+                          <span className={`${styles.paymentStatusBadge} ${p.status === 'refunded' ? styles.statusRefunded : styles.statusCompleted}`}>
+                            {p.status === 'refunded' ? '↩ Refunded' : '✓ Completed'}
+                          </span>
+                        </span>
+                        <span style={{ fontSize: '0.8rem', color: '#9e9e9e' }}>
+                          {new Date(p.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+              }
+            </section>
+          )
+        })()}
 
         {/* User Profile Modal */}
         {selectedUser && (

@@ -3,7 +3,7 @@ const router = express.Router();
 const path = require("path");
 const fs = require("fs");
 const { register, login } = require("../controllers/auth.controller");
-const { User, Task, Submission, Reward, Redemption, ChallengeProgress, StreakMilestone } = require("../models/user.model");
+const { User, Task, Submission, Reward, Redemption, ChallengeProgress, StreakMilestone, Payment } = require("../models/user.model");
 const { protect, adminOnly } = require("../middleware/auth.middleware");
 const { fraudCheck, trackRegistrationIP } = require("../middleware/fraud.middleware");
 const { sendTaskReminder, sendApprovalEmail } = require("../services/email.service");
@@ -500,6 +500,19 @@ router.get("/admin/users", protect, adminOnly, async (req, res) => {
   try {
     const users = await User.find({}, "-password").sort({ createdAt: -1 });
     res.json(users);
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
+// Get all payment transactions (admin)
+router.get("/admin/payments", protect, adminOnly, async (req, res) => {
+  try {
+    const { type, limit = 200 } = req.query;
+    const filter = type ? { type } : {};
+    const payments = await Payment.find(filter)
+      .populate("userId", "name email")
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit));
+    res.json(payments);
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 

@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Stripe = require("stripe");
-const { User, Reward } = require("../models/user.model");
+const { User, Reward, Payment } = require("../models/user.model");
 const { protect } = require("../middleware/auth.middleware");
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -208,6 +208,24 @@ router.post("/webhook", express.raw({ type: "application/json" }), async (req, r
       if (type === "points" && userId && points) {
         await User.findByIdAndUpdate(userId, { $inc: { points: parseInt(points) } });
         console.log(`✅ Credited ${points} points to user ${userId}`);
+
+        // Log payment record
+        const pkg = POINTS_PACKAGES.find(p => p.points === parseInt(points));
+        await Payment.findOneAndUpdate(
+          { stripeSessionId: session.id },
+          {
+            userId,
+            stripeSessionId: session.id,
+            type: "points",
+            amountTotal: session.amount_total || 0,
+            currency: session.currency || "usd",
+            description: pkg ? `${pkg.label} — ${pkg.points} Points` : `${points} Points Top-up`,
+            status: "completed",
+            stripeCustomerId: session.customer || "",
+            meta: { points: parseInt(points) },
+          },
+          { upsert: true, new: true }
+        );
       }
 
       // C) Direct reward purchase — create a Redemption record
@@ -230,7 +248,43 @@ router.post("/webhook", express.raw({ type: "application/json" }), async (req, r
             await reward.save();
           }
           console.log(`✅ Reward ${rewardId} purchased by user ${userId}`);
+
+          // Log payment record
+          await Payment.findOneAndUpdate(
+            { stripeSessionId: session.id },
+            {
+              userId,
+              stripeSessionId: session.id,
+              type: "reward",
+              amountTotal: session.amount_total || 0,
+              currency: session.currency || reward.currency?.toLowerCase() || "usd",
+              description: `Reward: ${reward.flag || ""} ${reward.title}`.trim(),
+              status: "completed",
+              stripeCustomerId: session.customer || "",
+              meta: { rewardId: rewardId, rewardTitle: reward.title, deliveryInfo: deliveryInfo || "" },
+            },
+            { upsert: true, new: true }
+          );
         }
+      }
+
+      // Log subscription checkout (type = "subscription") — premium activated separately via subscription events
+      if (type === "subscription" && userId) {
+        await Payment.findOneAndUpdate(
+          { stripeSessionId: session.id },
+          {
+            userId,
+            stripeSessionId: session.id,
+            type: "subscription",
+            amountTotal: session.amount_total || 0,
+            currency: session.currency || "usd",
+            description: "Premium Subscription",
+            status: "completed",
+            stripeCustomerId: session.customer || "",
+            meta: {},
+          },
+          { upsert: true, new: true }
+        );
       }
     }
 

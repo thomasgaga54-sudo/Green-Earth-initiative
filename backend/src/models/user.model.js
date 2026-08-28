@@ -106,6 +106,19 @@ const ChallengeProgressSchema = new mongoose.Schema({
   completedAt: Date
 });
 
+// Stores a record of every completed Stripe payment for admin visibility
+const PaymentSchema = new mongoose.Schema({
+  userId:        { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  stripeSessionId: { type: String, unique: true }, // checkout session id — prevents duplicate logging
+  type:          { type: String }, // "points" | "subscription" | "reward"
+  amountTotal:   { type: Number, default: 0 }, // in cents (e.g. 760000 = ₦7,600 / $7.60)
+  currency:      { type: String, default: "usd" },
+  description:   { type: String }, // e.g. "Champion Pack — 1000 Points" or "Premium Subscription"
+  status:        { type: String, default: "completed" }, // completed | refunded
+  stripeCustomerId: String,
+  meta:          { type: mongoose.Schema.Types.Mixed, default: {} }, // extra data (points awarded, rewardId, etc.)
+}, { timestamps: true });
+
 const User = mongoose.model("User", UserSchema);
 
 // Auto-sync level when points change via findByIdAndUpdate
@@ -131,5 +144,6 @@ const Reward = mongoose.model("Reward", RewardSchema);
 const Redemption = mongoose.model("Redemption", RedemptionSchema);
 const StreakMilestone = mongoose.model("StreakMilestone", StreakMilestoneSchema);
 const ChallengeProgress = mongoose.model("ChallengeProgress", ChallengeProgressSchema);
+const Payment = mongoose.model("Payment", PaymentSchema);
 
-module.exports = { User, Task, Submission, Reward, Redemption, ChallengeProgress, StreakMilestone };
+module.exports = { User, Task, Submission, Reward, Redemption, ChallengeProgress, StreakMilestone, Payment };
