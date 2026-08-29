@@ -1,8 +1,12 @@
 /**
- * One-time script: reads local image files and updates task imageUrls in MongoDB
- * with base64 data URLs so they persist even on ephemeral filesystems (Render, etc.)
+ * patch-task-images.js
+ *
+ * Reads local image files from /uploads and updates task imageUrls
+ * in MongoDB with base64 data URLs so they persist on ephemeral
+ * filesystems (Render, etc.)
  *
  * Usage: node src/patch-task-images.js
+ * Safe to run multiple times — only updates tasks where a local file exists.
  */
 
 const path = require("path");
@@ -11,143 +15,136 @@ require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const mongoose = require("mongoose");
 const { Task } = require("./models/user.model");
 
-const PATCHES = [
-  {
-    title: "Collect Plastic Bottles for Recycling",
-    file: path.join(__dirname, "../uploads/bottle.jpg"),
-    mime: "image/jpeg",
-  },
-  {
-    title: "Clean a Public Area",
-    file: path.join(__dirname, "../uploads/clean.avif"),
-    mime: "image/avif",
-  },
-  {
-    title: "Create a Small Home Garden",
-    file: path.join(__dirname, "../uploads/homegarden.jpg"),
-    mime: "image/jpeg",
-  },
-  {
-    title: "Fetch Water for Household Use",
-    file: path.join(__dirname, "../uploads/water.jpg"),
-    mime: "image/jpeg",
-  },
-  {
-    title: "Remove Weeds Around a Plant",
-    file: path.join(__dirname, "../uploads/removeweed.jpg"),
-    mime: "image/jpeg",
-  },
-  {
-    title: "Pick Up Litter Around Your Compound",
-    file: path.join(__dirname, "../uploads/pict.jpg"),
-    mime: "image/jpeg",
-  },
-  {
-    title: "Clean a Drainage Area Safely",
-    file: path.join(__dirname, "../uploads/Drainage.jpg"),
-    mime: "image/jpeg",
-  },
-  {
-    title: "Clean the Compound",
-    file: path.join(__dirname, "../uploads/compound.jpg"),
-    mime: "image/jpeg",
-  },
-  {
-    title: "Organise Your Wardrobe",
-    file: path.join(__dirname, "../uploads/wardrope.jpg"),
-    mime: "image/jpeg",
-  },
-  {
-    title: "Clean the Bathroom",
-    file: path.join(__dirname, "../uploads/bathroom.jpg"),
-    mime: "image/jpeg",
-  },
-  {
-    title: "Wash Clothes",
-    file: path.join(__dirname, "../uploads/wash.jpg"),
-    mime: "image/jpeg",
-  },
-  {
-    title: "Wash Dishes",
-    file: path.join(__dirname, "../uploads/washdish.jpg"),
-    mime: "image/jpeg",
-  },
-  {
-    title: "Close Taps Properly After Use",
-    file: path.join(__dirname, "../uploads/tap.jpg"),
-    mime: "image/jpeg",
-  },
-  {
-    title: "Take a Shorter Shower",
-    file: path.join(__dirname, "../uploads/shower.jpg"),
-    mime: "image/jpeg",
-  },
-  {
-    title: "Check Appliances Are Off Before Leaving",
-    file: path.join(__dirname, "../uploads/off.jpg"),
-    mime: "image/jpeg",
-  },
-  { title: "Go Car-Free for One Month",            file: path.join(__dirname, "../uploads/carfree.jpg"),     mime: "image/jpeg" },
-  { title: "Draw a Save the Earth Poster",         file: path.join(__dirname, "../uploads/draw.jpg"),        mime: "image/jpeg" },
-  { title: "Plant and Harvest a Vegetable Garden", file: path.join(__dirname, "../uploads/grow.jpg"),        mime: "image/jpeg" },
-  { title: "Pick Up 10 Pieces of Litter",          file: path.join(__dirname, "../uploads/pick.jpg"),        mime: "image/jpeg" },
-  { title: "Learn 5 Recycling Facts",              file: path.join(__dirname, "../uploads/recycle.jpg"),     mime: "image/jpeg" },
-  { title: "Complete a 5km Plogging Run",          file: path.join(__dirname, "../uploads/runpick.jpg"),     mime: "image/jpeg" },
-  { title: "Plant Seeds in a Cup",                 file: path.join(__dirname, "../uploads/seed.jpg"),        mime: "image/jpeg" },
-  { title: "Teach a Friend About Recycling",       file: path.join(__dirname, "../uploads/teachfriend.jpg"), mime: "image/jpeg" },
-  { title: "Water a Plant Every Day for a Week",   file: path.join(__dirname, "../uploads/waterplant.jpg"),  mime: "image/jpeg" },
-  { title: "Plant a Tree",                         file: path.join(__dirname, "../uploads/planttree1.jpg"),  mime: "image/jpeg" },
-  { title: "Plastic-Free Day",                     file: path.join(__dirname, "../uploads/plasticbag.jpg"),  mime: "image/jpeg" },
-  { title: "Create a Compost Pile",                file: path.join(__dirname, "../uploads/compostbin.jpg"),    mime: "image/jpeg" },
-  { title: "Report Illegal Dumping",               file: path.join(__dirname, "../uploads/report.jpg"),        mime: "image/jpeg" },
-  { title: "Community Clean-Up",                   file: path.join(__dirname, "../uploads/communityclean.jpg"),mime: "image/jpeg" },
-  { title: "Bike to Work",                         file: path.join(__dirname, "../uploads/Biketowork.jpg"),    mime: "image/jpeg" },
-  { title: "Reduce Energy Use",                    file: path.join(__dirname, "../uploads/turnoff.jpg"),     mime: "image/jpeg" },
-  { title: "Compost Waste",                        file: path.join(__dirname, "../uploads/setbin.jpg"),      mime: "image/jpeg" },
+const u = (file) => path.join(__dirname, "../uploads", file);
 
-  // ── New image patches ──────────────────────────────────
-  { title: "Clean the Kitchen",                          file: path.join(__dirname, "../uploads/cleankit.jpg"),          mime: "image/jpeg" },
-  { title: "Clean the Bathroom",                         file: path.join(__dirname, "../uploads/cleantoilet.jpg"),       mime: "image/jpeg" },
-  { title: "Clean Windows",                              file: path.join(__dirname, "../uploads/cleanwin.jpg"),          mime: "image/jpeg" },
-  { title: "Collect 25 Plastic Bottles",                 file: path.join(__dirname, "../uploads/collectplastic.jpg"),   mime: "image/jpeg" },
-  { title: "Donate Usable Items Instead of Throwing Away", file: path.join(__dirname, "../uploads/donate.jpg"),         mime: "image/jpeg" },
-  { title: "Drink Water Instead of a Sugary Drink",      file: path.join(__dirname, "../uploads/drinkwater (1).jpg"),   mime: "image/jpeg" },
-  { title: "Fold and Arrange Clothes",                   file: path.join(__dirname, "../uploads/foldcloth.jpg"),        mime: "image/jpeg" },
-  { title: "Help an Elderly Family Member with Chores",  file: path.join(__dirname, "../uploads/helpold.jpg"),          mime: "image/jpeg" },
-  { title: "Clean Household Appliances",                 file: path.join(__dirname, "../uploads/household.jpg"),        mime: "image/jpeg" },
-  { title: "Make Your Bed",                              file: path.join(__dirname, "../uploads/makebed.jpg"),          mime: "image/jpeg" },
-  { title: "Mop the Floor",                              file: path.join(__dirname, "../uploads/mopfloor.jpg"),         mime: "image/jpeg" },
-  { title: "Collect 10 Plastic Bottles",                 file: path.join(__dirname, "../uploads/picklitter.jpg"),       mime: "image/jpeg" },
-  { title: "Help Prepare a Meal",                        file: path.join(__dirname, "../uploads/preparemeal.jpg"),      mime: "image/jpeg" },
-  { title: "Repair or Report a Leaking Tap",             file: path.join(__dirname, "../uploads/repairtap.jpg"),        mime: "image/jpeg" },
-  { title: "Reuse a Container",                          file: path.join(__dirname, "../uploads/reuse.jpg"),            mime: "image/jpeg" },
-  { title: "Reuse Suitable Household Water",             file: path.join(__dirname, "../uploads/reusewater.jpg"),       mime: "image/jpeg" },
-  { title: "Take Out the Rubbish",                       file: path.join(__dirname, "../uploads/rubbish.jpg"),          mime: "image/jpeg" },
-  { title: "Separate Plastic from Other Waste",          file: path.join(__dirname, "../uploads/separateplastic.jpg"),  mime: "image/jpeg" },
-  { title: "Sweep the House",                            file: path.join(__dirname, "../uploads/sweepfloor.jpg"),       mime: "image/jpeg" },
-  { title: "Turn Off Unnecessary Lights",                file: path.join(__dirname, "../uploads/Unnecessary Lights.jpg"), mime: "image/jpeg" },
-  { title: "Unplug Unused Appliances",                   file: path.join(__dirname, "../uploads/unplung.jpg"),          mime: "image/jpeg" },
-  { title: "Wash the Car",                               file: path.join(__dirname, "../uploads/washcar.jpg"),          mime: "image/jpeg" },
-  { title: "Clean Your Study/Work Area",                 file: path.join(__dirname, "../uploads/workarea.jpg"),         mime: "image/jpeg" },
-  { title: "Turn Off TV When Not Being Used",            file: path.join(__dirname, "../uploads/turnoff.jpg"),          mime: "image/jpeg" },
-  { title: "Wash Dishes",                                file: path.join(__dirname, "../uploads/washdish.jpg"),         mime: "image/jpeg" },
-  { title: "Water a Plant",                              file: path.join(__dirname, "../uploads/waterplant.jpg"),       mime: "image/jpeg" },
-  { title: "Turn Off Tap While Brushing",                file: path.join(__dirname, "../uploads/brush.jpg"),            mime: "image/jpeg" },
+const PATCHES = [
+  // ── Personal Healthy-Living ───────────────────────────────
+  { title: "Drink Water Instead of a Sugary Drink",     file: u("drinkwater (1).jpg") },
+
+  // ── School Tasks ──────────────────────────────────────────
+  // (school tasks use Unsplash URLs — no local files needed unless added)
+
+  // ── Family Tasks ──────────────────────────────────────────
+  { title: "Help an Elderly Family Member",             file: u("helpold.jpg") },
+  { title: "Help an Elderly Family Member with Chores", file: u("helpold.jpg") },
+  { title: "Cook or Help Prepare Food for the Family",  file: u("preparemeal.jpg") },
+
+  // ── Waste Management ──────────────────────────────────────
+  { title: "Separate Plastic from Other Waste",         file: u("separateplastic.jpg") },
+  { title: "Collect 10 Plastic Bottles",                file: u("picklitter.jpg") },
+  { title: "Collect 25 Plastic Bottles",                file: u("collectplastic.jpg") },
+  { title: "Reuse a Container",                         file: u("reuse.jpg") },
+
+  // ── Energy-Saving ─────────────────────────────────────────
+  { title: "Turn Off Unnecessary Lights",               file: u("Unnecessary Lights.jpg") },
+  { title: "Unplug Unused Appliances",                  file: u("unplung.jpg") },
+  { title: "Turn Off TV When Not Being Used",           file: u("turnoff.jpg") },
+  { title: "Check Appliances Are Off Before Leaving",   file: u("off.jpg") },
+  { title: "Reduce Energy Use",                         file: u("turnoff.jpg") },
+
+  // ── Water-Saving ──────────────────────────────────────────
+  { title: "Turn Off Tap While Brushing",               file: u("brush.jpg") },
+  { title: "Repair or Report a Leaking Tap",            file: u("repairtap.jpg") },
+  { title: "Reuse Suitable Household Water",            file: u("reusewater.jpg") },
+  { title: "Close Taps Properly After Use",             file: u("tap.jpg") },
+  { title: "Take a Shorter Shower",                     file: u("shower.jpg") },
+  { title: "Collect Rainwater for Plants",              file: u("rainwater.jpg") },
+
+  // ── Domestic Chores ───────────────────────────────────────
+  { title: "Sweep the House",                           file: u("sweepfloor.jpg") },
+  { title: "Mop the Floor",                             file: u("mopfloor.jpg") },
+  { title: "Wash Dishes",                               file: u("washdish.jpg") },
+  { title: "Make Your Bed",                             file: u("makebed.jpg") },
+  { title: "Wash Clothes",                              file: u("wash.jpg") },
+  { title: "Fold and Arrange Clothes",                  file: u("foldcloth.jpg") },
+  { title: "Clean the Kitchen",                         file: u("cleankit.jpg") },
+  { title: "Clean the Bathroom",                        file: u("cleantoilet.jpg") },
+  { title: "Clean Windows",                             file: u("cleanwin.jpg") },
+  { title: "Take Out the Rubbish",                      file: u("rubbish.jpg") },
+  { title: "Organise Your Wardrobe",                    file: u("wardrope.jpg") },
+  { title: "Clean Your Study/Work Area",                file: u("workarea.jpg") },
+  { title: "Wash the Car",                              file: u("washcar.jpg") },
+  { title: "Clean the Compound",                        file: u("compound.jpg") },
+  { title: "Help Prepare a Meal",                       file: u("preparemeal.jpg") },
+  { title: "Fetch Water for Household Use",             file: u("water.jpg") },
+  { title: "Clean Household Appliances",                file: u("household.jpg") },
+
+  // ── Environmental / General ───────────────────────────────
+  { title: "Water a Plant",                             file: u("waterplant.jpg") },
+  { title: "Water a Plant Every Day for a Week",        file: u("waterplant.jpg") },
+  { title: "Remove Weeds Around a Plant",               file: u("removeweed.jpg") },
+  { title: "Create a Small Home Garden",                file: u("homegarden.jpg") },
+  { title: "Pick Up Litter Around Your Compound",       file: u("pict.jpg") },
+  { title: "Clean a Public Area",                       file: u("clean.avif") },
+  { title: "Collect Plastic Bottles for Recycling",     file: u("bottle.jpg") },
+  { title: "Reuse an Old Container",                    file: u("can.jpg") },
+  { title: "Use a Reusable Shopping Bag",               file: u("bag.jpg") },
+  { title: "Avoid Single-Use Plastic for a Day",        file: u("plastic.jpg") },
+  { title: "Clean a Drainage Area Safely",              file: u("Drainage.jpg") },
+  { title: "Report Illegal Dumping",                    file: u("report.jpg") },
+  { title: "Create a Compost Pile",                     file: u("compostbin.jpg") },
+  { title: "Donate Usable Items Instead of Throwing Away", file: u("donate.jpg") },
+
+  // ── General tasks (short list) ────────────────────────────
+  { title: "Plant a Tree",                              file: u("planttree1.jpg") },
+  { title: "Plastic-Free Day",                          file: u("plasticbag.jpg") },
+  { title: "Bike to Work",                              file: u("Biketowork.jpg") },
+  { title: "Community Clean-Up",                        file: u("communityclean.jpg") },
+  { title: "Compost Waste",                             file: u("setbin.jpg") },
+
+  // ── Hard tasks ────────────────────────────────────────────
+  { title: "Install a Rainwater Harvesting System",     file: u("rainwater.jpg") },
+  { title: "Create a Wildlife Garden",                  file: u("garden.jpg") },
+  { title: "Complete a 5km Plogging Run",               file: u("runpick.jpg") },
+  { title: "Go Car-Free for One Month",                 file: u("carfree.jpg") },
+  { title: "Plant and Harvest a Vegetable Garden",      file: u("grow.jpg") },
+
+  // ── Children's tasks ──────────────────────────────────────
+  { title: "Draw a Save the Earth Poster",              file: u("draw.jpg") },
+  { title: "Pick Up 10 Pieces of Litter",               file: u("pick.jpg") },
+  { title: "Learn 5 Recycling Facts",                   file: u("recycle.jpg") },
+  { title: "Turn Off Lights When Leaving a Room",       file: u("offlight.jpg") },
+  { title: "Make a Bird Feeder from Recycled Materials",file: u("bird-feeder.jpg") },
+  { title: "Plant Seeds in a Cup",                      file: u("seed.jpg") },
+  { title: "Have a Screen-Free Outdoor Day",            file: u("kids.jpg") },
+  { title: "Teach a Friend About Recycling",            file: u("teachfriend.jpg") },
+
+  // ── Previously missed / older titles ─────────────────────
+  { title: "Pick Up 10 Pieces of Litter",               file: u("pick.jpg") },
+  { title: "Teach a Friend About Recycling",            file: u("teachfriend.jpg") },
 ];
+
+// Deduplicate by title (keep last entry wins — most specific)
+const seen = new Map();
+for (const p of PATCHES) seen.set(p.title, p.file);
+const DEDUPED = [...seen.entries()].map(([title, file]) => ({ title, file }));
 
 async function run() {
   const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URL;
   await mongoose.connect(mongoUri);
-  console.log("Connected to MongoDB");
+  console.log("✅ Connected to MongoDB\n");
 
-  for (const patch of PATCHES) {
+  let updated = 0;
+  let alreadySet = 0;
+  let missing = 0;
+  let notFound = 0;
+
+  for (const patch of DEDUPED) {
     if (!fs.existsSync(patch.file)) {
-      console.warn(`⚠️  File not found: ${patch.file} — skipping`);
+      console.warn(`⚠️  File not found: ${path.basename(patch.file)} — skipping "${patch.title}"`);
+      missing++;
       continue;
     }
+
+    // Detect mime from extension
+    const ext = path.extname(patch.file).toLowerCase();
+    const mime = ext === ".avif" ? "image/avif"
+               : ext === ".png"  ? "image/png"
+               : ext === ".webp" ? "image/webp"
+               : "image/jpeg";
+
     const buffer = fs.readFileSync(patch.file);
-    const base64 = buffer.toString("base64");
-    const dataUrl = `data:${patch.mime};base64,${base64}`;
+    const dataUrl = `data:${mime};base64,${buffer.toString("base64")}`;
 
     const result = await Task.updateOne(
       { title: patch.title },
@@ -155,13 +152,24 @@ async function run() {
     );
 
     if (result.matchedCount === 0) {
-      console.warn(`⚠️  Task not found in DB: "${patch.title}"`);
+      console.warn(`⚠️  Task not in DB: "${patch.title}"`);
+      notFound++;
     } else if (result.modifiedCount > 0) {
-      console.log(`✅ Updated image for: "${patch.title}"`);
+      console.log(`✅  Updated: "${patch.title}"`);
+      updated++;
     } else {
-      console.log(`ℹ️  Already up-to-date: "${patch.title}"`);
+      console.log(`ℹ️  Already set: "${patch.title}"`);
+      alreadySet++;
     }
   }
+
+  console.log(`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Tasks updated   : ${updated}
+  Already up-to-date: ${alreadySet}
+  File not found  : ${missing}
+  Task not in DB  : ${notFound}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
 
   await mongoose.disconnect();
   console.log("Done.");
