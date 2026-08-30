@@ -132,6 +132,16 @@ if (!mongoUri) {
   console.error("WARNING: MONGO_URI is not set. Database features will not work.");
 } else {
   mongoose.connect(mongoUri)
-    .then(() => console.log("MongoDB Connected"))
+    .then(async () => {
+      console.log("MongoDB Connected");
+      // Auto-patch task images from local uploads on every startup.
+      // This ensures images are always stored as base64 in the DB
+      // regardless of ephemeral filesystem resets (Render, etc.).
+      try {
+        await require("./startup-patch")();
+      } catch (err) {
+        console.error("Startup image patch error (non-fatal):", err.message);
+      }
+    })
     .catch(err => console.error("MongoDB connection error:", err));
 }
