@@ -19,6 +19,10 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([])
   const [payments, setPayments] = useState([])
   const [paymentTypeFilter, setPaymentTypeFilter] = useState('all')
+  const [redemptions, setRedemptions] = useState([])
+  const [redemptionFilter, setRedemptionFilter] = useState('all')
+  const [fulfilNote, setFulfilNote] = useState({}) // { [id]: string }
+  const [fulfillingId, setFulfillingId] = useState(null)
   const [newTask, setNewTask] = useState({ title: '', description: '', points: '' })
   const [editingImageTaskId, setEditingImageTaskId] = useState(null)
   const [editImageUrl, setEditImageUrl] = useState('')
@@ -40,16 +44,18 @@ export default function AdminDashboard() {
 
   const fetchAll = async () => {
     try {
-      const [s, t, u, p] = await Promise.all([
+      const [s, t, u, p, r] = await Promise.all([
         axios.get('/api/admin/submissions', api(token)),
         axios.get('/api/tasks'),
         axios.get('/api/admin/users', api(token)),
         axios.get('/api/admin/payments', api(token)),
+        axios.get('/api/admin/redemptions', api(token)),
       ])
       setSubmissions(s.data)
       setTasks(t.data)
       setUsers(u.data)
       setPayments(p.data)
+      setRedemptions(r.data)
     } catch { navigate('/login') }
   }
 
@@ -182,9 +188,30 @@ export default function AdminDashboard() {
     }
   }
 
+  const fulfil = async (id) => {
+    setFulfillingId(id)
+    try {
+      await axios.patch(`/api/admin/redemptions/${id}/fulfil`,
+        { fulfilmentNote: fulfilNote[id] || '' }, api(token))
+      toast('✅ Redemption fulfilled — confirmation email sent to user.')
+      setFulfilNote(prev => { const n = { ...prev }; delete n[id]; return n })
+      fetchAll()
+    } catch (e) { toast(e.response?.data?.msg || 'Error fulfilling redemption') }
+    setFulfillingId(null)
+  }
+
+  const cancelRedemption = async (id) => {
+    if (!confirm('Cancel this redemption and refund the points to the user?')) return
+    try {
+      await axios.patch(`/api/admin/redemptions/${id}/cancel`, {}, api(token))
+      toast('↩ Redemption cancelled — points refunded to user.')
+      fetchAll()
+    } catch (e) { toast(e.response?.data?.msg || 'Error cancelling redemption') }
+  }
+
+  const pendingRedemptions = redemptions.filter(r => r.status === 'pending')
   const pending = submissions.filter(s => s.status === 'pending' || s.status === 'flagged')
   const approved = submissions.filter(s => s.status === 'approved')
-
   return (
     <div className={styles.page}>
       {/* Sidebar */}
@@ -196,6 +223,7 @@ export default function AdminDashboard() {
             { key: 'tasks', label: '🌱 Tasks' },
             { key: 'users', label: '👥 Users' },
             { key: 'payments', label: '💳 Payments' },
+            { key: 'redemptions', label: '🎁 Redemptions', badge: pendingRedemptions.length },
           ].map(({ key, label, badge }) => (
             <button
               key={key}
@@ -227,6 +255,7 @@ export default function AdminDashboard() {
               {activeTab === 'tasks' && '🌱 Manage Tasks'}
               {activeTab === 'users' && '👥 All Users'}
               {activeTab === 'payments' && '💳 Payment Transactions'}
+              {activeTab === 'redemptions' && '🎁 Reward Redemptions'}
             </h1>
             <p>Welcome, {user.name} · Admin</p>
           </div>
@@ -551,6 +580,135 @@ export default function AdminDashboard() {
             </section>
           )
         })()}
+
+        {/* Redemptions Tab */}
+        {activeTab === 'redemptions' && (
+          <section>
+            {/* Summary row */}
+            <div className={styles.redemptionSummary}>
+              {[
+                { label: 'Total', value: redemptions.length, cls: '' },
+                { label: 'Pending', value: redemptions.filter(r => r.status === 'pending').length, cls: styles.rdSumPending },
+                { label: 'Fulfilled', value: redemptions.filter(r => r.status === 'fulfilled').length, cls: styles.rdSumFulfilled },
+                { label: 'Cancelled', value: redemptions.filter(r => r.status === 'cancelled').length, cls: styles.rdSumCancelled },
+              ].map(({ label, value, cls }) => (
+                <div key={label} className={`${styles.rdSumCard} ${cls}`}>
+                  <strong>{value}</strong>
+                  <span>{label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Filter bar */}
+            <div className={styles.paymentsToolbar}>
+              {['all', 'pending', 'fulfilled', 'cancelled'].map(f => (
+                <button
+                  key={f}
+                  className={`${styles.filterBtn} ${redemptionFilter === f ? styles.filterActive : ''}`}
+                  onClick={() => setRedemptionFilter(f)}
+                >
+                  {f === 'all' ? '🗂 All' : f === 'pending' ? '⏳ Pending' : f === 'fulfilled' ? '✅ Fulfilled' : '↩ Cancelled'}
+                </button>
+              ))}
+            </div>
+
+            {/* Cards */}
+            {(() => {
+              const filtered = redemptionFilter === 'all'
+                ? redemptions
+                : redemptions.filter(r => r.status === redemptionFilter)
+
+              if (filtered.length === 0) return (
+                <div className={styles.empty}>No redemptions found.</div>
+              )
+
+              return (
+                <div className={styles.rdList}>
+                  {filtered.map(r => (
+                    <div key={r._id} className={`${styles.rdCard} ${styles['rd_' + r.status]}`}>
+
+                      {/* Top row: user + reward + status badge */}
+                      <div className={styles.rdTop}>
+                        <div className={styles.rdUserBlock}>
+                          <div className={styles.rdAvatar}>
+                            {(r.userId?.name || 'U')[0].toUpperCase()}
+                          </div>
+                          <div>
+                            <p className={styles.rdUserName}>{r.userId?.name || '—'}</p>
+                            <p className={styles.rdUserEmail}>{r.userId?.email || ''}</p>
+                          </div>
+                        </div>
+                        <span className={`${styles.rdStatusBadge} ${styles['rdStatus_' + r.status]}`}>
+                          {r.status === 'pending'   && '⏳ Pending'}
+                          {r.status === 'fulfilled' && '✅ Fulfilled'}
+                          {r.status === 'cancelled' && '↩ Cancelled'}
+                        </span>
+                      </div>
+
+                      {/* Reward details */}
+                      <div className={styles.rdDetails}>
+                        <div className={styles.rdDetailRow}>
+                          <span className={styles.rdLabel}>🎁 Reward</span>
+                          <span className={styles.rdValue}>{r.rewardId?.title || '—'}</span>
+                        </div>
+                        <div className={styles.rdDetailRow}>
+                          <span className={styles.rdLabel}>💎 Points spent</span>
+                          <span className={styles.rdValuePts}>{r.pointsSpent || 0} pts</span>
+                        </div>
+                        {r.deliveryInfo && (
+                          <div className={styles.rdDetailRow}>
+                            <span className={styles.rdLabel}>📬 Delivery info</span>
+                            <span className={styles.rdValue}>{r.deliveryInfo}</span>
+                          </div>
+                        )}
+                        <div className={styles.rdDetailRow}>
+                          <span className={styles.rdLabel}>📅 Redeemed</span>
+                          <span className={styles.rdValue}>{new Date(r.createdAt).toLocaleString()}</span>
+                        </div>
+                        {r.fulfilmentNote && (
+                          <div className={styles.rdNoteBox}>
+                            <p className={styles.rdNoteLabel}>📋 Fulfilment note</p>
+                            <p className={styles.rdNoteText}>{r.fulfilmentNote}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Actions — only for pending */}
+                      {r.status === 'pending' && (
+                        <div className={styles.rdActions}>
+                          <div className={styles.rdFulfilRow}>
+                            <input
+                              className={styles.rdNoteInput}
+                              placeholder="Voucher code / tracking number / payment ref…"
+                              value={fulfilNote[r._id] || ''}
+                              onChange={e => setFulfilNote(prev => ({ ...prev, [r._id]: e.target.value }))}
+                            />
+                          </div>
+                          <div className={styles.rdBtnRow}>
+                            <button
+                              className={styles.rdFulfilBtn}
+                              onClick={() => fulfil(r._id)}
+                              disabled={fulfillingId === r._id}
+                            >
+                              {fulfillingId === r._id ? '⏳ Sending…' : '✅ Mark Fulfilled & Email User'}
+                            </button>
+                            <button
+                              className={styles.rdCancelBtn}
+                              onClick={() => cancelRedemption(r._id)}
+                            >
+                              ↩ Cancel & Refund Points
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                    </div>
+                  ))}
+                </div>
+              )
+            })()}
+          </section>
+        )}
 
         {/* User Profile Modal */}
         {selectedUser && (

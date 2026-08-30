@@ -758,3 +758,186 @@
   .paymentsRow span:nth-child(5),
   .paymentsRow span:nth-child(6) { display: none; }
 }
+
+/* ── Redemptions Tab ────────────────────────────────────── */
+.redemptionSummary {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.rdSumCard {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 110px;
+}
+.rdSumCard strong { font-size: 1.6rem; font-weight: 900; color: #1b5e20; }
+.rdSumCard span   { font-size: 0.75rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+
+.rdSumPending   strong { color: #e65100; }
+.rdSumFulfilled strong { color: #2e7d32; }
+.rdSumCancelled strong { color: #9e9e9e; }
+
+/* Redemption card list */
+.rdList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.rdCard {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  overflow: hidden;
+  border-left: 4px solid #e0e0e0;
+}
+.rd_pending   { border-left-color: #ff6d00; }
+.rd_fulfilled { border-left-color: #2e7d32; }
+.rd_cancelled { border-left-color: #bdbdbd; opacity: 0.75; }
+
+/* Card top row */
+.rdTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.1rem 1.4rem 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.rdUserBlock {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.rdAvatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #2e7d32;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.rdUserName  { font-size: 0.95rem; font-weight: 700; color: #1b5e20; margin: 0 0 0.1rem; }
+.rdUserEmail { font-size: 0.78rem; color: #9e9e9e; margin: 0; }
+
+/* Status badge */
+.rdStatusBadge {
+  display: inline-block;
+  border-radius: 50px;
+  padding: 0.25rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.rdStatus_pending   { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+.rdStatus_fulfilled { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+.rdStatus_cancelled { background: #f5f5f5; color: #9e9e9e; border: 1px solid #e0e0e0; }
+
+/* Detail rows */
+.rdDetails {
+  padding: 0 1.4rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.rdDetailRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 0.875rem;
+  flex-wrap: wrap;
+}
+.rdLabel { color: #9e9e9e; font-weight: 600; min-width: 120px; flex-shrink: 0; }
+.rdValue { color: #333; font-weight: 500; }
+.rdValuePts { color: #2e7d32; font-weight: 800; }
+
+/* Existing fulfilment note (already saved) */
+.rdNoteBox {
+  background: #f9fbe7;
+  border-left: 3px solid #aed581;
+  border-radius: 0 8px 8px 0;
+  padding: 0.6rem 0.875rem;
+  margin-top: 0.25rem;
+}
+.rdNoteLabel { font-size: 0.78rem; font-weight: 700; color: #558b2f; margin: 0 0 0.25rem; }
+.rdNoteText  { font-size: 0.875rem; color: #424242; margin: 0; white-space: pre-wrap; line-height: 1.5; }
+
+/* Actions area (pending only) */
+.rdActions {
+  border-top: 1px solid #f0f0f0;
+  padding: 1rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  background: #fafafa;
+}
+
+.rdFulfilRow { display: flex; }
+
+.rdNoteInput {
+  flex: 1;
+  padding: 0.6rem 0.9rem;
+  border: 1.5px solid #c8e6c9;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: border 0.2s;
+}
+.rdNoteInput:focus { outline: none; border-color: #2e7d32; }
+
+.rdBtnRow {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.rdFulfilBtn {
+  background: #2e7d32;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.rdFulfilBtn:hover:not(:disabled) { background: #1b5e20; }
+.rdFulfilBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.rdCancelBtn {
+  background: #fdecea;
+  color: #c62828;
+  border: 1.5px solid #ef9a9a;
+  border-radius: 8px;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.rdCancelBtn:hover { background: #c62828; color: #fff; }
+
+@media (max-width: 600px) {
+  .rdTop { flex-direction: column; align-items: flex-start; }
+  .rdBtnRow { flex-direction: column; }
+  .rdFulfilBtn, .rdCancelBtn { width: 100%; text-align: center; }
+}

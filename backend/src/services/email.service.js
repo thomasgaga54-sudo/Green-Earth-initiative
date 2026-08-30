@@ -181,4 +181,95 @@ const sendApprovalEmail = async (user, taskTitle, pointsAwarded) => {
   return data;
 };
 
-module.exports = { sendTaskReminder, sendApprovalEmail };
+/**
+ * Send reward fulfilment email to a user
+ * Called when an admin marks a redemption as fulfilled
+ */
+const sendFulfilmentEmail = async (user, rewardTitle, fulfilmentNote, pointsSpent) => {
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: user.email,
+    subject: `🎁 Your reward is on its way! — ${rewardTitle}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <body style="margin:0;padding:0;background:#f0f7f0;font-family:'Segoe UI',Arial,sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f7f0;padding:40px 20px;">
+          <tr><td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+
+              <!-- Header -->
+              <tr>
+                <td style="background:linear-gradient(135deg,#1b5e20,#2e7d32);padding:40px;text-align:center;">
+                  <div style="font-size:52px;">🎁</div>
+                  <h1 style="color:#fff;margin:12px 0 0;font-size:24px;font-weight:800;">Your Reward Is On Its Way!</h1>
+                </td>
+              </tr>
+
+              <!-- Body -->
+              <tr>
+                <td style="padding:40px;">
+                  <p style="color:#1b5e20;font-size:18px;font-weight:700;margin:0 0 16px;">Hi ${user.name || "Eco Warrior"} 🌍</p>
+                  <p style="color:#424242;font-size:15px;line-height:1.6;margin:0 0 24px;">
+                    Great news! Your reward redemption for <strong>"${rewardTitle}"</strong> has been processed by our team.
+                  </p>
+
+                  <!-- Reward box -->
+                  <table width="100%" cellpadding="0" cellspacing="0" style="background:#e8f5e9;border-radius:12px;border:1px solid #c8e6c9;margin-bottom:24px;">
+                    <tr><td style="padding:24px;">
+                      <p style="color:#9e9e9e;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 4px;">Reward</p>
+                      <p style="color:#1b5e20;font-size:17px;font-weight:800;margin:0 0 16px;">${rewardTitle}</p>
+                      <p style="color:#9e9e9e;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 4px;">Points Spent</p>
+                      <p style="color:#2e7d32;font-size:22px;font-weight:900;margin:0;">${pointsSpent} pts</p>
+                    </td></tr>
+                  </table>
+
+                  <!-- Fulfilment note (voucher code / tracking) -->
+                  ${fulfilmentNote ? `
+                  <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff8e1;border-radius:12px;border:1px solid #ffe082;margin-bottom:28px;">
+                    <tr><td style="padding:24px;">
+                      <p style="color:#f57f17;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 8px;">📋 Fulfilment Details</p>
+                      <p style="color:#424242;font-size:15px;line-height:1.6;margin:0;white-space:pre-wrap;">${fulfilmentNote}</p>
+                    </td></tr>
+                  </table>
+                  ` : ''}
+
+                  <p style="color:#757575;font-size:13px;line-height:1.6;margin:0 0 28px;">
+                    If you have any questions about your reward, please reply to this email or contact us at
+                    <a href="mailto:support@greenearthinitiative.online" style="color:#2e7d32;">support@greenearthinitiative.online</a>.
+                  </p>
+
+                  <!-- CTA -->
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr><td align="center">
+                      <a href="${SITE_URL}/dashboard" style="display:inline-block;background:#2e7d32;color:#fff;text-decoration:none;padding:16px 40px;border-radius:12px;font-weight:800;font-size:16px;">
+                        Keep Earning Points →
+                      </a>
+                    </td></tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="background:#f5f5f5;padding:20px 40px;text-align:center;border-top:1px solid #e0e0e0;">
+                  <p style="color:#9e9e9e;font-size:12px;margin:0;">
+                    © ${new Date().getFullYear()} Green Earth Initiative ·
+                    <a href="${SITE_URL}" style="color:#2e7d32;text-decoration:none;">greenearthinitiative.online</a>
+                  </p>
+                </td>
+              </tr>
+
+            </table>
+          </td></tr>
+        </table>
+      </body>
+      </html>
+    `,
+  });
+
+  if (error) throw error;
+  return data;
+};
+
+module.exports = { sendTaskReminder, sendApprovalEmail, sendFulfilmentEmail };

@@ -6,7 +6,7 @@ const { register, login } = require("../controllers/auth.controller");
 const { User, Task, Submission, Reward, Redemption, ChallengeProgress, StreakMilestone, Payment } = require("../models/user.model");
 const { protect, adminOnly } = require("../middleware/auth.middleware");
 const { fraudCheck, trackRegistrationIP } = require("../middleware/fraud.middleware");
-const { sendTaskReminder, sendApprovalEmail } = require("../services/email.service");
+const { sendTaskReminder, sendApprovalEmail, sendFulfilmentEmail } = require("../services/email.service");
 const { getLevelFromPoints } = require("../utils/levels");
 
 // ── Earning caps (configurable via .env) ──────────────────
@@ -904,11 +904,28 @@ router.get("/admin/redemptions", protect, adminOnly, async (req, res) => {
 router.patch("/admin/redemptions/:id/fulfil", protect, adminOnly, async (req, res) => {
   try {
     const { fulfilmentNote } = req.body;
-    const redemption = await Redemption.findByIdAndUpdate(
-      req.params.id,
-      { status: "fulfilled", fulfilmentNote },
-      { new: true }
-    );
+
+    // Fetch full redemption with user + reward populated before updating
+    const redemption = await Redemption.findById(req.params.id)
+      .populate("userId", "name email")
+      .populate("rewardId", "title pointsCost");
+    if (!redemption) return res.status(404).json({ msg: "Redemption not found" });
+    if (redemption.status === "fulfilled") return res.status(400).json({ msg: "Already fulfilled" });
+
+    redemption.status = "fulfilled";
+    redemption.fulfilmentNote = fulfilmentNote || "";
+    await redemption.save();
+
+    // Send fulfilment email to user (non-blocking — don't fail the request if email fails)
+    if (redemption.userId?.email) {
+      sendFulfilmentEmail(
+        redemption.userId,
+        redemption.rewardId?.title || "Your Reward",
+        fulfilmentNote || "",
+        redemption.pointsSpent || 0
+      ).catch(err => console.error("Fulfilment email failed:", err.message));
+    }
+
     res.json({ msg: "Redemption fulfilled", redemption });
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
