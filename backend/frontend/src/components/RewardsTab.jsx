@@ -138,18 +138,16 @@ export default function RewardsTab({ currentUser, onPointsUpdate }) {
               <strong>{(currentUser.points || 0) - selected.pointsCost} pts</strong>
             </div>
             <div className={styles.field}>
-              <label>
-                {selected.category === 'merchandise' ? '📦 Delivery Address' : '📧 Email Address for eVoucher'}
-              </label>
+              <label>📧 Email Address for Delivery</label>
               <input
-                type="text"
-                placeholder={selected.category === 'merchandise' ? 'Your full postal address' : 'your@email.com'}
+                type="email"
+                placeholder="your@email.com"
                 value={deliveryInfo}
                 onChange={e => setDeliveryInfo(e.target.value)}
               />
             </div>
             {error && <div className={styles.error}>{error}</div>}
-            <p className={styles.modalHint}>⏱ eVoucher codes are delivered by email within 14–28 business days. Points are deducted immediately on confirmation.</p>
+            <p className={styles.modalHint}>📧 Your reward will be delivered to this email within 24–48 hours. Points are deducted immediately on confirmation.</p>
             <div className={styles.modalActions}>
               <button className={styles.cancelBtn} onClick={() => setSelected(null)}>Cancel</button>
               <button className={styles.confirmBtn} onClick={handleRedeem} disabled={loading}>

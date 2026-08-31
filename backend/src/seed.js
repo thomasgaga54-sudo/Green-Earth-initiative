@@ -1127,15 +1127,9 @@ async function seed() {
         description: "We plant a real tree in your name through our reforestation partners. Receive a personalised digital certificate by email. Available worldwide.",
         pointsCost: 150, category: "digital", currency: "ALL", region: "Global", flag: "🌍",
         imageUrl: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&auto=format&fit=crop",
-        stock: -1, available: true
+        stock: -1, available: false // disabled — requires manual physical fulfilment
       },
-      {
-        title: "Green Earth Eco Tote Bag 🎁",
-        description: "A reusable cotton tote bag with the Green Earth Initiative logo. Shipped to your address worldwide. Shipping takes 7–21 business days.",
-        pointsCost: 100, category: "merchandise", currency: "ALL", region: "Global", flag: "🌍",
-        imageUrl: "https://images.unsplash.com/photo-1610650200733-e8f7f4d3b9e8?w=400&auto=format&fit=crop",
-        stock: -1, available: true
-      },
+      // Green Earth Eco Tote Bag removed — physical merchandise cannot be fulfilled digitally
     ]);
     console.log("✅ Seeded global rewards available in all countries");
   } else {
