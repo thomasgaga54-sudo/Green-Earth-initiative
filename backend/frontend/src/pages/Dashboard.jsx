@@ -72,8 +72,10 @@ export default function Dashboard() {
     } else if (payment === 'reward_success') {
       setSubmitMsg('🎁 Purchase successful! Your reward will be delivered within 14–28 business days.')
       window.history.replaceState({}, '', '/dashboard')
-    } else if (payment === 'cancelled') {
-      setSubmitMsg('ℹ️ Payment was cancelled.')
+    }
+    // Note: ?payment=cancelled is intentionally not shown — users who cancel
+    // Stripe checkout are simply returned to the dashboard with no message.
+    if (payment) {
       window.history.replaceState({}, '', '/dashboard')
     }
 
