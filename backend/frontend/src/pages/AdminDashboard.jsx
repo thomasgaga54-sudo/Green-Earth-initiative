@@ -210,6 +210,15 @@ export default function AdminDashboard() {
   }
 
   const pendingRedemptions = redemptions.filter(r => r.status === 'pending')
+  const replaceRewards = async () => {
+    if (!confirm('This will DELETE all existing rewards and replace them with 6 PayPal cash tiers ($1–$50). This cannot be undone. Continue?')) return
+    try {
+      const { data } = await axios.post('/api/admin/replace-rewards', {}, api(token))
+      toast(data.msg)
+      fetchAll()
+    } catch (e) { toast(e.response?.data?.msg || 'Error replacing rewards') }
+  }
+
   const pending = submissions.filter(s => s.status === 'pending' || s.status === 'flagged')
   const approved = submissions.filter(s => s.status === 'approved')
   return (
@@ -386,9 +395,16 @@ export default function AdminDashboard() {
             <button
               className={styles.patchImagesBtn}
               onClick={patchLocalImages}
-              title="Convert local upload files (bottle.jpg, clean.avif) to base64 and save in DB"
+              title="Convert local upload files to base64 and save in DB"
             >
               🖼️ Patch Local Images → DB
+            </button>
+            <button
+              className={styles.replaceRewardsBtn}
+              onClick={replaceRewards}
+              title="Replace all rewards with PayPal cash tiers"
+            >
+              💵 Replace Rewards with PayPal Tiers
             </button>
             <div className={styles.taskGrid}>
               {tasks.map(t => (

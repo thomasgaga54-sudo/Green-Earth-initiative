@@ -182,14 +182,21 @@ const sendApprovalEmail = async (user, taskTitle, pointsAwarded) => {
 };
 
 /**
- * Send reward fulfilment email to a user
+ * Send PayPal reward fulfilment email to a user
  * Called when an admin marks a redemption as fulfilled
  */
 const sendFulfilmentEmail = async (user, rewardTitle, fulfilmentNote, pointsSpent) => {
+  // Extract dollar value from title e.g. "$5 PayPal Cash" → "$5"
+  const dollarMatch = rewardTitle.match(/\$[\d,]+/);
+  const dollarValue = dollarMatch ? dollarMatch[0] : null;
+  const isPayPal = rewardTitle.toLowerCase().includes('paypal');
+
   const { data, error } = await resend.emails.send({
     from: FROM_EMAIL,
     to: user.email,
-    subject: `🎁 Your reward is on its way! — ${rewardTitle}`,
+    subject: dollarValue
+      ? `💵 Your ${dollarValue} PayPal payment has been sent!`
+      : `✅ Your reward has been fulfilled — ${rewardTitle}`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -201,42 +208,66 @@ const sendFulfilmentEmail = async (user, rewardTitle, fulfilmentNote, pointsSpen
               <!-- Header -->
               <tr>
                 <td style="background:linear-gradient(135deg,#1b5e20,#2e7d32);padding:40px;text-align:center;">
-                  <div style="font-size:52px;">🎁</div>
-                  <h1 style="color:#fff;margin:12px 0 0;font-size:24px;font-weight:800;">Your Reward Is On Its Way!</h1>
+                  <div style="font-size:52px;">${isPayPal ? '💵' : '🎁'}</div>
+                  <h1 style="color:#fff;margin:12px 0 0;font-size:24px;font-weight:800;">
+                    ${dollarValue ? `${dollarValue} PayPal Payment Sent!` : 'Your Reward Is Fulfilled!'}
+                  </h1>
+                  ${dollarValue ? `<p style="color:#a5d6a7;margin:8px 0 0;font-size:15px;">Your cash is on its way 🎉</p>` : ''}
                 </td>
               </tr>
 
               <!-- Body -->
               <tr>
                 <td style="padding:40px;">
-                  <p style="color:#1b5e20;font-size:18px;font-weight:700;margin:0 0 16px;">Hi ${user.name || "Eco Warrior"} 🌍</p>
+                  <p style="color:#1b5e20;font-size:18px;font-weight:700;margin:0 0 16px;">Hi ${user.name || 'Eco Warrior'} 👋</p>
                   <p style="color:#424242;font-size:15px;line-height:1.6;margin:0 0 24px;">
-                    Great news! Your reward redemption for <strong>"${rewardTitle}"</strong> has been processed by our team.
+                    ${dollarValue
+                      ? `Your PayPal cash reward of <strong>${dollarValue}</strong> has been processed. Please check your PayPal account — the payment should arrive within minutes.`
+                      : `Your reward redemption for <strong>"${rewardTitle}"</strong> has been processed by our team.`
+                    }
                   </p>
 
-                  <!-- Reward box -->
+                  <!-- Reward summary box -->
                   <table width="100%" cellpadding="0" cellspacing="0" style="background:#e8f5e9;border-radius:12px;border:1px solid #c8e6c9;margin-bottom:24px;">
                     <tr><td style="padding:24px;">
+                      ${dollarValue ? `
+                      <p style="color:#9e9e9e;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 4px;">Amount Sent</p>
+                      <p style="color:#1b5e20;font-size:36px;font-weight:900;margin:0 0 16px;line-height:1;">${dollarValue}</p>
+                      ` : ''}
                       <p style="color:#9e9e9e;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 4px;">Reward</p>
-                      <p style="color:#1b5e20;font-size:17px;font-weight:800;margin:0 0 16px;">${rewardTitle}</p>
-                      <p style="color:#9e9e9e;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 4px;">Points Spent</p>
-                      <p style="color:#2e7d32;font-size:22px;font-weight:900;margin:0;">${pointsSpent} pts</p>
+                      <p style="color:#2e7d32;font-size:15px;font-weight:700;margin:0 0 16px;">${rewardTitle}</p>
+                      <p style="color:#9e9e9e;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 4px;">Points Redeemed</p>
+                      <p style="color:#2e7d32;font-size:18px;font-weight:900;margin:0;">${pointsSpent} pts</p>
                     </td></tr>
                   </table>
 
-                  <!-- Fulfilment note (voucher code / tracking) -->
+                  <!-- PayPal note / transaction ref -->
                   ${fulfilmentNote ? `
                   <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff8e1;border-radius:12px;border:1px solid #ffe082;margin-bottom:28px;">
                     <tr><td style="padding:24px;">
-                      <p style="color:#f57f17;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 8px;">📋 Fulfilment Details</p>
+                      <p style="color:#f57f17;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 8px;">
+                        ${isPayPal ? '📋 Payment Reference' : '📋 Fulfilment Details'}
+                      </p>
                       <p style="color:#424242;font-size:15px;line-height:1.6;margin:0;white-space:pre-wrap;">${fulfilmentNote}</p>
                     </td></tr>
                   </table>
                   ` : ''}
 
+                  ${isPayPal ? `
+                  <table width="100%" cellpadding="0" cellspacing="0" style="background:#e3f2fd;border-radius:12px;border:1px solid #90caf9;margin-bottom:28px;">
+                    <tr><td style="padding:20px 24px;">
+                      <p style="color:#1565c0;font-size:13px;font-weight:700;margin:0 0 6px;">💡 Haven't received it yet?</p>
+                      <p style="color:#424242;font-size:13px;line-height:1.6;margin:0;">
+                        PayPal payments typically arrive within minutes. If you don't see it after 24 hours,
+                        please check your PayPal spam/pending folder or reply to this email and we'll investigate.
+                      </p>
+                    </td></tr>
+                  </table>
+                  ` : ''}
+
                   <p style="color:#757575;font-size:13px;line-height:1.6;margin:0 0 28px;">
-                    If you have any questions about your reward, please reply to this email or contact us at
-                    <a href="mailto:support@greenearthinitiative.online" style="color:#2e7d32;">support@greenearthinitiative.online</a>.
+                    Questions? Contact us at
+                    <a href="mailto:support@greenearthinitiative.online" style="color:#2e7d32;">support@greenearthinitiative.online</a>
                   </p>
 
                   <!-- CTA -->

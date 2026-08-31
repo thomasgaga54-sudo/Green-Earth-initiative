@@ -887,6 +887,26 @@ router.delete("/admin/rewards/:id", protect, adminOnly, async (req, res) => {
   } catch (err) { res.status(500).json({ msg: err.message }); }
 });
 
+// ── One-time: replace all rewards with PayPal cash tiers ────
+// Call once after deploy: POST /api/admin/replace-rewards
+// Remove this route after running.
+router.post("/admin/replace-rewards", protect, adminOnly, async (req, res) => {
+  try {
+    const PAYPAL_IMAGE = "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop";
+    const NEW_REWARDS = [
+      { title: "$1 PayPal Cash",  description: "Redeem 100 points for a $1 PayPal cash payment sent directly to your PayPal account. Available worldwide.",   pointsCost: 100,  category: "paypal", currency: "USD", region: "Global", flag: "💵", imageUrl: PAYPAL_IMAGE, stock: -1, available: true },
+      { title: "$2 PayPal Cash",  description: "Redeem 200 points for a $2 PayPal cash payment sent directly to your PayPal account. Available worldwide.",   pointsCost: 200,  category: "paypal", currency: "USD", region: "Global", flag: "💵", imageUrl: PAYPAL_IMAGE, stock: -1, available: true },
+      { title: "$5 PayPal Cash",  description: "Redeem 500 points for a $5 PayPal cash payment sent directly to your PayPal account. Available worldwide.",   pointsCost: 500,  category: "paypal", currency: "USD", region: "Global", flag: "💵", imageUrl: PAYPAL_IMAGE, stock: -1, available: true },
+      { title: "$10 PayPal Cash", description: "Redeem 1,000 points for a $10 PayPal cash payment sent directly to your PayPal account. Available worldwide.", pointsCost: 1000, category: "paypal", currency: "USD", region: "Global", flag: "💵", imageUrl: PAYPAL_IMAGE, stock: -1, available: true },
+      { title: "$20 PayPal Cash", description: "Redeem 2,000 points for a $20 PayPal cash payment sent directly to your PayPal account. Available worldwide.", pointsCost: 2000, category: "paypal", currency: "USD", region: "Global", flag: "💵", imageUrl: PAYPAL_IMAGE, stock: -1, available: true },
+      { title: "$50 PayPal Cash", description: "Redeem 5,000 points for a $50 PayPal cash payment sent directly to your PayPal account. Available worldwide.", pointsCost: 5000, category: "paypal", currency: "USD", region: "Global", flag: "💵", imageUrl: PAYPAL_IMAGE, stock: -1, available: true },
+    ];
+    const deleted = await Reward.deleteMany({});
+    await Reward.insertMany(NEW_REWARDS);
+    res.json({ msg: `✅ Replaced ${deleted.deletedCount} old rewards with ${NEW_REWARDS.length} PayPal cash tiers.` });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
 // Get all redemptions (admin)
 router.get("/admin/redemptions", protect, adminOnly, async (req, res) => {
   try {

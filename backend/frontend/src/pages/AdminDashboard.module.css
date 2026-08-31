@@ -941,3 +941,20 @@
   .rdBtnRow { flex-direction: column; }
   .rdFulfilBtn, .rdCancelBtn { width: 100%; text-align: center; }
 }
+
+/* Replace rewards button */
+.replaceRewardsBtn {
+  background: #e3f2fd;
+  color: #1565c0;
+  border: 1.5px solid #90caf9;
+  border-radius: 8px;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  margin-left: 0.5rem;
+  display: inline-block;
+  transition: all 0.2s;
+}
+.replaceRewardsBtn:hover { background: #1565c0; color: #fff; border-color: #1565c0; }

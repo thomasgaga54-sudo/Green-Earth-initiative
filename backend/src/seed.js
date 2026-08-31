@@ -1066,72 +1066,50 @@ async function seed() {
   const rewardCount = await Reward.countDocuments();
   if (rewardCount === 0) {
     await Reward.insertMany([
-      // ── Tier 1 ──
       {
-        title: "Global eVoucher — Starter (100 pts)",
-        description: "Approx. value: £5 / $6 / €6 / ₦8,000 / GH₵75 / R$30 / R100 / KSh800. Delivered as a PayPal payment or local mobile money transfer to your registered email. Available in all countries.",
-        pointsCost: 100, category: "voucher", currency: "GLOBAL", region: "Global", flag: "🌍",
+        title: "$1 PayPal Cash",
+        description: "Redeem 100 points for a $1 PayPal cash payment sent directly to your PayPal account. Available worldwide.",
+        pointsCost: 100, category: "paypal", currency: "USD", region: "Global", flag: "💵",
         imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop",
         stock: -1, available: true
       },
-      // ── Tier 2 ──
       {
-        title: "Global eVoucher — Explorer (250 pts)",
-        description: "Approx. value: £12 / $15 / €14 / ₦20,000 / GH₵190 / R$75 / R250 / KSh2,000. Delivered as a PayPal payment or local mobile money transfer. Available in all countries.",
-        pointsCost: 250, category: "voucher", currency: "GLOBAL", region: "Global", flag: "🌍",
+        title: "$2 PayPal Cash",
+        description: "Redeem 200 points for a $2 PayPal cash payment sent directly to your PayPal account. Available worldwide.",
+        pointsCost: 200, category: "paypal", currency: "USD", region: "Global", flag: "💵",
         imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop",
         stock: -1, available: true
       },
-      // ── Tier 3 ──
       {
-        title: "Global eVoucher — Champion (500 pts)",
-        description: "Approx. value: £25 / $30 / €28 / ₦40,000 / GH₵380 / R$150 / R500 / KSh4,000. Delivered as a PayPal payment or local mobile money transfer. Available in all countries.",
-        pointsCost: 500, category: "voucher", currency: "GLOBAL", region: "Global", flag: "🌍",
+        title: "$5 PayPal Cash",
+        description: "Redeem 500 points for a $5 PayPal cash payment sent directly to your PayPal account. Available worldwide.",
+        pointsCost: 500, category: "paypal", currency: "USD", region: "Global", flag: "💵",
         imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop",
         stock: -1, available: true
       },
-      // ── Tier 4 ──
       {
-        title: "Global eVoucher — Legend (1000 pts)",
-        description: "Approx. value: £50 / $60 / €55 / ₦80,000 / GH₵760 / R$300 / R1000 / KSh8,000. Delivered as a PayPal payment or local mobile money transfer. Available in all countries.",
-        pointsCost: 1000, category: "voucher", currency: "GLOBAL", region: "Global", flag: "🌍",
+        title: "$10 PayPal Cash",
+        description: "Redeem 1,000 points for a $10 PayPal cash payment sent directly to your PayPal account. Available worldwide.",
+        pointsCost: 1000, category: "paypal", currency: "USD", region: "Global", flag: "💵",
         imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop",
         stock: -1, available: true
       },
-      // ── Google Play ──
       {
-        title: "Google Play Gift Card $5",
-        description: "A $5 Google Play gift card — usable in 190+ countries for apps, games, movies, books, and more. Code sent to your email. Available worldwide.",
-        pointsCost: 150, category: "voucher", currency: "USD", region: "Global", flag: "🌍",
-        imageUrl: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&auto=format&fit=crop",
+        title: "$20 PayPal Cash",
+        description: "Redeem 2,000 points for a $20 PayPal cash payment sent directly to your PayPal account. Available worldwide.",
+        pointsCost: 2000, category: "paypal", currency: "USD", region: "Global", flag: "💵",
+        imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop",
         stock: -1, available: true
       },
       {
-        title: "Google Play Gift Card $10",
-        description: "A $10 Google Play gift card usable in 190+ countries. Perfect for apps, games, and digital content. Code sent to your email.",
-        pointsCost: 300, category: "voucher", currency: "USD", region: "Global", flag: "🌍",
-        imageUrl: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&auto=format&fit=crop",
+        title: "$50 PayPal Cash",
+        description: "Redeem 5,000 points for a $50 PayPal cash payment sent directly to your PayPal account. Available worldwide.",
+        pointsCost: 5000, category: "paypal", currency: "USD", region: "Global", flag: "💵",
+        imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop",
         stock: -1, available: true
       },
-      // ── Amazon ──
-      {
-        title: "Amazon Gift Card $10",
-        description: "A $10 Amazon gift card redeemable on Amazon.com and many international Amazon stores. Code sent to your email. Available worldwide.",
-        pointsCost: 300, category: "voucher", currency: "USD", region: "Global", flag: "🌍",
-        imageUrl: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&auto=format&fit=crop",
-        stock: -1, available: true
-      },
-      // ── Non-cash global ──
-      {
-        title: "Tree Planting Certificate 🌳",
-        description: "We plant a real tree in your name through our reforestation partners. Receive a personalised digital certificate by email. Available worldwide.",
-        pointsCost: 150, category: "digital", currency: "ALL", region: "Global", flag: "🌍",
-        imageUrl: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&auto=format&fit=crop",
-        stock: -1, available: false // disabled — requires manual physical fulfilment
-      },
-      // Green Earth Eco Tote Bag removed — physical merchandise cannot be fulfilled digitally
     ]);
-    console.log("✅ Seeded global rewards available in all countries");
+    console.log("✅ Seeded PayPal cash reward tiers");
   } else {
     console.log(`ℹ️  Rewards already exist (${rewardCount}), skipping reward seed`);
   }
