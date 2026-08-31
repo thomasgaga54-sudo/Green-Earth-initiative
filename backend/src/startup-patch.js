@@ -19,6 +19,7 @@ const u = (file) => path.join(__dirname, "../uploads", file);
 const PATCHES = [
   // Personal Healthy-Living
   { title: "Drink Water Instead of a Sugary Drink",       file: u("drinkwater (1).jpg") },
+  { title: "Clean Your Street",                           file: u("cleanstreet (1).jpg") },
 
   // Family
   { title: "Help an Elderly Family Member",               file: u("helpold.jpg") },
