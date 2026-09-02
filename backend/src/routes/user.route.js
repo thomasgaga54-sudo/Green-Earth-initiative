@@ -45,7 +45,7 @@ const checkStreakMilestones = async (userId, newStreak) => {
 // ── Redemption guards ──────────────────────────────────────
 const MIN_LEVEL_TO_REDEEM    = 2;          // must be Green Helper or above
 const MIN_ACCOUNT_AGE_DAYS   = 7;          // account must be at least 7 days old
-const REDEMPTION_COOLDOWN_DAYS = 14;       // one redemption per 14 days
+const REDEMPTION_COOLDOWN_DAYS = 7;        // one redemption per 7 days
 
 /**
  * Calculate how many points a user has earned today and this week.
