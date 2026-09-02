@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Component } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import styles from './AdminDashboard.module.css'
@@ -8,10 +8,37 @@ const api = (token) => ({
   headers: { Authorization: `Bearer ${token}` }
 })
 
-export default function AdminDashboard() {
+// Error boundary — catches render errors and shows a recovery UI instead of blank page
+class AdminErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { hasError: false, error: null } }
+  static getDerivedStateFromError(error) { return { hasError: true, error } }
+  componentDidCatch(error, info) { console.error('Admin dashboard error:', error, info) }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '3rem', textAlign: 'center', fontFamily: 'sans-serif' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+          <h2 style={{ color: '#c62828', marginBottom: '0.5rem' }}>Something went wrong</h2>
+          <p style={{ color: '#666', marginBottom: '1.5rem' }}>
+            {this.state.error?.message || 'An unexpected error occurred in the admin dashboard.'}
+          </p>
+          <button
+            onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload() }}
+            style={{ background: '#2e7d32', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.75rem 2rem', fontSize: '1rem', cursor: 'pointer' }}
+          >
+            🔄 Reload Dashboard
+          </button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
+function AdminDashboardInner() {
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  const token = localStorage.getItem('token') || ''
+  const user = (() => { try { return JSON.parse(localStorage.getItem('user') || '{}') } catch { return {} } })()
 
   const [activeTab, setActiveTab] = useState('submissions')
   const [submissions, setSubmissions] = useState([])
@@ -28,6 +55,7 @@ export default function AdminDashboard() {
   const [editImageUrl, setEditImageUrl] = useState('')
   const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(false)
+  const [dataLoading, setDataLoading] = useState(true)
   const [sendingReminders, setSendingReminders] = useState(false)
 
   // User profile modal
@@ -43,20 +71,22 @@ export default function AdminDashboard() {
   }, [])
 
   const fetchAll = async () => {
-    try {
-      const [s, t, u, p, r] = await Promise.all([
-        axios.get('/api/admin/submissions', api(token)),
-        axios.get('/api/tasks'),
-        axios.get('/api/admin/users', api(token)),
-        axios.get('/api/admin/payments', api(token)),
-        axios.get('/api/admin/redemptions', api(token)),
-      ])
-      setSubmissions(s.data)
-      setTasks(t.data)
-      setUsers(u.data)
-      setPayments(p.data)
-      setRedemptions(r.data)
-    } catch { navigate('/login') }
+    setDataLoading(true)
+    // Each request is independent — a failure in one never blanks the page
+    const safe = async (fn, fallback) => { try { const r = await fn(); return r.data } catch { return fallback } }
+    const [s, t, u, p, r] = await Promise.all([
+      safe(() => axios.get('/api/admin/submissions', api(token)), []),
+      safe(() => axios.get('/api/tasks'),                         []),
+      safe(() => axios.get('/api/admin/users', api(token)),       []),
+      safe(() => axios.get('/api/admin/payments', api(token)),    []),
+      safe(() => axios.get('/api/admin/redemptions', api(token)), []),
+    ])
+    setSubmissions(Array.isArray(s) ? s : [])
+    setTasks(Array.isArray(t) ? t : [])
+    setUsers(Array.isArray(u) ? u : [])
+    setPayments(Array.isArray(p) ? p : [])
+    setRedemptions(Array.isArray(r) ? r : [])
+    setDataLoading(false)
   }
 
   const toast = (m) => { setMsg(m); setTimeout(() => setMsg(''), 3000) }
@@ -221,6 +251,17 @@ export default function AdminDashboard() {
 
   const pending = submissions.filter(s => s.status === 'pending' || s.status === 'flagged')
   const approved = submissions.filter(s => s.status === 'approved')
+
+  if (dataLoading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#f0f4f0', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ width: 48, height: 48, border: '5px solid #c8e6c9', borderTop: '5px solid #2e7d32', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <p style={{ color: '#2e7d32', fontWeight: 700, fontFamily: 'sans-serif' }}>Loading admin dashboard…</p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      </div>
+    )
+  }
+
   return (
     <div className={styles.page}>
       {/* Sidebar */}
@@ -414,6 +455,7 @@ export default function AdminDashboard() {
                       src={t.imageUrl}
                       alt={t.title}
                       className={styles.taskCardImg}
+                      loading="lazy"
                       onError={e => { e.target.style.display = 'none' }}
                     />
                   )}
@@ -852,5 +894,13 @@ export default function AdminDashboard() {
         )}
       </main>
     </div>
+  )
+}
+
+export default function AdminDashboard() {
+  return (
+    <AdminErrorBoundary>
+      <AdminDashboardInner />
+    </AdminErrorBoundary>
   )
 }
