@@ -22,6 +22,7 @@ const PATCHES = [
   { title: "Clean Your Street",                           file: u("cleanstreet (1).jpg") },
   { title: "Plant Trees in a Community Space",            file: u("communitytree (1).jpg") },
   { title: "Water School Plants",                         file: u("schoolplant (1).jpg") },
+  { title: "Create a Recycling Box for Your Class",       file: u("classbox.jpg") },
 
   // Family
   { title: "Help an Elderly Family Member",               file: u("helpold.jpg") },
