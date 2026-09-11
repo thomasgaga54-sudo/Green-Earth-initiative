@@ -159,7 +159,7 @@ export default function Landing() {
             <span>·</span>
             <Link to="/terms">Terms &amp; Conditions</Link>
             <span>·</span>
-            <a href="mailto:admin@greenearth.com">Contact Us</a>
+            <a href="mailto:greenearthinitiative399@gmail.com">Contact Us</a>
           </div>
         </div>
       </footer>

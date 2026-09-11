@@ -107,7 +107,7 @@ export default function Terms() {
           <ul>
             <li>We are committed to compliance with the <strong>Children's Online Privacy Protection Act (COPPA)</strong> for US users under 13 and <strong>GDPR for children</strong> for EU/UK users under 16.</li>
             <li>Children under 13 must have a parent or guardian register on their behalf. We do not knowingly collect personal data from children under 13 without verifiable parental consent.</li>
-            <li>Parents may request deletion of their child's account and all associated data by contacting <a href="mailto:admin@greenearth.com">admin@greenearth.com</a>.</li>
+            <li>Parents may request deletion of their child's account and all associated data by contacting <a href="mailto:greenearthinitiative399@gmail.com">greenearthinitiative399@gmail.com</a>.</li>
             <li>Children's task submissions are subject to additional review. Photos submitted by or on behalf of children must not contain identifying information (e.g. faces, school names, home addresses).</li>
             <li>All children's tasks are designed to be completed under adult supervision. Green Earth Initiative accepts no liability for unsupervised activities.</li>
           </ul>
@@ -160,7 +160,7 @@ export default function Terms() {
           <h2>🛡️ 9. Data Protection and GDPR Compliance</h2>
           <ul>
             <li>We process personal data in accordance with our <Link to="/privacy">Privacy Policy</Link> and applicable data protection law including the <strong>UK GDPR</strong>, <strong>EU GDPR</strong>, and <strong>CCPA</strong> (California).</li>
-            <li>You have the right to access, rectify, erase, restrict, and port your personal data. Requests should be directed to <a href="mailto:admin@greenearth.com">admin@greenearth.com</a>.</li>
+            <li>You have the right to access, rectify, erase, restrict, and port your personal data. Requests should be directed to <a href="mailto:greenearthinitiative399@gmail.com">greenearthinitiative399@gmail.com</a>.</li>
             <li>We do not sell personal data to third parties.</li>
             <li>Data is retained for as long as your account is active. Upon account deletion, personal data is removed within 30 days except where retention is required by law.</li>
           </ul>
@@ -185,7 +185,7 @@ export default function Terms() {
           <h2>📬 12. Contact and Complaints</h2>
           <p>For questions, complaints, data requests, or reward enquiries:</p>
           <ul>
-            <li>Email: <a href="mailto:admin@greenearth.com">admin@greenearth.com</a></li>
+            <li>Email: <a href="mailto:greenearthinitiative399@gmail.com">greenearthinitiative399@gmail.com</a></li>
             <li>Response time: within 5 business days</li>
             <li>Platform: <a href="https://green-earth-initiative-f04d.onrender.com" target="_blank" rel="noopener noreferrer">green-earth-initiative-f04d.onrender.com</a></li>
           </ul>

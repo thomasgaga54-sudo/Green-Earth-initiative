@@ -89,7 +89,7 @@ export default function PrivacyPolicy() {
             <li>Request deletion of your account and associated data.</li>
             <li>Withdraw consent at any time by deleting your account.</li>
           </ul>
-          <p>To exercise any of these rights, please contact us at <a href="mailto:admin@greenearth.com">admin@greenearth.com</a>.</p>
+          <p>To exercise any of these rights, please contact us at <a href="mailto:greenearthinitiative399@gmail.com">greenearthinitiative399@gmail.com</a>.</p>
         </div>
 
         <div className={styles.card}>
@@ -101,7 +101,7 @@ export default function PrivacyPolicy() {
           <h2>📬 9. Contact Us</h2>
           <p>If you have any questions or concerns about this Privacy Policy, please contact us:</p>
           <ul>
-            <li>Email: <a href="mailto:admin@greenearth.com">admin@greenearth.com</a></li>
+            <li>Email: <a href="mailto:greenearthinitiative399@gmail.com">greenearthinitiative399@gmail.com</a></li>
             <li>Platform: <a href="https://green-earth-initiative-f04d.onrender.com">green-earth-initiative-f04d.onrender.com</a></li>
           </ul>
         </div>
