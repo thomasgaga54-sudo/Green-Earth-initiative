@@ -12,7 +12,7 @@ export default function Contact() {
     // Opens the user's mail client with pre-filled content
     const body = encodeURIComponent(`Name: ${form.name}\nEmail: ${form.email}\n\n${form.message}`)
     const subject = encodeURIComponent(form.subject || 'Green Earth Initiative Enquiry')
-    window.location.href = `mailto:admin@greenearthinitiative.online?subject=${subject}&body=${body}`
+    window.location.href = `mailto:greenearthinitiative399@gmail.com?subject=${subject}&body=${body}`
     setSent(true)
   }
 
@@ -48,7 +48,7 @@ export default function Contact() {
           {sent ? (
             <div className={styles.successMsg}>
               ✅ Your message has been prepared. Your email client should open shortly.
-              If it doesn't, email us directly at <a href="mailto:admin@greenearthinitiative.online">admin@greenearthinitiative.online</a>
+              If it doesn't, email us directly at <a href="mailto:greenearthinitiative399@gmail.com">greenearthinitiative399@gmail.com</a>
             </div>
           ) : (
             <form className={styles.form} onSubmit={handleSubmit}>
@@ -81,7 +81,7 @@ export default function Contact() {
           <h2>Other Ways to Reach Us</h2>
           <div className={styles.grid}>
             {[
-              { icon: '📧', title: 'Email', desc: 'admin@greenearthinitiative.online — we aim to respond within 5 business days.' },
+              { icon: '📧', title: 'Email', desc: 'greenearthinitiative399@gmail.com — we aim to respond within 5 business days.' },
               { icon: '🌐', title: 'Website', desc: 'greenearthinitiative.online — browse, register, or log in to access your dashboard.' },
               { icon: '⏱️', title: 'Response Time', desc: 'We typically respond to all enquiries within 5 business days.' },
             ].map((item, i) => (
