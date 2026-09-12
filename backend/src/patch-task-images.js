@@ -24,6 +24,7 @@ const PATCHES = [
   { title: "Plant Trees in a Community Space",          file: u("communitytree (1).jpg") },
   { title: "Water School Plants",                       file: u("schoolplant (1).jpg") },
   { title: "Create a Recycling Box for Your Class",     file: u("classbox.jpg") },
+  { title: "Help a Younger Sibling Clean Their Room",   file: u("child.jpg") },
 
   // ── School Tasks ──────────────────────────────────────────
   // (school tasks use Unsplash URLs — no local files needed unless added)
